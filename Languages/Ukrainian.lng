@@ -1,0 +1,93 @@
+[main]
+tabname=Вкладка %%
+location=Розміщення: %%
+parameters=Параметри: %%
+description=Опис: %%
+confirmation=Підтвердження
+message1=Файл Flaunch.dat має ранішу версію (%%).\nХочете адаптувати його для подальшого використання?
+message2=Дійсно хочете запустити програму?\n\n%%
+message3=Дійсно хочете видалити вкладку?\n\n%%
+message4=Дійсно хочете звільнити кнопку?\n\n%%
+message5=Дійсно хочете очистити вкладку?\n\n%%
+message6=Дана кнопка вже зайнята. Хочете замінити?
+message7=Хочете імпортувати налаштування кнопки з файлу?\n\n%%
+ni_show=&FreeLaunch
+ni_settings=&Налаштування...
+ni_about=&Про програму...
+ni_close=&Вихід
+ni_run=&Запустити
+ni_export=&Експорт...
+ni_import=&Імпорт...
+ni_clear=&Звільнити
+ni_prop=&Властивості...
+ni_rename=&Перейменувати
+ni_cleartab=&Очистити
+ni_deletetab=&Видалити
+ni_group=&Скомпонувати
+flbfilter=Файл кнопки FreeLaunch (*.flb)
+ok=OK
+cancel=Відміна
+
+[properties]
+properties=Властивості
+object=Об'єкт
+parameters=Параметри
+description=Опис
+priority=Пріоритет
+priority_normal=Середній
+priority_high=Високий
+priority_low=Низький
+view=Вигляд
+view_normal=Нормальний
+view_max=Максимізований
+view_min=Мінімізований
+view_hidden=Прихований
+options=Опції
+icon=Ікона
+change=Змінити...
+chb_drop=Приймати перетягувані файли (%1 - ім'я)
+chb_question=Підтвердження
+chb_hide=Приховувати при запуску
+
+[iconselect]
+iconselect=Вибір ікони
+file=Файл
+index=Індекс
+of=з %%
+
+[tabname]
+tabname=Ім'я вкладки
+
+[settings]
+settings=Налаштування
+general=Загальні
+tabs=Вкладок
+rows=Рядів
+buttons=Кнопок
+spacing=Зазор
+chb_autorun=Автозапуск при старті
+chb_alwaysontop=Поверх всіх вікон
+chb_starthide=Приховувати при старті
+chb_statusbar=Рядок стану
+titlebar=Заголовок
+titlebar_normal=Нормальний
+titlebar_mini=Міні
+titlebar_hidden=Відсутній
+tabstyle=Вигляд вкладок
+tabstyle_pages=Сторінки
+tabstyle_buttons=Кнопки
+tabstyle_fbuttons=Плоскі кнопки
+icons=Іконки
+size=Розмір
+reloadicons=Перезавантажити ікони
+language=Мова
+
+[about]
+about=Про програму
+version=Версія
+author=Автор
+donate=Віддячити авторові (Webmoney)
+
+[information]
+name=Українська
+image=Qk1GAgAAAAAAADYAAAAoAAAAEAAAAAsAAAABABgAAAAAABACAAATCwAAEwsAAAAAAAAAAAAAFt35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35Ft35c6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTc6WTxHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6xHU6x===
