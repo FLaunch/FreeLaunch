@@ -1,0 +1,103 @@
+[main]
+tabname=Tab %%
+location=Lacation: %%
+parameters=Parameters: %%
+description=Description: %%
+confirmation=Confirmation
+caution=Caution
+message1=File FLaunch.dat has an older version (%%).\nDo you wish to convert it for using?
+message2=Do you wish to run this program?\n\n%%
+message3=Do you wish to delete this tab?\n\n%%
+message4=Do you wish to delete this button?\n\n%%
+message5=Do you wish to clear this tab?\n\n%%
+message6=This button is busy yet. Do you wish to replace it?
+message7=Do you wish to import button settings from this file?\n\n%%
+message8=Object not found\n\n%%
+ni_show=&FreeLaunch
+ni_settings=&Settings...
+ni_about=&About...
+ni_close=&Close
+ni_run=&Execute
+ni_tprogram=&Executed file
+ni_tfile=&File, folder
+ni_export=&Export...
+ni_import=&Import...
+ni_clear=&Clear
+ni_prop=&Properties...
+ni_rename=&Rename
+ni_cleartab=&Clear
+ni_deletetab=&Delete
+ni_group=&Group
+flbfilter=FreeLaunch button file (*.flb)
+ok=OK
+cancel=Cancel
+
+[properties]
+properties=Properties
+object=Object
+folder=Folder
+parameters=Parameters
+description=Description
+priority=Priority
+priority_normal=Normal
+priority_high=High
+priority_low=Low
+view=View
+view_normal=Normal
+view_max=Maximized
+view_min=Minimized
+view_hidden=Hidden
+options=Options
+icon=Icon
+change=Change...
+chb_drop=Process dropping files (%1 - filename)
+chb_question=Confirm launch
+chb_hide=Hide after launch
+be_hint=Select object
+rp_hint=Refresh properties
+tprogramfilter=Executed file (*.exe, *.bat)
+
+[iconselect]
+iconselect=Icon select
+file=File
+index=Index
+of=of %%
+
+[tabname]
+tabname=Tab name
+
+[settings]
+settings=Settings
+general=General
+tabs=Tabs
+rows=Rows
+buttons=Buttons
+spacing=Spacing
+chb_autorun=Autostart with system
+chb_alwaysontop=Always on top
+chb_starthide=Start hidden
+chb_statusbar=Status bar
+titlebar=Titlebar
+titlebar_normal=Normal
+titlebar_mini=Mini
+titlebar_hidden=Hidden
+tabstyle=Tab style
+tabstyle_pages=Pages
+tabstyle_buttons=Buttons
+tabstyle_fbuttons=Flat buttons
+icons=Icons
+size=Size
+reloadicons=Reload icons
+language=Language
+
+[about]
+about=About
+version=Version
+author=Author
+translate=Translator
+donate=Donation (Webmoney)
+
+[information]
+name=English
+author=C4ox9auEw0kFWXfF5TV9qSn1NqWOkFICMiUuGEWaZt7sxsXHxcHKg/XUr9flM+B/DnS+AIRLvdawlkp92pLq0b3TEAX7Kd46voJNI1bZQCgphkO3yS6yj1wbGJGl2xFOaIQVdg==
+image=Qk1GAgAAAAAAADYAAAAoAAAAEAAAAAsAAAABABgAAAAAABACAADEDgAAxA4AAAAAAAAAAAAAxJt7aUuYsWVQjisYjisYjisY6tXNNxuFNxuF6tXNbRQAbRQAbRQAjisY07aQjisY07aQ//7+fIX53cTCx4Rxx4Rx//7+TlH+TlH++/39sWVQsWVQ3cTC+/39VWDqtXNkrFI81q2h////fIX5jZH5tXNk////NTT4NTT4+/39rFI8+/39jZH5VWDqz5mKbRQArFI8z5mKsWVQ6tXN6uv/YmP+////NTT4NTT4////////NTT4tZm/jisYsWVQbRQA7d3Z//7+////////////////////NTT4NTT4////////////+/39+/39+/396tXNf2GsjZH5YmP+YmP+TlH+TlH+TlH+TlH+TlH+NTT4NTT4NTT4NTT4NTT4TlH+NxuF7d3Z//7+////////////////////TlH+TlH+//////////////////////7+6tXNwYNh1q2hz5mK377hfIX5////////YmP+TlH+////YmP+6uv/6tXNrFI8x4RxjisYwYNh7c+6r678r678////z5mK////YmP+YmP+////x4Rxr678jZH5////1q2hjisY1q2hr678//7+9OHb1q2h1q2h//7+jZH5jZH5//7+z5mKz5mK3cTCfIX5+/3907aQz5mK7c+6xJt7wYNhwYNhwYNh7d3Zf2Gsf2Gs7d3ZsWVQsWVQrFI8wYNhaUuYxJt7x===

@@ -1,0 +1,83 @@
+{
+  ##########################################################################
+  #  FreeLaunch 2.0 - free links manager for Windows                       #
+  #  ====================================================================  #
+  #  Copyright (C) 2010 Joker-jar                                          #
+  #  E-Mail joker-jar@yandex.ru                                            #
+  #  WEB http://sourceforge.net/projects/freelaunch                        #
+  #  ====================================================================  #
+  #  This file is part of FreeLaunch.                                      #
+  #                                                                        #
+  #  FreeLaunch is free software: you can redistribute it and/or modify    #
+  #  it under the terms of the GNU General Public License as published by  #
+  #  the Free Software Foundation, either version 3 of the License, or     #
+  #  (at your option) any later version.                                   #
+  #                                                                        #
+  #  FreeLaunch is distributed in the hope that it will be useful,         #
+  #  but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+  #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+  #  GNU General Public License for more details.                          #
+  #                                                                        #
+  #  You should have received a copy of the GNU General Public License     #
+  #  along with FreeLaunch. If not, see <http://www.gnu.org/licenses/>.    #
+  ##########################################################################
+}
+
+unit AboutFormModule;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, StdCtrls, inifiles;
+
+type
+  TAboutForm = class(TForm)
+    GroupBox1: TGroupBox;
+    Image1: TImage;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label7: TLabel;
+    Edit1: TEdit;
+    Edit2: TEdit;
+    Label4: TLabel;
+    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+
+  public
+
+  end;
+
+implementation
+
+uses
+  FLaunchMainFormModule;
+
+{$R *.dfm}
+
+procedure TAboutForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  aboutshowing := false;
+  action := CAFree;
+end;
+
+procedure TAboutForm.FormShow(Sender: TObject);
+begin
+  Color := FormColor;
+  aboutshowing := true;
+  //--Loading language
+  Caption := lng_about_strings[1];
+  Label1.Caption := FlaunchMainForm.FullDecrypt(cr_progname);
+  Label2.Caption := format('%s: %s (%s)',[lng_about_strings[2], FlaunchMainForm.GetFLVersion, releasedate]);
+  Label3.Caption := format('%s: %s (%s)',[lng_about_strings[3], FlaunchMainForm.FullDecrypt(cr_author), FlaunchMainForm.FullDecrypt(cr_authormail)]);
+  Label4.Caption := format('%s: %s',[lng_about_strings[4], FlaunchMainForm.FullDecrypt(lng_about_strings[5])]);
+  Label7.Caption := lng_about_strings[6] + ':';
+  Edit1.Text := FlaunchMainForm.FullDecrypt(cr_wmr);
+  Edit2.Text := FlaunchMainForm.FullDecrypt(cr_wmz);
+
+  Image1.Picture.Icon.Handle := LoadIcon(hinstance, 'MAINICON');
+end;
+
+end.

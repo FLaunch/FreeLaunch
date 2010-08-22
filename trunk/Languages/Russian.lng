@@ -1,0 +1,103 @@
+[main]
+tabname=Вкладка %%
+location=Размещение: %%
+parameters=Параметры: %%
+description=Описание: %%
+confirmation=Подтверждение
+caution=Предупреждение
+message1=Файл FLaunch.dat имеет более раннюю версию (%%).\nХотите адаптировать его для дальнейшего использования?
+message2=Действительно хотите запустить программу?\n\n%%
+message3=Действительно хотите удалить вкладку?\n\n%%
+message4=Действительно хотите освободить кнопку?\n\n%%
+message5=Действительно хотите очистить вкладку?\n\n%%
+message6=Данная кнопка уже занята. Хотите заменить?
+message7=Хотите импортировать настройки кнопки из файла?\n\n%%
+message8=Объект не найден\n\n%%
+ni_show=&FreeLaunch
+ni_settings=&Настройки...
+ni_about=&О программе...
+ni_close=&Выход
+ni_run=&Запустить
+ni_tprogram=&Исполняемый файл
+ni_tfile=&Файл, папка
+ni_export=&Экспорт...
+ni_import=И&мпорт...
+ni_clear=&Освободить
+ni_prop=&Свойства...
+ni_rename=&Переименовать
+ni_cleartab=&Очистить
+ni_deletetab=&Удалить
+ni_group=&Скомпоновать
+flbfilter=Файл кнопки FreeLaunch (*.flb)
+ok=OK
+cancel=Отмена
+
+[properties]
+properties=Свойства
+object=Объект
+folder=Папка
+parameters=Параметры
+description=Описание
+priority=Приоритет
+priority_normal=Средний
+priority_high=Высокий
+priority_low=Низкий
+view=Вид
+view_normal=Нормальный
+view_max=Максимизированный
+view_min=Минимизированный
+view_hidden=Скрытый
+options=Опции
+icon=Иконка
+change=Изменить...
+chb_drop=Принимать перетягиваемые файлы (%1 - имя)
+chb_question=Подтверждение
+chb_hide=Скрывать при запуске
+be_hint=Выбрать объект
+rp_hint=Обновить свойства
+tprogramfilter=Исполняемый файл (*.exe, *.bat)
+
+[iconselect]
+iconselect=Выбор иконки
+file=Файл
+index=Индекс
+of=из %%
+
+[tabname]
+tabname=Имя вкладки
+
+[settings]
+settings=Настройки
+general=Общие
+tabs=Вкладок
+rows=Рядов
+buttons=Кнопок
+spacing=Зазор
+chb_autorun=Автозапуск при старте
+chb_alwaysontop=Поверх всех окон
+chb_starthide=Скрывать при старте
+chb_statusbar=Строка состояния
+titlebar=Заголовок
+titlebar_normal=Нормальный
+titlebar_mini=Мини
+titlebar_hidden=Отсутствует
+tabstyle=Вид вкладок
+tabstyle_pages=Страницы
+tabstyle_buttons=Кнопки
+tabstyle_fbuttons=Плоские кнопки
+icons=Иконки
+size=Размер
+reloadicons=Перезагрузить иконки
+language=Язык
+
+[about]
+about=О программе
+version=Версия
+author=Автор
+translate=Перевод
+donate=Отблагодарить автора (Webmoney)
+
+[information]
+name=Русский
+author=C4ox9auEw0kFWXfF5TV9qSn1NqWOkFICMiUuGEWaZt7sxsXHxcHKg/XUr9flM+B/DnS+AIRLvdawlkp92pLq0b3TEAX7Kd46voJNI1bZQCgphkO3yS6yj1wbGJGl2xFOaIQVdg==
+image=Qk1GAgAAAAAAADYAAAAoAAAAEAAAAAsAAAABABgAAAAAABACAADEDgAAxA4AAAAAAAAAAAAAAADzAADzAADzAADsAADsAADsAADsAADsAADlAADlAADlAADgAADgAADdAADdAADdAAD4ZGT8W1v6W1v6UFD4UFD4UFD4RET3RET3Ozv1Ozv1NDTzNDTzLS30LS30AADdAAD4ZGT8RET6PT36Ozv1NDT4LS30LS30ISH1ISH1FhbzFhbzDQ3xDQ3xLS30AADgAACzjGrccEfScEfSaD3PaD3PXzLKXzLKVifHVifHTRzDTRzDRRK+RRK+XzLKAAB7/QAA/W9v/E9P/UpK+0ZG+kBA+Ds79zY29zAw9isq9SIi9SIi8xgY8xgY9zY25gAA/QAA/nR0/VVV/E9P/UpK+0ZG+kBA+Ds79zY29zAw9isq9SIi9SIi8xgY+Ds75gAA/QAA/nR0/VVV/VVV/U9Q/UpK+0ZG+kBA+Ds79zY29zAw9isq9SIi9SIi9T8/5gAA/UpK/rGx/pyc/pyc/pyc/JWV/JWV/JWV+I2N+I2N+I2N94OD94OD9X19+I2N5gAA//X1/////v7+/v7+/v7+/Pz8/Pz8/Pz8/Pz8+vr6+vr69/f39/f39vb29/f36t7e//X1/////////v7+/v7+/v7+/v7+/Pz8/Pz8/Pz8/Pz8+vr6+vr69/f39/f36t7e//X1//X1//X1//X1//X1/fLy/fLy/fLy+u/v+u/v9uzs9uzs8ujo8ujo7+Tj7+Tj7===
