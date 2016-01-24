@@ -31,7 +31,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, PanelClass,
+  Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, PanelClass,
   ComObj, ActiveX, ShlObj, IniFiles, Registry, Shfolder,
   ProgrammPropertiesFormModule,
   FilePropertiesFormModule,
@@ -197,7 +197,7 @@ type
     procedure ImportButton(filename: string; t,r,c: integer);
     //function B64Encode(data:string): string;
     //function Encrypt(const InString: string; StartKey: integer): string;
-    function Decrypt(const InString: string; StartKey: integer): string;
+    function Decrypt(const InString: AnsiString; StartKey: integer): string;
     //function FormatStr(s: string): string;
     function DeFormatStr(s: string): string;
     function GetSpecialDir(const CSIDL: byte): string;
@@ -212,6 +212,7 @@ type
     //procedure ModColors(Bitmap: TBitmap; Color: TColor);
     procedure DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
     procedure DropFileFolder(FileName: string; t,r,c: integer; fromlnk: boolean);
+    function ConfirmDialog(Msg, Title: string): Boolean;
   public
     procedure EndWork;
     procedure ChangeWndSize;
@@ -249,7 +250,7 @@ type
     function GetIconCount(FileName: String): integer;
     procedure SaveLinksToCash;
     procedure ChWinView(b: boolean);
-    function B64Decode(data:string): string;
+    function B64Decode(data: AnsiString): AnsiString;
   end;
 
 var
@@ -294,7 +295,7 @@ procedure ThreadLaunch(p: pointer);
 var
   WinType,Prior: integer;
   params: string;
-  execparams, path: PChar;
+  execparams, path: string;
   pi : TProcessInformation;
   si : TStartupInfo;
   t,r,c: integer;
@@ -329,23 +330,25 @@ begin
         2: Prior := IDLE_PRIORITY_CLASS;
       end;
       if GlobParam <> '' then
-        params := PAnsiChar(stringreplace(links[t][r][c].dropparams, '%1', GlobParam, []))
+        params := stringreplace(links[t][r][c].dropparams, '%1', GlobParam, [])
       else
         params := links[t][r][c].params;
-      execparams := PChar(Format('"%s" %s', [FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec), params]));
-      path := PChar(FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir));
-      if path = '' then path := nil;
+      execparams := Format('"%s" %s', [FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec), params]);
+      path := FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir);
+
       ZeroMemory(@si, sizeof(si));
       si.cb := SizeOf(si);
       si.dwFlags := STARTF_USESHOWWINDOW;
       si.wShowWindow := WinType;
-      CreateProcess(nil, execparams, nil, nil, false, Prior, nil, path, si, pi);
+      CreateProcess(nil, PChar(execparams), nil, nil, false, Prior, nil,
+        PChar(path), si, pi);
       if links[t][r][c].hide then FlaunchMainForm.ChWinView(false);
     end;
   if links[t][r][c].ltype = 1 then
     begin
-      path := PChar(FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir));
-      ShellExecute(FlaunchMainForm.Handle, 'open', PChar(FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec)), nil, path, WinType);
+      path := FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir);
+      ShellExecute(FlaunchMainForm.Handle, 'open',
+        PChar(FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec)), nil, PChar(path), WinType);
     end;
 end;
 
@@ -420,11 +423,11 @@ begin
     result := '';
 end;}
 
-function TFlaunchMainForm.B64Decode(data:string): string;
+function TFlaunchMainForm.B64Decode(data: AnsiString): AnsiString;
 var
   i1,i2,len : integer;
   pi, po : TPAByte;
-  ch1 : char;
+  ch1 : AnsiChar;
   c1 : dword;
 begin
   len:=length(data);
@@ -440,7 +443,7 @@ begin
           i2 := 0;
           while true do
             begin
-              ch1 := char(pi^[i2]);
+              ch1 := AnsiChar(pi^[i2]);
               case ch1 of
                 'A'..'Z' : c1 := c1 or (dword(ch1) - byte('A') );
                 'a'..'z' : c1 := c1 or (dword(ch1) - byte('a') + 26);
@@ -490,14 +493,14 @@ begin
   end;
 end;}
 
-function TFlaunchMainForm.Decrypt(const InString: string; StartKey: integer): string;
+function TFlaunchMainForm.Decrypt(const InString: AnsiString; StartKey: integer): string;
 var
   I: Byte;
 begin
   Result := '';
   for I := 1 to Length(InString) do
   begin
-    Result := Result + CHAR(Byte(InString[I]) xor (StartKey shr 8));
+    Result := Result + AnsiCHAR(Byte(InString[I]) xor (StartKey shr 8));
     StartKey := (Byte(InString[I]) + StartKey) * MultKey + AddKey;
   end;
 end;
@@ -736,8 +739,8 @@ begin
     2: exit;
   end;
 
+  reg := TRegistry.Create;
   try
-    reg := TRegistry.Create;
     reg.RootKey := rkey;
     reg.LazyWrite := false;
     reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Run', false);
@@ -804,6 +807,12 @@ begin
   val('$' + s, result, e);
   if e <> 0 then
     result := clBtnFace;
+end;
+
+function TFlaunchMainForm.ConfirmDialog(Msg, Title: string): Boolean;
+begin
+  Result := Application.MessageBox(PChar(Msg), PChar(Title),
+    MB_ICONQUESTION or MB_YESNO) = ID_YES;
 end;
 
 procedure TFlaunchMainForm.LoadIni;
@@ -888,7 +897,6 @@ var
   Value: Pointer;
   Len: UINT;
   GetTranslationString:string;
-  FFileName: PChar;
   FValid:boolean;
   FSize: DWORD;
   FHandle: DWORD;
@@ -896,16 +904,15 @@ var
 begin
   FBuffer := nil;
   try
-    FFileName := StrPCopy(StrAlloc(Length(FileName) + 1), FileName);
     FValid := False;
-    FSize := GetFileVersionInfoSize(FFileName, FHandle);
+    FSize := GetFileVersionInfoSize(PChar(FileName), FHandle);
     if FSize > 0 then
       try
         GetMem(FBuffer, FSize);
-        FValid := GetFileVersionInfo(FFileName, FHandle, FSize, FBuffer);
+        FValid := GetFileVersionInfo(PChar(FileName), FHandle, FSize, FBuffer);
       except
         FValid := False;
-        //raise;
+        raise;
       end;
     Result := '';
     if FValid then
@@ -918,18 +925,11 @@ begin
       begin
         StrPCopy(szName, '\StringFileInfo\' + GetTranslationString + '\FileDescription');
         if VerQueryValue(FBuffer, szName, Value, Len) then
-          Result := StrPas(PAnsiChar(Value));
+          Result := StrPas(PChar(Value));
       end;
   finally
-    try
-      if FBuffer <> nil then
-        FreeMem(FBuffer, FSize);
-    except
-    end;
-    try
-      StrDispose(FFileName);
-    except
-    end;
+    if FBuffer <> nil then
+      FreeMem(FBuffer, FSize);
   end;
 end;
 
@@ -1037,7 +1037,7 @@ begin
           fillchar(buff, sizeof(buff), 0);
           FileRead(LinksCfgFile, buff, bufflen);
           links[t,r,c].exec := strpas(buff);
-          ext := strlower(PAnsiChar(extractfileext(links[t,r,c].exec)));
+          ext := extractfileext(links[t,r,c].exec).ToLower;
           if (not links[t,r,c].active) or (ext = '.exe') or (ext = '.bat') then
             links[t,r,c].ltype := 0
           else
@@ -1094,7 +1094,7 @@ begin
           fillchar(buff, sizeof(buff), 0);
           FileRead(LinksCfgFile, buff, bufflen);
           links[t,r,c].exec := strpas(buff);
-          ext := strlower(PAnsiChar(extractfileext(links[t,r,c].exec)));
+          ext := extractfileext(links[t,r,c].exec).ToLower;
           if (not links[t,r,c].active) or (ext = '.exe') or (ext = '.bat') then
             links[t,r,c].ltype := 0
           else
@@ -1153,15 +1153,13 @@ begin
     begin
       FileClose(LinksCfgFile);
       if (buff = '1.21') or (buff = '1.2') or ((buff = '1.1')) then
-        if MessageBox(FlaunchMainForm.Handle, PChar(format(lngstrings[8],[buff])),
-          PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) = ID_YES then
+        if ConfirmDialog(format(lngstrings[8],[buff]), lngstrings[7]) then
           begin
             LoadLinksCfgFileV121_12_11;
             exit;
           end;
       if buff = '1.0' then
-        if MessageBox(FlaunchMainForm.Handle, PChar(format(lngstrings[8],[buff])),
-          PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) = ID_YES then
+        if ConfirmDialog(format(lngstrings[8],[buff]), lngstrings[7]) then
           begin
             LoadLinksCfgFileV10;
             exit;
@@ -2179,8 +2177,8 @@ procedure TFlaunchMainForm.NI_DeleteTabClick(Sender: TObject);
 var
   i: integer;
 begin
-  if MessageBox(Handle, PChar(format(lngstrings[10],[MainTabs.Pages[GlobTabNum].Caption])),
-    PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) <> IDYES then exit;
+  if not ConfirmDialog(format(lngstrings[10], [MainTabs.Pages[GlobTabNum].Caption]),
+    lngstrings[7]) then exit;
   ClearLinks(GlobTabNum);
   for i := GlobTabNum to tabscount - 2 do
     begin
@@ -2326,8 +2324,8 @@ begin
   r := GlobRow;
   c := GlobCol;
   panels[t][r][c].SetBlueFrame;
-  if MessageBox(Handle, PChar(format(lngstrings[11],[ExtractFileName(GetAbsolutePath(links[t][r][c].exec))])),
-    PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) = IDYES then
+  if ConfirmDialog(format(lngstrings[11],[ExtractFileName(GetAbsolutePath(links[t][r][c].exec))]),
+    lngstrings[7]) then
     begin
       fillchar(links[t][r][c],sizeof(lnk),0);
       panels[t][r][c].HasIcon := false;
@@ -2339,8 +2337,8 @@ end;
 
 procedure TFlaunchMainForm.NI_ClearTabClick(Sender: TObject);
 begin
-  if MessageBox(Handle, PChar(format(lngstrings[12],[MainTabs.Pages[GlobTabNum].Caption])),
-    PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) <> IDYES then exit;
+  if not ConfirmDialog(format(lngstrings[12], [MainTabs.Pages[GlobTabNum].Caption]),
+    lngstrings[7]) then exit;
   ClearLinks(GlobTabNum);
   LoadPanelLinks(GlobTabNum);
   SaveLinksCfgFile;
@@ -2468,25 +2466,23 @@ begin
       CreateThread(nil,0,@ThreadLaunch,nil,0,h);
       exit;
     end;
-  if (links[t][r][c].active) and (MessageBox(FlaunchMainForm.Handle,
-    PChar(lngstrings[13]), PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) = IDNO) then
+  if (links[t][r][c].active) and (not ConfirmDialog(lngstrings[13], lngstrings[7])) then
     exit;
   fillchar(links[t,r,c],sizeof(lnk),0);
-  if strlower(PChar(extractfileext(FileName))) = '.flb' then
-    if MessageBox(FlaunchMainForm.Handle, PChar(format(lngstrings[14],[FileName])),
-      PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) = IDYES then
+  if extractfileext(FileName).ToLower = '.flb' then
+    if ConfirmDialog(format(lngstrings[14],[FileName]), lngstrings[7]) then
       begin
         ImportButton(FileName, t, r, c);
         exit;
       end;
-  if strlower(PAnsiChar(extractfileext(FileName))) = '.lnk' then
+  if extractfileext(FileName).ToLower = '.lnk' then
     begin
       strpcopy(lnkinfo.FullPathAndNameOfLinkFile, FileName);
       GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
       links[t,r,c].exec := string(pch);
       FileName := links[t,r,c].exec;
-      ext := strlower(PAnsiChar(extractfileext(links[t,r,c].exec)));
+      ext := extractfileext(links[t,r,c].exec).ToLower;
       fromlnk := true;
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileContiningIcon,pch,sizeof(pch));
       links[t,r,c].icon := string(pch);
@@ -2500,7 +2496,7 @@ begin
     end
   else
     begin
-      ext := strlower(PAnsiChar(extractfileext(FileName)));
+      ext := extractfileext(FileName).ToLower;
       fromlnk := false;
     end;
   if (ext = '.exe') or (ext = '.bat') then

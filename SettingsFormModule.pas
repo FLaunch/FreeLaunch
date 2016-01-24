@@ -224,7 +224,7 @@ begin
   if FindFirst(Dir+'*.*', faAnyFile, SearchRec) = 0 then
     repeat
       if (SearchRec.name='.') or (SearchRec.name='..') then continue;
-      if (StrUpper(PAnsiChar(extractfileext(SearchRec.name))) = '.LNG') then
+      if (extractfileext(SearchRec.name).ToLower = '.lng') then
         begin
           ProcLanguage(Dir + SearchRec.name);
         end;
@@ -479,7 +479,7 @@ end;
 
 procedure TSettingsForm.EditKeyPress(Sender: TObject; var Key: Char);
 begin
-  if not (Key in [#8,'0'..'9']) then Key := #0;
+  if not CharInSet(Key, [#8,'0'..'9']) then Key := #0;
 end;
 
 procedure TSettingsForm.OKButtonClick(Sender: TObject);

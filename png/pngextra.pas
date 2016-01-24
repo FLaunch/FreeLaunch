@@ -20,28 +20,28 @@ type
     FCaption: String;
     FButtonLayout: TPNGButtonLayout;
     FButtonState: TPNGButtonState;
-    FImageDown: TPNGObject;
-    fImageNormal: TPNGObject;
-    fImageDisabled: TPNGObject;
-    fImageOver: TPNGObject;
+    FImageDown: TPngImage;
+    fImageNormal: TPngImage;
+    fImageDisabled: TPngImage;
+    fImageOver: TPngImage;
     fOnMouseEnter, fOnMouseExit: TNotifyEvent;
     {Procedures for setting the property values}
     procedure SetButtonStyle(const Value: TPNGButtonStyle);
     procedure SetCaption(const Value: String);
     procedure SetButtonLayout(const Value: TPNGButtonLayout);
     procedure SetButtonState(const Value: TPNGButtonState);
-    procedure SetImageNormal(const Value: TPNGObject);
-    procedure SetImageDown(const Value: TPNGObject);
-    procedure SetImageOver(const Value: TPNGObject);
+    procedure SetImageNormal(const Value: TPngImage);
+    procedure SetImageDown(const Value: TPngImage);
+    procedure SetImageOver(const Value: TPngImage);
   published
     {Published properties}
     property Font;
     property Visible;
     property ButtonLayout: TPNGButtonLayout read FButtonLayout write SetButtonLayout;
     property Caption: String read FCaption write SetCaption;
-    property ImageNormal: TPNGObject read fImageNormal write SetImageNormal;
-    property ImageDown: TPNGObject read FImageDown write SetImageDown;
-    property ImageOver: TPNGObject read FImageOver write SetImageOver;
+    property ImageNormal: TPngImage read fImageNormal write SetImageNormal;
+    property ImageDown: TPngImage read FImageDown write SetImageDown;
+    property ImageOver: TPngImage read FImageOver write SetImageOver;
     property ButtonStyle: TPNGButtonStyle read fButtonStyle
       write SetButtonStyle;
     property Enabled;
@@ -84,7 +84,7 @@ type
   end;
 
 procedure Register;
-procedure MakeImageHalfTransparent(Source, Dest: TPNGObject);
+procedure MakeImageHalfTransparent(Source, Dest: TPngImage);
 
 implementation
 
@@ -93,7 +93,7 @@ begin
   RegisterComponents('Samples', [TPNGButton]);
 end;
 
-procedure MakeImageHalfTransparent(Source, Dest: TPNGObject);
+procedure MakeImageHalfTransparent(Source, Dest: TPngImage);
 var
   i, j: Integer;
 begin
@@ -112,11 +112,11 @@ constructor TPNGButton.Create(AOwner: TComponent);
 begin
   {Calls ancestor}
   inherited Create(AOwner);
-  {Creates the TPNGObjects}
-  fImageNormal := TPNGObject.Create;
-  fImageDown := TPNGObject.Create;
-  fImageDisabled := TPNGObject.Create;
-  fImageOver := TPNGObject.Create;
+  {Creates the TPngImages}
+  fImageNormal := TPngImage.Create;
+  fImageDown := TPngImage.Create;
+  fImageDisabled := TPngImage.Create;
+  fImageOver := TPngImage.Create;
   {Initial properties}
   ControlStyle := ControlStyle + [csCaptureMouse];
   SetBounds(Left, Top, 23, 23);
@@ -127,7 +127,7 @@ end;
 
 destructor TPNGButton.Destroy;
 begin
-  {Frees the TPNGObject}
+  {Frees the TPngImage}
   fImageNormal.Free;
   fImageDown.Free;
   fImageDisabled.Free;
@@ -158,7 +158,7 @@ var
   Area: TRect;
   TextSize, ImageSize: TSize;
   TextPos, ImagePos: TPoint;
-  Image: TPNGObject;
+  Image: TPngImage;
   Pushed: Boolean;
 begin
   {Prepares the canvas}
@@ -261,7 +261,7 @@ begin
 end;
 
 {Changing the image property}
-procedure TPNGButton.SetImageNormal(const Value: TPNGObject);
+procedure TPNGButton.SetImageNormal(const Value: TPngImage);
 begin
   fImageNormal.Assign(Value);
   MakeImageHalfTransparent(fImageNormal, fImageDisabled);
@@ -269,14 +269,14 @@ begin
 end;
 
 {Setting the down image}
-procedure TPNGButton.SetImageDown(const Value: TPNGObject);
+procedure TPNGButton.SetImageDown(const Value: TPngImage);
 begin
   FImageDown.Assign(Value);
   Repaint
 end;
 
 {Setting the over image}
-procedure TPNGButton.SetImageOver(const Value: TPNGObject);
+procedure TPNGButton.SetImageOver(const Value: TPngImage);
 begin
   fImageOver.Assign(Value);
   Repaint
