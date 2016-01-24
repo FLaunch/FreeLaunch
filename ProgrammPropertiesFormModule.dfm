@@ -33,6 +33,10 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         513
         236)
@@ -154,7 +158,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 107
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 6
       end
       object ChangeIconButton: TButton
@@ -178,7 +181,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 102
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 7
       end
       object DropBox: TCheckBox
