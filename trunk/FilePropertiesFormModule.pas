@@ -160,8 +160,8 @@ begin
       Width := 21;
       Height := 21;
       ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'OPEN', 'PNG');
-      ImageOver.LoadFromResourceName(HInstance, 'OPEN_H', 'PNG');
+      ImageNormal.LoadFromResourceName(HInstance, 'OPEN');
+      ImageOver.LoadFromResourceName(HInstance, 'OPEN_H');
       OnClick := BrowseExecClick;
     end;
   RefProps := TPNGButton.Create(TabSheet1);
@@ -173,8 +173,8 @@ begin
       Width := 21;
       Height := 21;
       ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'REFRESH', 'PNG');
-      ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H', 'PNG');
+      ImageNormal.LoadFromResourceName(HInstance, 'REFRESH');
+      ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H');
       OnClick := RefPropsClick;
     end;
 end;
@@ -245,12 +245,12 @@ var
 begin
   if (not FileExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) then exit;
 
-  if strlower(pchar(extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)))) = '.lnk' then
+  if strlower(PAnsiChar(extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)))) = '.lnk' then
     begin
       strpcopy(lnkinfo.FullPathAndNameOfLinkFile, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
       FlaunchMainForm.GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
-      //ext := strlower(pchar(extractfileext(pch)));
+      //ext := strlower(PAnsiChar(extractfileext(pch)));
       //if not ((ext = '.exe') or (ext = '.bat')) then exit;
       CommandEdit.Text := string(pch);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileContiningIcon,pch,sizeof(pch));
@@ -263,7 +263,7 @@ begin
     end
   else
     begin
-      //ext := strlower(pchar(extractfileext(GetAbsolutePath(CommandEdit.Text))));
+      //ext := strlower(PAnsiChar(extractfileext(GetAbsolutePath(CommandEdit.Text))));
       //if not ((ext = '.exe') or (ext = '.bat')) then exit;
       Ic := CommandEdit.Text;
       //ParamsEdit.Text := '';

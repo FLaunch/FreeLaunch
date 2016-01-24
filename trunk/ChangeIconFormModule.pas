@@ -145,8 +145,8 @@ begin
       Width := 21;
       Height := 21;
       ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'OPEN', 'PNG');
-      ImageOver.LoadFromResourceName(HInstance, 'OPEN_H', 'PNG');
+      ImageNormal.LoadFromResourceName(HInstance, 'OPEN');
+      ImageOver.LoadFromResourceName(HInstance, 'OPEN_H');
       OnClick := BrowseIconClick;
     end;
   RefProps := TPNGButton.Create(GroupBox1);
@@ -158,8 +158,8 @@ begin
       Width := 21;
       Height := 21;
       ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'REFRESH', 'PNG');
-      ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H', 'PNG');
+      ImageNormal.LoadFromResourceName(HInstance, 'REFRESH');
+      ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H');
       OnClick := RefPropsClick;
     end;
 end;

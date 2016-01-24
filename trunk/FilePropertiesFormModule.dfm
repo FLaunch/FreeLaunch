@@ -33,6 +33,10 @@ object FilePropertiesForm: TFilePropertiesForm
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         513
         185)
@@ -126,7 +130,6 @@ object FilePropertiesForm: TFilePropertiesForm
         Width = 107
         Height = 21
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 3
       end
       object ChangeIconButton: TButton

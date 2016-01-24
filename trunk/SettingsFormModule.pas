@@ -224,7 +224,7 @@ begin
   if FindFirst(Dir+'*.*', faAnyFile, SearchRec) = 0 then
     repeat
       if (SearchRec.name='.') or (SearchRec.name='..') then continue;
-      if (StrUpper(pchar(extractfileext(SearchRec.name))) = '.LNG') then
+      if (StrUpper(PAnsiChar(extractfileext(SearchRec.name))) = '.LNG') then
         begin
           ProcLanguage(Dir + SearchRec.name);
         end;
