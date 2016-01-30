@@ -1019,7 +1019,7 @@ var
   t,r,c: integer;
   FileName, ext: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of char;
+  buff: array[0..255] of AnsiChar;
   bufflen: integer;
 begin
   result := false;
@@ -1076,7 +1076,7 @@ var
   t,r,c: integer;
   FileName, ext: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of char;
+  buff: array[0..255] of AnsiChar;
   bufflen: integer;
 begin
   result := false;
@@ -1133,7 +1133,7 @@ var
   t,r,c: integer;
   FileName: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of char;
+  buff: array[0..255] of AnsiChar;
   bufflen: integer;
 begin
   result := false;
@@ -1214,17 +1214,17 @@ var
   t,r,c: integer;
   FileName: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of char;
+  buff: array[0..255] of AnsiChar;
   bufflen: integer;
 begin
   FileName := workdir + 'FLaunch.dat';
   {if (fileexists(FileName)) and not (fileexists(FileName + '.bak')) then
     RenameFile(FileName, FileName + '.bak');}
   LinksCfgFile := FileCreate(FileName);
-  FileWrite(LinksCfgFile, 'LCFG', 4);
+  FileWrite(LinksCfgFile, AnsiString('LCFG'), 4);
   bufflen := length(version);
   FileWrite(LinksCfgFile, byte(bufflen), sizeof(bufflen));
-  FileWrite(LinksCfgFile, version, length(version));
+  FileWrite(LinksCfgFile, AnsiString(version), length(version));
   for t := 0 to maxt - 1 do
     for r := 0 to maxr - 1 do
       for c := 0 to maxc - 1 do
@@ -1270,7 +1270,7 @@ var
   t,r,c,tt,rr,cc: integer;
   FileName: string;
   LinksCashFile: integer;
-  buff: array[0..255] of char;
+  buff: array[0..255] of AnsiChar;
   bufflen: integer;
   Stream: TMemoryStream;
   iw,ih: integer;
@@ -1360,10 +1360,10 @@ begin
   {if (fileexists(FileName)) and not (fileexists(FileName + '.bak')) then
     RenameFile(FileName, FileName + '.bak');}
   LinksCashFile := FileCreate(FileName);
-  FileWrite(LinksCashFile, 'LCASH', 5);
+  FileWrite(LinksCashFile, AnsiString('LCASH'), 5);
   bufflen := length(version);
   FileWrite(LinksCashFile, bufflen, sizeof(bufflen));
-  FileWrite(LinksCashFile, version, length(version));
+  FileWrite(LinksCashFile, AnsiString(version), length(version));
   FileWrite(LinksCashFile, iconwidth, sizeof(integer));
   FileWrite(LinksCashFile, iconheight, sizeof(integer));
   Stream := TMemoryStream.Create;
