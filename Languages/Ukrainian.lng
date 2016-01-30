@@ -4,6 +4,7 @@ location=Розміщення: %%
 parameters=Параметри: %%
 description=Опис: %%
 confirmation=Підтвердження
+caution=Попередження
 message1=Файл Flaunch.dat має ранішу версію (%%).\nХочете адаптувати його для подальшого використання?
 message2=Дійсно хочете запустити програму?\n\n%%
 message3=Дійсно хочете видалити вкладку?\n\n%%
@@ -11,11 +12,14 @@ message4=Дійсно хочете звільнити кнопку?\n\n%%
 message5=Дійсно хочете очистити вкладку?\n\n%%
 message6=Дана кнопка вже зайнята. Хочете замінити?
 message7=Хочете імпортувати налаштування кнопки з файлу?\n\n%%
+message8=Об'єкт не знайдено\n\n%%
 ni_show=&FreeLaunch
 ni_settings=&Налаштування...
 ni_about=&Про програму...
 ni_close=&Вихід
 ni_run=&Запустити
+ni_tprogram=&Виконуваний файл
+ni_tfile=&Файл, папка
 ni_export=&Експорт...
 ni_import=&Імпорт...
 ni_clear=&Звільнити
@@ -31,6 +35,7 @@ cancel=Відміна
 [properties]
 properties=Властивості
 object=Об'єкт
+folder=Папка
 parameters=Параметри
 description=Опис
 priority=Пріоритет
@@ -48,6 +53,9 @@ change=Змінити...
 chb_drop=Приймати перетягувані файли (%1 - ім'я)
 chb_question=Підтвердження
 chb_hide=Приховувати при запуску
+be_hint=Вибрати об'єкт
+rp_hint=Оновити властивості
+tprogramfilter=Виконуваний файл (*.exe, *.bat)
 
 [iconselect]
 iconselect=Вибір ікони
@@ -86,6 +94,7 @@ language=Мова
 about=Про програму
 version=Версія
 author=Автор
+translate=Переклад
 donate=Віддячити авторові (Webmoney)
 
 [information]
