@@ -29,10 +29,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, IniFiles;
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, IniFiles, Vcl.Samples.Spin;
 
 const
   base64ABC='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  DesignDPI = 96;
 
 type
   TBase64 = record
@@ -46,14 +47,8 @@ type
     OKButton: TButton;
     CancelButton: TButton;
     Label2: TLabel;
-    TabsEdit: TEdit;
-    UpDown1: TUpDown;
     Label1: TLabel;
-    RowsEdit: TEdit;
-    UpDown2: TUpDown;
     Label3: TLabel;
-    ColsEdit: TEdit;
-    UpDown3: TUpDown;
     AutorunCheckBox: TCheckBox;
     TopCheckBox: TCheckBox;
     Bevel1: TBevel;
@@ -64,44 +59,31 @@ type
     Bevel2: TBevel;
     TabsBox: TComboBox;
     Label5: TLabel;
-    PaddingEdit: TEdit;
-    UpDown4: TUpDown;
     ReloadIconsButton: TButton;
     Label9: TLabel;
     Bevel4: TBevel;
     Label7: TLabel;
-    IWEdit: TEdit;
-    UpDown5: TUpDown;
     Label8: TLabel;
-    IHEdit: TEdit;
-    UpDown6: TUpDown;
     StartHideBox: TCheckBox;
     Label10: TLabel;
     Bevel5: TBevel;
     LanguagesBox: TComboBox;
     StatusBarBox: TCheckBox;
+    PaddingEdit: TSpinEdit;
+    ColsEdit: TSpinEdit;
+    RowsEdit: TSpinEdit;
+    TabsEdit: TSpinEdit;
+    IWEdit: TSpinEdit;
+    IHEdit: TSpinEdit;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure UpDown1Click(Sender: TObject; Button: TUDBtnType);
-    procedure UpDown2Click(Sender: TObject; Button: TUDBtnType);
-    procedure UpDown3Click(Sender: TObject; Button: TUDBtnType);
-    procedure UpDown4Click(Sender: TObject; Button: TUDBtnType);
-    procedure UpDown5Click(Sender: TObject; Button: TUDBtnType);
-    procedure UpDown6Click(Sender: TObject; Button: TUDBtnType);
     procedure ReloadIconsButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure EditKeyPress(Sender: TObject; var Key: Char);
-    procedure IWEditChange(Sender: TObject);
-    procedure IHEditChange(Sender: TObject);
     procedure LanguagesBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure TabsEditChange(Sender: TObject);
-    procedure RowsEditChange(Sender: TObject);
-    procedure ColsEditChange(Sender: TObject);
-    procedure PaddingEditChange(Sender: TObject);
   private
     function DecodeBase64(StringValue: string): TBase64;
   public
@@ -158,28 +140,6 @@ begin
     end;
 end;
 
-procedure TSettingsForm.PaddingEditChange(Sender: TObject);
-var
-  val: integer;
-begin
-  if not TryStrToInt(PaddingEdit.Text, val) then
-    begin
-      PaddingEdit.Text := inttostr(UpDown4.Position);
-      exit;
-    end;
-  if val > UpDown4.Max then
-    begin
-      PaddingEdit.Text := inttostr(UpDown4.Max);
-      exit;
-    end;
-  if val < UpDown4.Min then
-    begin
-      PaddingEdit.Text := inttostr(UpDown4.Min);
-      exit;
-    end;
-  UpDown4.Position := val;
-end;
-
 procedure TSettingsForm.ProcLanguage(FileName: string);
 const
   sect = 'information';
@@ -233,55 +193,11 @@ begin
   FindClose(SearchRec);
 end;
 
-procedure TSettingsForm.TabsEditChange(Sender: TObject);
-var
-  val: integer;
-begin
-  if not TryStrToInt(TabsEdit.Text, val) then
-    begin
-      TabsEdit.Text := inttostr(UpDown1.Position);
-      exit;
-    end;
-  if val > UpDown1.Max then
-    begin
-      TabsEdit.Text := inttostr(UpDown1.Max);
-      exit;
-    end;
-  if val < UpDown1.Min then
-    begin
-      TabsEdit.Text := inttostr(UpDown1.Min);
-      exit;
-    end;
-  UpDown1.Position := val;
-end;
-
 procedure TSettingsForm.ReloadIconsButtonClick(Sender: TObject);
 begin
   Close;
   FlaunchMainForm.LoadLinks;
   FlaunchMainForm.SaveLinksToCash;
-end;
-
-procedure TSettingsForm.RowsEditChange(Sender: TObject);
-var
-  val: integer;
-begin
-  if not TryStrToInt(RowsEdit.Text, val) then
-    begin
-      RowsEdit.Text := inttostr(UpDown2.Position);
-      exit;
-    end;
-  if val > UpDown2.Max then
-    begin
-      RowsEdit.Text := inttostr(UpDown2.Max);
-      exit;
-    end;
-  if val < UpDown2.Min then
-    begin
-      RowsEdit.Text := inttostr(UpDown2.Min);
-      exit;
-    end;
-  UpDown2.Position := val;
 end;
 
 procedure TSettingsForm.CancelButtonClick(Sender: TObject);
@@ -290,10 +206,20 @@ begin
 end;
 
 procedure TSettingsForm.LanguagesBoxDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+  Multiplier: Double;
+  FlagRect: TRect;
 begin
+  Multiplier := (Rect.Height - 4) / Flags[Index].Height;
+  FlagRect.Left := Rect.Left + 2;
+  FlagRect.Top := Rect.Top + 2;
+  FlagRect.Height := Rect.Height - 4;
+  FlagRect.Width := Round(Flags[Index].Width * Multiplier);
+
   LanguagesBox.Canvas.fillrect(rect);
-  LanguagesBox.Canvas.Draw(rect.left + 2,rect.top + 2, Flags[Index]);
-  LanguagesBox.Canvas.textout(rect.left + 22,rect.top + 2, LanguagesBox.items[index]);
+  LanguagesBox.Canvas.StretchDraw(FlagRect, Flags[Index]);
+  LanguagesBox.Canvas.textout(rect.left + FlagRect.Width + 4, rect.top + 2,
+    LanguagesBox.items[index]);
 end;
 
 procedure TSettingsForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -317,6 +243,9 @@ begin
   PaddingEdit.PopupMenu := NoPopup;
   IWEdit.PopupMenu := NoPopup;
   IHEdit.PopupMenu := NoPopup;
+
+  LanguagesBox.ItemHeight := MulDiv(LanguagesBox.ItemHeight,
+    Screen.PixelsPerInch, DesignDPI);
 end;
 
 procedure TSettingsForm.FormKeyDown(Sender: TObject; var Key: Word;
@@ -389,97 +318,22 @@ begin
   StatusBarBox.Checked := StatusBarVis;
   TBarBox.ItemIndex := titlebar;
   TabsBox.ItemIndex := tabsview;
-  UpDown1.Max := maxt;
-  UpDown1.Position := tabscount;
-  UpDown1.Min := mint;
-  UpDown2.Max := maxr;
-  UpDown2.Position := rowscount;
-  UpDown2.Min := minr;
-  UpDown3.Max := maxc;
-  UpDown3.Position := colscount;
-  UpDown3.Min := minc;
-  UpDown4.Max := maxp;
-  UpDown4.Position := lpadding;
-  UpDown4.Min := minp;
-  UpDown5.Max := 32;
-  UpDown5.Position := iconwidth - 4;
-  UpDown5.Min := 20;
-  UpDown6.Max := 32;
-  UpDown6.Position := iconheight - 4;
-  UpDown6.Min := 20;
+  TabsEdit.MaxValue := maxt;
+  TabsEdit.Value := tabscount;
+  TabsEdit.MinValue := mint;
+  RowsEdit.MaxValue := maxr;
+  RowsEdit.Value := rowscount;
+  RowsEdit.MinValue := minr;
+  ColsEdit.MaxValue := maxc;
+  ColsEdit.Value := colscount;
+  ColsEdit.MinValue := minc;
+  PaddingEdit.MaxValue := maxp;
+  PaddingEdit.Value := lpadding;
+  PaddingEdit.MinValue := minp;
+  IWEdit.Value := iconwidth - 4;
+  IHEdit.Value := iconheight - 4;
   AutoRunCheckBox.Enabled := SettingsMode <> 2;
   TabsEdit.SetFocus;
-end;
-
-procedure TSettingsForm.IHEditChange(Sender: TObject);
-var
-  val: integer;
-begin
-  if not TryStrToInt(IHEdit.Text, val) then
-    begin
-      IHEdit.Text := inttostr(UpDown6.Position);
-      exit;
-    end;
-  if val > UpDown6.Max then
-    begin
-      IHEdit.Text := inttostr(UpDown6.Max);
-      exit;
-    end;
-  if val < UpDown6.Min then
-    begin
-      IHEdit.Text := inttostr(UpDown6.Min);
-      exit;
-    end;
-  UpDown6.Position := val;
-end;
-
-procedure TSettingsForm.IWEditChange(Sender: TObject);
-var
-  val: integer;
-begin
-  if not TryStrToInt(IWEdit.Text, val) then
-    begin
-      IWEdit.Text := inttostr(UpDown5.Position);
-      exit;
-    end;
-  if val > UpDown5.Max then
-    begin
-      IWEdit.Text := inttostr(UpDown5.Max);
-      exit;
-    end;
-  if val < UpDown5.Min then
-    begin
-      IWEdit.Text := inttostr(UpDown5.Min);
-      exit;
-    end;
-  UpDown5.Position := val;
-end;
-
-procedure TSettingsForm.ColsEditChange(Sender: TObject);
-var
-  val: integer;
-begin
-  if not TryStrToInt(ColsEdit.Text, val) then
-    begin
-      ColsEdit.Text := inttostr(UpDown3.Position);
-      exit;
-    end;
-  if val > UpDown3.Max then
-    begin
-      ColsEdit.Text := inttostr(UpDown3.Max);
-      exit;
-    end;
-  if val < UpDown3.Min then
-    begin
-      ColsEdit.Text := inttostr(UpDown3.Min);
-      exit;
-    end;
-  UpDown3.Position := val;
-end;
-
-procedure TSettingsForm.EditKeyPress(Sender: TObject; var Key: Char);
-begin
-  if not CharInSet(Key, [#8,'0'..'9']) then Key := #0;
 end;
 
 procedure TSettingsForm.OKButtonClick(Sender: TObject);
@@ -524,36 +378,6 @@ begin
   FlaunchMainForm.ChWinView(true);
   ChPos := false;
   Close;
-end;
-
-procedure TSettingsForm.UpDown1Click(Sender: TObject; Button: TUDBtnType);
-begin
-  TabsEdit.Text := inttostr(UpDown1.Position);
-end;
-
-procedure TSettingsForm.UpDown2Click(Sender: TObject; Button: TUDBtnType);
-begin
-  RowsEdit.Text := inttostr(UpDown2.Position);
-end;
-
-procedure TSettingsForm.UpDown3Click(Sender: TObject; Button: TUDBtnType);
-begin
-  ColsEdit.Text := inttostr(UpDown3.Position);
-end;
-
-procedure TSettingsForm.UpDown4Click(Sender: TObject; Button: TUDBtnType);
-begin
-  PaddingEdit.Text := inttostr(UpDown4.Position);
-end;
-
-procedure TSettingsForm.UpDown5Click(Sender: TObject; Button: TUDBtnType);
-begin
-  IWEdit.Text := inttostr(UpDown5.Position);
-end;
-
-procedure TSettingsForm.UpDown6Click(Sender: TObject; Button: TUDBtnType);
-begin
-  IHEdit.Text := inttostr(UpDown6.Position);
 end;
 
 end.

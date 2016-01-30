@@ -29,7 +29,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, PNGExtra;
+  Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, PNGExtra, Vcl.Samples.Spin;
 
 type
   TChangeIconForm = class(TForm)
@@ -37,24 +37,21 @@ type
     Label1: TLabel;
     IconEdit: TEdit;
     Label2: TLabel;
-    IndexEdit: TEdit;
-    UpDown1: TUpDown;
     CancelButton: TButton;
     OKButton: TButton;
     IcImage: TImage;
     Label3: TLabel;
     OpenIcon: TOpenDialog;
+    IndexEdit: TSpinEdit;
     procedure FormShow(Sender: TObject);
-    procedure UpDown1Click(Sender: TObject; Button: TUDBtnType);
     procedure BrowseIconClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure IndexEditKeyPress(Sender: TObject; var Key: Char);
-    procedure IndexEditChange(Sender: TObject);
     procedure RefPropsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure IndexEditChange(Sender: TObject);
   private
 
   public
@@ -82,12 +79,10 @@ begin
   iconcount := FlaunchMainForm.GetIconCount(FlaunchMainForm.GetAbsolutePath(IconEdit.Text));
   if iconcount = 0 then iconcount := 1;
   Label3.Caption := Format(lng_iconselect_strings[4], [iconcount]);
-  IndexEdit.Text := inttostr(icindex);
+  IndexEdit.Value := icindex;
   IndexEdit.Enabled := iconcount > 1;
+  IndexEdit.MaxValue := iconcount;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(IconEdit.Text), icindex - 1);
-  UpDown1.Min := 1;
-  UpDown1.Position := icindex;
-  UpDown1.Max := iconcount;
 end;
 
 procedure TChangeIconForm.BrowseIconClick(Sender: TObject);
@@ -140,10 +135,10 @@ begin
   with BrowseIcon do
     begin
       Parent := GroupBox1;
-      Left := 292;
-      Top := 20;
-      Width := 21;
-      Height := 21;
+      Left := IconEdit.Left + IconEdit.Width + 4;
+      Top := IconEdit.Top;
+      Height := IconEdit.Height;
+      Width := Height;
       ButtonStyle := pbsFlat;
       ImageNormal.LoadFromResourceName(HInstance, 'OPEN');
       ImageOver.LoadFromResourceName(HInstance, 'OPEN_H');
@@ -153,10 +148,10 @@ begin
   with RefProps do
     begin
       Parent := GroupBox1;
-      Left := 313;
-      Top := 20;
-      Width := 21;
-      Height := 21;
+      Left := BrowseIcon.Left + BrowseIcon.Width + 4;;
+      Top := BrowseIcon.Top;
+      Height := BrowseIcon.Height;
+      Width := Height;
       ButtonStyle := pbsFlat;
       ImageNormal.LoadFromResourceName(HInstance, 'REFRESH');
       ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H');
@@ -198,48 +193,16 @@ begin
 
   if iconcount = 0 then iconcount := 1;
   Label3.Caption := Format(lng_iconselect_strings[4], [iconcount]);
-  IndexEdit.Text := inttostr(icindex);
+  IndexEdit.Value := icindex;
   IndexEdit.Enabled := iconcount > 1;
+  IndexEdit.MaxValue := iconcount;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(IconEdit.Text), icindex - 1);
-  UpDown1.Min := 1;
-  UpDown1.Position := icindex;
-  UpDown1.Max := iconcount;
   IconEdit.SetFocus;
 end;
 
 procedure TChangeIconForm.IndexEditChange(Sender: TObject);
-var
-  val: integer;
 begin
-  if not TryStrToInt(IndexEdit.Text, val) then
-    begin
-      IndexEdit.Text := inttostr(UpDown1.Position);
-      exit;
-    end;
-  if val > UpDown1.Max then
-    begin
-      val := UpDown1.Max;
-      IndexEdit.Text := inttostr(UpDown1.Max);
-    end;
-  if val < UpDown1.Min then
-    begin
-      val := UpDown1.Min;
-      IndexEdit.Text := inttostr(UpDown1.Min);
-    end;
-  UpDown1.Position := val;
-  icindex := val;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, IconEdit.Text, icindex - 1);
-end;
-
-procedure TChangeIconForm.IndexEditKeyPress(Sender: TObject; var Key: Char);
-begin
-  if not (Key in [#8,'0'..'9']) then Key := #0;
-end;
-
-procedure TChangeIconForm.UpDown1Click(Sender: TObject; Button: TUDBtnType);
-begin
-  IndexEdit.Text := inttostr(UpDown1.Position);
-  icindex := UpDown1.Position;
+  icindex := IndexEdit.Value;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(IconEdit.Text), icindex - 1);
 end;
 

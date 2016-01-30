@@ -99,7 +99,6 @@ const
   mainsect = 'properties';
 var
   lfile: TIniFile;
-  w: integer;
 begin
   lfile := TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Languages\' + filename);
   OKButton.Caption := lngstrings[15];
@@ -124,14 +123,10 @@ begin
   RefProps.Hint := FlaunchMainForm.parse(lfile.ReadString(mainsect,'rp_hint',''));
   Label5.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'options',''));
   Bevel2.Left := Label5.Left + Label5.Width + 7;
-  w := 505 - Bevel2.Left;
-  if w < 0 then w := 0;
-  Bevel2.Width := w;
+  Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
   Label6.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'icon',''));
   Bevel3.Left := Label6.Left + Label6.Width + 7;
-  w := 505 - Bevel3.Left;
-  if w < 0 then w := 0;
-  Bevel3.Width := w;
+  Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
   ChangeIconButton.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'change',''));
   DropBox.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'chb_drop',''));
   QuesCheckBox.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'chb_question',''));
@@ -217,10 +212,10 @@ begin
   with BrowseExec do
     begin
       Parent := TabSheet1;
-      Left := 295;
-      Top := 15;
-      Width := 21;
-      Height := 21;
+      Left := CommandEdit.Left + CommandEdit.Width + 4;
+      Top := CommandEdit.Top;
+      Height := CommandEdit.Height;
+      Width := Height;
       ButtonStyle := pbsFlat;
       ImageNormal.LoadFromResourceName(HInstance, 'OPEN');
       ImageOver.LoadFromResourceName(HInstance, 'OPEN_H');
@@ -230,10 +225,10 @@ begin
   with RefProps do
     begin
       Parent := TabSheet1;
-      Left := 316;
-      Top := 15;
-      Width := 21;
-      Height := 21;
+      Left := BrowseExec.Left + BrowseExec.Width + 4;
+      Top := BrowseExec.Top;
+      Height := BrowseExec.Height;
+      Width := Height;
       ButtonStyle := pbsFlat;
       ImageNormal.LoadFromResourceName(HInstance, 'REFRESH');
       ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H');
@@ -251,8 +246,6 @@ begin
 end;
 
 procedure TProgrammPropertiesForm.FormShow(Sender: TObject);
-var
-  w: integer;
 begin
   Color := FormColor;
   panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
@@ -280,14 +273,10 @@ begin
   RefProps.Hint := lng_properties_strings[16];
   Label5.Caption := lng_properties_strings[17];
   Bevel2.Left := Label5.Left + Label5.Width + 7;
-  w := 505 - Bevel2.Left;
-  if w < 0 then w := 0;
-  Bevel2.Width := w;
+  Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
   Label6.Caption := lng_properties_strings[18];
   Bevel3.Left := Label6.Left + Label6.Width + 7;
-  w := 505 - Bevel3.Left;
-  if w < 0 then w := 0;
-  Bevel3.Width := w;
+  Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
   ChangeIconButton.Caption := lng_properties_strings[19];
   DropBox.Caption := lng_properties_strings[20];
   QuesCheckBox.Caption := lng_properties_strings[21];

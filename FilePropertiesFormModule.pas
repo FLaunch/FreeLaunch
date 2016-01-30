@@ -155,10 +155,10 @@ begin
   with BrowseExec do
     begin
       Parent := TabSheet1;
-      Left := 295;
-      Top := 15;
-      Width := 21;
-      Height := 21;
+      Left := CommandEdit.Left + CommandEdit.Width + 4;
+      Top := CommandEdit.Top;
+      Height := CommandEdit.Height;
+      Width := Height;
       ButtonStyle := pbsFlat;
       ImageNormal.LoadFromResourceName(HInstance, 'OPEN');
       ImageOver.LoadFromResourceName(HInstance, 'OPEN_H');
@@ -168,10 +168,10 @@ begin
   with RefProps do
     begin
       Parent := TabSheet1;
-      Left := 316;
-      Top := 15;
-      Width := 21;
-      Height := 21;
+      Left := BrowseExec.Left + BrowseExec.Width + 4;;
+      Top := BrowseExec.Top;
+      Height := BrowseExec.Height;
+      Width := Height;
       ButtonStyle := pbsFlat;
       ImageNormal.LoadFromResourceName(HInstance, 'REFRESH');
       ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H');
@@ -211,14 +211,10 @@ begin
   RefProps.Hint := lng_properties_strings[16];
   Label5.Caption := lng_properties_strings[17];
   Bevel2.Left := Label5.Left + Label5.Width + 7;
-  w := 505 - Bevel2.Left;
-  if w < 0 then w := 0;
-  Bevel2.Width := w;
+  Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
   Label6.Caption := lng_properties_strings[18];
   Bevel3.Left := Label6.Left + Label6.Width + 7;
-  w := 505 - Bevel3.Left;
-  if w < 0 then w := 0;
-  Bevel3.Width := w;
+  Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
   ChangeIconButton.Caption := lng_properties_strings[19];
   QuesCheckBox.Caption := lng_properties_strings[21];
   HideCheckBox.Caption := lng_properties_strings[22];

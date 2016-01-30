@@ -59,23 +59,16 @@ object ChangeIconForm: TChangeIconForm
       Height = 21
       TabOrder = 0
     end
-    object IndexEdit: TEdit
+    object IndexEdit: TSpinEdit
       Left = 62
       Top = 50
-      Width = 51
-      Height = 21
+      Width = 64
+      Height = 22
+      MaxValue = 1
+      MinValue = 1
       TabOrder = 1
-      Text = '1'
+      Value = 0
       OnChange = IndexEditChange
-      OnKeyPress = IndexEditKeyPress
-    end
-    object UpDown1: TUpDown
-      Left = 113
-      Top = 50
-      Width = 13
-      Height = 21
-      TabOrder = 2
-      OnClick = UpDown1Click
     end
   end
   object CancelButton: TButton
