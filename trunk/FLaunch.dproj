@@ -66,6 +66,7 @@
         <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_ExeOutput>.\Release</DCC_ExeOutput>
         <DCC_RangeChecking>true</DCC_RangeChecking>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
