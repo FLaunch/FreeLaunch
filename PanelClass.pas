@@ -28,7 +28,8 @@ unit PanelClass;
 interface
 
 uses
-  Windows, SysUtils, Classes, Controls, ExtCtrls, ShellApi, Messages, Graphics;
+  Windows, SysUtils, Classes, Controls, ExtCtrls, ShellApi, Messages, Graphics,
+  Types;
 
 const
   FocusColor = clred;

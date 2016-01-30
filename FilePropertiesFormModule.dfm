@@ -33,6 +33,10 @@ object FilePropertiesForm: TFilePropertiesForm
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         513
         185)
