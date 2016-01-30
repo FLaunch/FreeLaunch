@@ -846,10 +846,10 @@ begin
   if lpadding < minp then
     lpadding := minp;
   iconwidth := ini.ReadInteger(inisection, 'iconwidth', 32) + panelzoom;
-  if (iconwidth < 20 + panelzoom) or (iconwidth > 32 + panelzoom) then
+  if (iconwidth < 16 + panelzoom) or (iconwidth > 256 + panelzoom) then
     iconwidth := 32 + panelzoom;
   iconheight:= ini.ReadInteger(inisection, 'iconheight', 32) + panelzoom;
-  if (iconheight < 20 + panelzoom) or (iconheight > 32 + panelzoom) then
+  if (iconheight < 16 + panelzoom) or (iconheight > 256 + panelzoom) then
     iconheight := 32 + panelzoom;
   tabind := ini.ReadInteger(inisection, 'activetab', 0);
   if (tabind < 0) or (tabind > tabscount-1) then
