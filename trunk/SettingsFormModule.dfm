@@ -28,10 +28,6 @@ object SettingsForm: TSettingsForm
     ActivePage = TabSheet1
     TabOrder = 0
     object TabSheet1: TTabSheet
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label2: TLabel
         Left = 58
         Top = 13
@@ -114,7 +110,7 @@ object SettingsForm: TSettingsForm
         Alignment = taRightJustify
       end
       object Label8: TLabel
-        Left = 288
+        Left = 287
         Top = 144
         Width = 6
         Height = 13
@@ -133,73 +129,19 @@ object SettingsForm: TSettingsForm
         Height = 10
         Shape = bsTopLine
       end
-      object TabsEdit: TEdit
-        Left = 67
-        Top = 10
-        Width = 51
-        Height = 21
-        TabOrder = 0
-        Text = '1'
-        OnChange = TabsEditChange
-        OnKeyPress = EditKeyPress
-      end
-      object UpDown1: TUpDown
-        Left = 118
-        Top = 10
-        Width = 13
-        Height = 21
-        TabOrder = 1
-        OnClick = UpDown1Click
-      end
-      object RowsEdit: TEdit
-        Left = 67
-        Top = 37
-        Width = 51
-        Height = 21
-        TabOrder = 2
-        Text = '1'
-        OnChange = RowsEditChange
-        OnKeyPress = EditKeyPress
-      end
-      object UpDown2: TUpDown
-        Left = 118
-        Top = 37
-        Width = 13
-        Height = 21
-        TabOrder = 3
-        OnClick = UpDown2Click
-      end
-      object ColsEdit: TEdit
-        Left = 67
-        Top = 64
-        Width = 51
-        Height = 21
-        TabOrder = 4
-        Text = '1'
-        OnChange = ColsEditChange
-        OnKeyPress = EditKeyPress
-      end
-      object UpDown3: TUpDown
-        Left = 118
-        Top = 64
-        Width = 13
-        Height = 21
-        TabOrder = 5
-        OnClick = UpDown3Click
-      end
       object AutorunCheckBox: TCheckBox
         Left = 14
         Top = 128
         Width = 148
         Height = 17
-        TabOrder = 8
+        TabOrder = 0
       end
       object TopCheckBox: TCheckBox
         Left = 14
         Top = 151
         Width = 148
         Height = 17
-        TabOrder = 9
+        TabOrder = 1
       end
       object TBarBox: TComboBox
         Left = 198
@@ -207,7 +149,7 @@ object SettingsForm: TSettingsForm
         Width = 145
         Height = 21
         Style = csDropDownList
-        TabOrder = 11
+        TabOrder = 3
       end
       object TabsBox: TComboBox
         Left = 198
@@ -215,81 +157,22 @@ object SettingsForm: TSettingsForm
         Width = 145
         Height = 21
         Style = csDropDownList
-        TabOrder = 12
-      end
-      object PaddingEdit: TEdit
-        Left = 67
-        Top = 90
-        Width = 51
-        Height = 21
-        TabOrder = 6
-        Text = '1'
-        OnChange = PaddingEditChange
-      end
-      object UpDown4: TUpDown
-        Left = 118
-        Top = 90
-        Width = 13
-        Height = 21
-        TabOrder = 7
-        OnClick = UpDown4Click
+        TabOrder = 4
       end
       object ReloadIconsButton: TButton
         Left = 198
         Top = 174
         Width = 145
         Height = 25
-        TabOrder = 17
+        TabOrder = 5
         OnClick = ReloadIconsButtonClick
-      end
-      object IWEdit: TEdit
-        Left = 245
-        Top = 141
-        Width = 25
-        Height = 21
-        TabOrder = 13
-        Text = '32'
-        OnChange = IWEditChange
-        OnKeyPress = EditKeyPress
-      end
-      object UpDown5: TUpDown
-        Left = 270
-        Top = 141
-        Width = 13
-        Height = 21
-        Min = 20
-        Max = 32
-        Position = 20
-        TabOrder = 14
-        OnClick = UpDown5Click
-      end
-      object IHEdit: TEdit
-        Left = 298
-        Top = 141
-        Width = 25
-        Height = 21
-        TabOrder = 15
-        Text = '32'
-        OnChange = IHEditChange
-        OnKeyPress = EditKeyPress
-      end
-      object UpDown6: TUpDown
-        Left = 323
-        Top = 141
-        Width = 13
-        Height = 21
-        Min = 20
-        Max = 32
-        Position = 20
-        TabOrder = 16
-        OnClick = UpDown6Click
       end
       object StartHideBox: TCheckBox
         Left = 14
         Top = 174
         Width = 148
         Height = 17
-        TabOrder = 10
+        TabOrder = 2
       end
       object LanguagesBox: TComboBox
         Left = 198
@@ -298,7 +181,7 @@ object SettingsForm: TSettingsForm
         Height = 21
         Style = csOwnerDrawFixed
         ItemHeight = 15
-        TabOrder = 18
+        TabOrder = 6
         OnDrawItem = LanguagesBoxDrawItem
         Items.Strings = (
           #1056#1091#1089#1089#1082#1080#1081)
@@ -308,7 +191,67 @@ object SettingsForm: TSettingsForm
         Top = 197
         Width = 148
         Height = 17
-        TabOrder = 19
+        TabOrder = 7
+      end
+      object PaddingEdit: TSpinEdit
+        Left = 67
+        Top = 91
+        Width = 64
+        Height = 22
+        MaxValue = 100
+        MinValue = 0
+        TabOrder = 8
+        Value = 1
+      end
+      object ColsEdit: TSpinEdit
+        Left = 67
+        Top = 63
+        Width = 64
+        Height = 22
+        MaxValue = 100
+        MinValue = 0
+        TabOrder = 9
+        Value = 1
+      end
+      object RowsEdit: TSpinEdit
+        Left = 67
+        Top = 37
+        Width = 64
+        Height = 22
+        MaxValue = 100
+        MinValue = 0
+        TabOrder = 10
+        Value = 1
+      end
+      object TabsEdit: TSpinEdit
+        Left = 67
+        Top = 9
+        Width = 64
+        Height = 22
+        MaxValue = 100
+        MinValue = 0
+        TabOrder = 11
+        Value = 1
+      end
+      object IWEdit: TSpinEdit
+        Left = 237
+        Top = 141
+        Width = 44
+        Height = 22
+        MaxValue = 256
+        MinValue = 16
+        TabOrder = 12
+        Value = 32
+      end
+      object IHEdit: TSpinEdit
+        Left = 299
+        Top = 141
+        Width = 44
+        Height = 22
+        MaxValue = 256
+        MinValue = 16
+        TabOrder = 13
+        Value = 32
       end
     end
   end

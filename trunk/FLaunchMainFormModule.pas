@@ -70,6 +70,8 @@ const
   cr_authormail = 'RxA9cIJJqF4Z4YkH7ZgDB8P5TBlbTAugS+pTNXN7b3lTVTngf6HkEnvHI4s9osqBuqYE6Tz8WFbbijvbbDJUOGHlA65BWVIoZB+NKBoGSPP9vyhG4OwCRoZfw5TaLXZiAdWz+g==';
   cr_progname = 'M9QS02WOy2aVszJjgS9A3pATAVKX+OJBUawqI/WDDBjbx2uEpfseaVLC5gxHXj63Hr7eXYlmkwFc1ZryCzofRotorHA3hs1EhMA9y92GkyvZw6zmMhGQXQtXB7J5vlZTXCkdkQ==';
 
+  DesignDPI = 96;
+
 type
   TAByte = array [0..maxInt-1] of byte;
   TPAByte = ^TAByte;
@@ -287,7 +289,7 @@ var
 
 implementation
 
-{$R WindowsXP.res}
+{$R Manifest.res}
 {$R png.res}
 {$R *.dfm}
 
@@ -1872,9 +1874,10 @@ procedure TFlaunchMainForm.ChangeWndSize;
 begin
  //GroupPanel1.Width := 500;
  //GroupPanel1.Height := 500;
+  StatusBar.Height := MulDiv(19, Screen.PixelsPerInch, DesignDPI);
   Width := Width + (lpadding*(colscount + 1)) + (iconwidth*colscount) - GroupPanel1.Width;
   Height := Height + (lpadding*(rowscount + 1)) + (iconheight*rowscount) - GroupPanel1.Height;
-  StatusBar.Panels[0].Width := Width - 122;
+  StatusBar.Panels[0].Width := Width - MulDiv(122, Screen.PixelsPerInch, DesignDPI);
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
 end;
