@@ -204,6 +204,7 @@ type
     function DeFormatStr(s: string): string;
     function GetSpecialDir(const CSIDL: byte): string;
     function ColorStrToColor(s: string): integer;
+    function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
@@ -245,6 +246,8 @@ type
     function parse(s: string; frm: string = ''): string;
     function FullDecrypt(s: string): string;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
+    procedure SaveCfgFileString(AFileHandle: THandle; AString: string;
+      AWriteLength: Boolean = True);
     procedure SaveLinksCfgFile;
     procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
     function GetFileDescription(FileName: string): string;
@@ -904,6 +907,7 @@ var
   FHandle: DWORD;
   FBuffer: PChar;
 begin
+  FSize := 0;
   FBuffer := nil;
   try
     FValid := False;
@@ -1014,55 +1018,54 @@ begin
   end;
 end;
 
+function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
+var
+  buff: array[0..255] of AnsiChar;
+  bufflen: integer;
+begin
+  Result := '';
+
+  if ALength > 0 then
+    bufflen := ALength
+  else
+    if FileRead(AFileHandle, bufflen, sizeof(bufflen)) < sizeof(bufflen) then
+      Exit;
+  FillChar(buff, sizeof(buff), 0);
+  if FileRead(AFileHandle, buff, bufflen) < bufflen then
+    Exit;
+
+  Result := buff;
+end;
+
 function TFlaunchMainForm.LoadLinksCfgFileV121_12_11: boolean;
 var
   t,r,c: integer;
   FileName, ext: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of AnsiChar;
-  bufflen: integer;
 begin
   result := false;
   FileName := workdir + 'FLaunch.dat';
   LinksCfgFile := FileOpen(FileName, fmOpenRead);
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCfgFile, buff, 4);
-  FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCfgFile, buff, bufflen);
+  LoadCfgFileString(LinksCfgFile, 4);
+  LoadCfgFileString(LinksCfgFile);
   for t := 0 to maxt - 1 do
     for r := 0 to maxr - 1 do
       for c := 0 to maxc - 1 do
         begin
           FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].exec := strpas(buff);
+          links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
           ext := extractfileext(links[t,r,c].exec).ToLower;
           if (not links[t,r,c].active) or (ext = '.exe') or (ext = '.bat') then
             links[t,r,c].ltype := 0
           else
             links[t,r,c].ltype := 1;
           links[t,r,c].workdir := ExtractFilePath(links[t,r,c].exec);
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].icon := strpas(buff);
+          links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].params := strpas(buff);
+          links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].dropparams := strpas(buff);
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].descr := strpas(buff);
+          links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
+          links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
           FileRead(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
           FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
@@ -1076,50 +1079,30 @@ var
   t,r,c: integer;
   FileName, ext: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of AnsiChar;
-  bufflen: integer;
 begin
   result := false;
   FileName := workdir + 'Flaunch.dat';
   LinksCfgFile := FileOpen(FileName, fmOpenRead);
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCfgFile, buff, 4);
-  FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCfgFile, buff, bufflen);
+  LoadCfgFileString(LinksCfgFile, 4);
+  LoadCfgFileString(LinksCfgFile);
   for t := 0 to maxt - 1 do
     for r := 0 to maxr - 1 do
       for c := 0 to maxc - 1 do
         begin
           FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].exec := strpas(buff);
+          links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
           ext := extractfileext(links[t,r,c].exec).ToLower;
           if (not links[t,r,c].active) or (ext = '.exe') or (ext = '.bat') then
             links[t,r,c].ltype := 0
           else
             links[t,r,c].ltype := 1;
           links[t,r,c].workdir := ExtractFilePath(links[t,r,c].exec);
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].icon := strpas(buff);
+          links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].params := strpas(buff);
+          links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].dropparams := strpas(buff);
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].descr := strpas(buff);
+          links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
+          links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
           links[t,r,c].hide := false;
           FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
@@ -1131,42 +1114,36 @@ end;
 function TFlaunchMainForm.LoadLinksCfgFile: boolean;
 var
   t,r,c: integer;
-  FileName: string;
+  FileName, VerStr: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of AnsiChar;
-  bufflen: integer;
 begin
   result := false;
   FileName := workdir + 'FLaunch.dat';
   if not (fileexists(FileName)) then exit;
   LinksCfgFile := FileOpen(FileName, fmOpenRead);
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCfgFile, buff, 4);
-  if buff <> 'LCFG' then
+  if LoadCfgFileString(LinksCfgFile, 4) <> 'LCFG' then
     begin
       FileClose(LinksCfgFile);
       RenameFile(FileName, workdir + 'Flaunch_Unknown.dat');
       exit;
     end;
-  FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCfgFile, buff, bufflen);
-  if buff <> version then
+  VerStr := LoadCfgFileString(LinksCfgFile);
+  if VerStr <> version then
     begin
       FileClose(LinksCfgFile);
-      if (buff = '1.21') or (buff = '1.2') or ((buff = '1.1')) then
-        if ConfirmDialog(format(lngstrings[8],[buff]), lngstrings[7]) then
+      if (VerStr = '1.21') or (VerStr = '1.2') or ((VerStr = '1.1')) then
+        if ConfirmDialog(format(lngstrings[8],[VerStr]), lngstrings[7]) then
           begin
             LoadLinksCfgFileV121_12_11;
             exit;
           end;
-      if buff = '1.0' then
-        if ConfirmDialog(format(lngstrings[8],[buff]), lngstrings[7]) then
+      if VerStr = '1.0' then
+        if ConfirmDialog(format(lngstrings[8],[VerStr]), lngstrings[7]) then
           begin
             LoadLinksCfgFileV10;
             exit;
           end;
-      RenameFile(FileName, workdir + Format('Flaunch_%s.dat',[buff]));
+      RenameFile(FileName, workdir + Format('Flaunch_%s.dat',[VerStr]));
       exit;
     end;
   for t := 0 to maxt - 1 do
@@ -1175,32 +1152,14 @@ begin
         begin
           FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
           FileRead(LinksCfgFile, links[t,r,c].ltype, sizeof(byte));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].exec := strpas(buff);
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].workdir := strpas(buff);
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].icon := strpas(buff);
+          links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
+          links[t,r,c].workdir := LoadCfgFileString(LinksCfgFile);
+          links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].params := strpas(buff);
+          links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].dropparams := strpas(buff);
-          FileRead(LinksCfgFile, bufflen, sizeof(bufflen));
-          fillchar(buff, sizeof(buff), 0);
-          FileRead(LinksCfgFile, buff, bufflen);
-          links[t,r,c].descr := strpas(buff);
+          links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
+          links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
           FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
           FileRead(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
           FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
@@ -1209,54 +1168,47 @@ begin
   FileClose(LinksCfgFile);
 end;
 
+procedure TFlaunchMainForm.SaveCfgFileString(AFileHandle: THandle; AString: string;
+  AWriteLength: Boolean = True);
+var
+  buff: AnsiString;
+  bufflen: integer;
+begin
+  bufflen := AString.Length;
+
+  if AWriteLength then
+    if FileWrite(AFileHandle, bufflen, sizeof(bufflen)) < sizeof(bufflen) then
+      Exit;
+  buff := Copy(AString, 1, 255);
+
+  if bufflen > 0 then
+    FileWrite(AFileHandle, buff[1], bufflen);
+end;
+
 procedure TFlaunchMainForm.SaveLinksCfgFile;
 var
   t,r,c: integer;
   FileName: string;
   LinksCfgFile: integer;
-  buff: array[0..255] of AnsiChar;
-  bufflen: integer;
 begin
   FileName := workdir + 'FLaunch.dat';
-  {if (fileexists(FileName)) and not (fileexists(FileName + '.bak')) then
-    RenameFile(FileName, FileName + '.bak');}
   LinksCfgFile := FileCreate(FileName);
-  FileWrite(LinksCfgFile, AnsiString('LCFG'), 4);
-  bufflen := length(version);
-  FileWrite(LinksCfgFile, byte(bufflen), sizeof(bufflen));
-  FileWrite(LinksCfgFile, AnsiString(version), length(version));
+  SaveCfgFileString(LinksCfgFile, 'LCFG', False);
+  SaveCfgFileString(LinksCfgFile, version);
   for t := 0 to maxt - 1 do
     for r := 0 to maxr - 1 do
       for c := 0 to maxc - 1 do
         begin
           FileWrite(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
           FileWrite(LinksCfgFile, links[t,r,c].ltype, sizeof(byte));
-          bufflen := length(links[t,r,c].exec);
-          FileWrite(LinksCfgFile, bufflen, sizeof(bufflen));
-          strpcopy(buff, links[t,r,c].exec);
-          FileWrite(LinksCfgFile, buff, bufflen);
-          bufflen := length(links[t,r,c].workdir);
-          FileWrite(LinksCfgFile, bufflen, sizeof(bufflen));
-          strpcopy(buff, links[t,r,c].workdir);
-          FileWrite(LinksCfgFile, buff, bufflen);
-          bufflen := length(links[t,r,c].icon);
-          FileWrite(LinksCfgFile, bufflen, sizeof(bufflen));
-          strpcopy(buff, links[t,r,c].icon);
-          FileWrite(LinksCfgFile, buff, bufflen);
+          SaveCfgFileString(LinksCfgFile, links[t,r,c].exec);
+          SaveCfgFileString(LinksCfgFile, links[t,r,c].workdir);
+          SaveCfgFileString(LinksCfgFile, links[t,r,c].icon);
           FileWrite(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          bufflen := length(links[t,r,c].params);
-          FileWrite(LinksCfgFile, bufflen, sizeof(bufflen));
-          strpcopy(buff, links[t,r,c].params);
-          FileWrite(LinksCfgFile, buff, bufflen);
+          SaveCfgFileString(LinksCfgFile, links[t,r,c].params);
           FileWrite(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-           bufflen := length(links[t,r,c].dropparams);
-          FileWrite(LinksCfgFile, bufflen, sizeof(bufflen));
-          strpcopy(buff, links[t,r,c].dropparams);
-          FileWrite(LinksCfgFile, buff, bufflen);
-          bufflen := length(links[t,r,c].descr);
-          FileWrite(LinksCfgFile, bufflen, sizeof(bufflen));
-          strpcopy(buff, links[t,r,c].descr);
-          FileWrite(LinksCfgFile, buff, bufflen);
+          SaveCfgFileString(LinksCfgFile, links[t,r,c].dropparams);
+          SaveCfgFileString(LinksCfgFile, links[t,r,c].descr);
           FileWrite(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
           FileWrite(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
           FileWrite(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
@@ -1270,7 +1222,6 @@ var
   t,r,c,tt,rr,cc: integer;
   FileName: string;
   LinksCashFile: integer;
-  buff: array[0..255] of AnsiChar;
   bufflen: integer;
   Stream: TMemoryStream;
   iw,ih: integer;
@@ -1282,22 +1233,15 @@ begin
       exit;
     end;
   LinksCashFile := FileOpen(FileName, fmOpenRead);
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCashFile, buff, 5);
-  if buff <> 'LCASH' then
+  if LoadCfgFileString(LinksCashFile, 5) <> 'LCASH' then
     begin
       FileClose(LinksCashFile);
-      //RenameFile(FileName, ExtractFilePath(ParamStr(0)) + 'IconCache_Unknown.dat');
       LoadLinks;
       exit;
     end;
-  FileRead(LinksCashFile, bufflen, sizeof(bufflen));
-  fillchar(buff, sizeof(buff), 0);
-  FileRead(LinksCashFile, buff, bufflen);
-  if buff <> version then
+  if LoadCfgFileString(LinksCashFile) <> version then
     begin
       FileClose(LinksCashFile);
-      //RenameFile(FileName, ExtractFilePath(ParamStr(0)) + Format('IconCache_%s.dat',[buff]));
       LoadLinks;
       exit;
     end;
@@ -1357,13 +1301,9 @@ var
   Stream: TMemoryStream;
 begin
   FileName := workdir + 'IconCache.dat';
-  {if (fileexists(FileName)) and not (fileexists(FileName + '.bak')) then
-    RenameFile(FileName, FileName + '.bak');}
   LinksCashFile := FileCreate(FileName);
-  FileWrite(LinksCashFile, AnsiString('LCASH'), 5);
-  bufflen := length(version);
-  FileWrite(LinksCashFile, bufflen, sizeof(bufflen));
-  FileWrite(LinksCashFile, AnsiString(version), length(version));
+  SaveCfgFileString(LinksCashFile, 'LCASH', False);
+  SaveCfgFileString(LinksCashFile, version);
   FileWrite(LinksCashFile, iconwidth, sizeof(integer));
   FileWrite(LinksCashFile, iconheight, sizeof(integer));
   Stream := TMemoryStream.Create;

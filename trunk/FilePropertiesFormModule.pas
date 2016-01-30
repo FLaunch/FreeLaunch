@@ -189,8 +189,6 @@ begin
 end;
 
 procedure TFilePropertiesForm.FormShow(Sender: TObject);
-var
-  w: integer;
 begin
   Color := FormColor;
   panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
