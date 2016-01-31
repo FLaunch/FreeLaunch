@@ -501,12 +501,14 @@ end;}
 function TFlaunchMainForm.Decrypt(const InString: AnsiString; StartKey: integer): string;
 var
   I: Byte;
+  CurrentKey: Int64;
 begin
   Result := '';
+  CurrentKey := StartKey;
   for I := 1 to Length(InString) do
   begin
-    Result := Result + AnsiCHAR(Byte(InString[I]) xor (StartKey shr 8));
-    StartKey := (Byte(InString[I]) + StartKey) * MultKey + AddKey;
+    Result := Result + AnsiCHAR(Byte(InString[I]) xor (CurrentKey shr 8));
+    CurrentKey := (Byte(InString[I]) + CurrentKey) * MultKey + AddKey;
   end;
 end;
 
@@ -529,8 +531,8 @@ var
   pos, len: byte;
 begin
   result := '';
-  pos := ord(s[1]);
-  len := ord(s[2]);
+  pos := ord(AnsiChar(s[1]));
+  len := ord(AnsiChar(s[2]));
   result := copy(s, pos, len);
 end;
 
@@ -1399,12 +1401,8 @@ begin
 end;
 
 function TFlaunchMainForm.GetIconCount(FileName: String): integer;
-var
-  Ind: integer;
 begin
-  Ind := -1;
-  Result := ExtractIcon(hinstance, PChar(FileName), Ind);
-  //if Result = 0 then Result := 1;
+  Result := ExtractIcon(hinstance, PChar(FileName), MAXDWORD);
 end;
 
 function TFlaunchMainForm.GetFileIcon(FileName: String; OpenIcon: Boolean; Index: integer): hicon;
