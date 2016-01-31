@@ -121,8 +121,8 @@ begin
           if StringValue[N] = '=' then Sour := 0
           else
             Sour := Pos(StringValue[N],base64ABC) - 1;
-          Sour := Sour shl M;
-          Dest := Dest shl 1;
+          Sour := (Sour shl M) and 255;
+          Dest := (Dest shl 1) and 255;
           if (Sour and 32)=32 then Dest := Dest or 1;
           Inc(NextNum);
           if NextNum > 8 then
