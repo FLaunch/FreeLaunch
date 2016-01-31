@@ -1968,19 +1968,24 @@ begin
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
   fl_dir := ExtractFilePath(paramstr(0));
   fl_root := Copy(fl_dir, 1, 3);
+
   sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //—читываем файл первичных настроек дл€ определени€ режима работы программы и места хранени€ настроек
-  SettingsMode := sini.ReadInteger('general', 'settingsmode', 0);
-  if SettingsMode > 2 then SettingsMode := 0;
-  if (SettingsMode = 0) then
+  try
+    SettingsMode := sini.ReadInteger('general', 'settingsmode', 0);
+    if SettingsMode > 2 then SettingsMode := 0;
+    if (SettingsMode = 0) then
     begin
       workdir := GetSpecialDir(CSIDL_APPDATA) + 'FreeLaunch\';
       if not DirectoryExists(workdir) then
         CreateDir(workdir);
     end
-  else
+    else
     begin
       workdir := ExtractFilePath(ParamStr(0));
     end;
+  finally
+    sini.Free;
+  end;
 
   LoadIni;
   LoadLanguage(lngfilename);
