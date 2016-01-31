@@ -61,10 +61,6 @@ object FlaunchMainForm: TFlaunchMainForm
     object TabSheet2: TTabSheet
       ImageIndex = 1
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupPanel2: TPanel
         Left = 0
         Top = 0
@@ -79,10 +75,6 @@ object FlaunchMainForm: TFlaunchMainForm
     object TabSheet3: TTabSheet
       ImageIndex = 2
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupPanel3: TPanel
         Left = 0
         Top = 0
@@ -97,10 +89,6 @@ object FlaunchMainForm: TFlaunchMainForm
     object TabSheet4: TTabSheet
       ImageIndex = 3
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupPanel4: TPanel
         Left = 0
         Top = 0
@@ -115,10 +103,6 @@ object FlaunchMainForm: TFlaunchMainForm
     object TabSheet5: TTabSheet
       ImageIndex = 4
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupPanel5: TPanel
         Left = 0
         Top = 0
@@ -133,10 +117,6 @@ object FlaunchMainForm: TFlaunchMainForm
     object TabSheet6: TTabSheet
       ImageIndex = 5
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupPanel6: TPanel
         Left = 0
         Top = 0
@@ -151,10 +131,6 @@ object FlaunchMainForm: TFlaunchMainForm
     object TabSheet7: TTabSheet
       ImageIndex = 6
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupPanel7: TPanel
         Left = 0
         Top = 0
@@ -169,10 +145,6 @@ object FlaunchMainForm: TFlaunchMainForm
     object TabSheet8: TTabSheet
       ImageIndex = 7
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupPanel8: TPanel
         Left = 0
         Top = 0

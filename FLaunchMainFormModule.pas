@@ -867,6 +867,7 @@ begin
     tabsview := 0;
   alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
   statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
+  Timer1.Enabled := statusbarvis;
   autorun := ini.ReadBool(inisection, 'autorun', false);
   starthide := ini.ReadBool(inisection, 'starthide', false);
   for i := 1 to maxt do
@@ -986,12 +987,15 @@ begin
   if b then
     begin
       FlaunchMainForm.Visible := true;
+      Timer1.Enabled := statusbarvis;
+      Timer1Timer(Self);
       ShowWindow(FlaunchMainForm.Handle, SW_SHOW);
       SetForegroundWindow(application.Handle);
     end
   else
     begin
       FlaunchMainForm.Visible := false;
+      Timer1.Enabled := False;
       ShowWindow(FlaunchMainForm.Handle, SW_HIDE);
     end;
 end;
