@@ -26,10 +26,8 @@
 program FLaunch;
 
 uses
-  //FastMM4,
   Forms,
-  messages,
-  windows,
+  Windows,
   FLaunchMainFormModule in 'FLaunchMainFormModule.pas' {FlaunchMainForm},
   ProgrammPropertiesFormModule in 'ProgrammPropertiesFormModule.pas' {ProgrammPropertiesForm},
   FilePropertiesFormModule in 'FilePropertiesFormModule.pas' {FilePropertiesForm},
@@ -42,26 +40,25 @@ uses
 
 {$R Resources.res}
 
-const
-  WM_FLAUNCHCOMMAND = WM_APP + 2008;
-  PleaseTerminate = 100;
-
 var
   Wnd: Hwnd;
 
 begin
+  {$IFDEF DEBUG}
+  ReportMemoryLeaksOnShutdown := True;
+  {$ENDIF}
+
   Wnd := FindWindow('TFlaunchMainForm', nil);
   if Wnd <> 0 then
-    begin
-      ShowWindow(Wnd, SW_SHOW);
-      SetForegroundWindow(Wnd);
-      Application.Terminate;
-    end
+  begin
+    ShowWindow(Wnd, SW_SHOW);
+    SetForegroundWindow(Wnd);
+  end
   else
-    begin
-      Application.Initialize;
-      Application.ShowMainForm := false;
-      Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
-  Application.Run;
-    end;
+  begin
+    Application.Initialize;
+    Application.ShowMainForm := false;
+    Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
+    Application.Run;
+  end;
 end.
