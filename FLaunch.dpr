@@ -54,10 +54,6 @@ var
   Wnd: Hwnd;
 
 begin
-  {$IFDEF DEBUG}
-  ReportMemoryLeaksOnShutdown := True;
-  {$ENDIF}
-
   Wnd := FindWindow('TFlaunchMainForm', nil);
   if Wnd <> 0 then
   begin
