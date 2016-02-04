@@ -296,11 +296,46 @@ implementation
 {$R png.res}
 {$R *.dfm}
 
+procedure ShellExecute(const AWnd: HWND; const AOperation, AFileName: String;
+  const AParameters: String = ''; const ADirectory: String = ''; const AShowCmd: Integer = SW_SHOWNORMAL);
+var
+  ExecInfo: TShellExecuteInfo;
+  NeedUninitialize: Boolean;
+begin
+  Assert(AFileName <> '');
+
+  NeedUninitialize := SUCCEEDED(CoInitializeEx(nil, COINIT_APARTMENTTHREADED or COINIT_DISABLE_OLE1DDE));
+  try
+    FillChar(ExecInfo, SizeOf(ExecInfo), 0);
+    ExecInfo.cbSize := SizeOf(ExecInfo);
+
+    ExecInfo.Wnd := AWnd;
+    ExecInfo.lpVerb := Pointer(AOperation);
+    ExecInfo.lpFile := PChar(AFileName);
+    ExecInfo.lpParameters := Pointer(AParameters);
+    ExecInfo.lpDirectory := Pointer(ADirectory);
+    ExecInfo.nShow := AShowCmd;
+    ExecInfo.fMask := SEE_MASK_NOASYNC { = SEE_MASK_FLAG_DDEWAIT для старых версий Delphi }
+                   or SEE_MASK_FLAG_NO_UI;
+    {$IFDEF UNICODE}
+    // Необязательно, см. http://www.transl-gunsmoker.ru/2015/01/what-does-SEEMASKUNICODE-flag-in-ShellExecuteEx-actually-do.html
+    ExecInfo.fMask := ExecInfo.fMask or SEE_MASK_UNICODE;
+    {$ENDIF}
+
+    {$WARN SYMBOL_PLATFORM OFF}
+    Win32Check(ShellExecuteEx(@ExecInfo));
+    {$WARN SYMBOL_PLATFORM ON}
+  finally
+    if NeedUninitialize then
+      CoUninitialize;
+  end;
+end;
+
 procedure ThreadLaunch(p: pointer);
 var
   WinType,Prior: integer;
   params: string;
-  execparams, path: string;
+  execparams, path, exec: string;
   pi : TProcessInformation;
   si : TStartupInfo;
   t,r,c: integer;
@@ -308,6 +343,8 @@ begin
   t := GlobTab;
   r := GlobRow;
   c := GlobCol;
+  exec := FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec);
+  path := FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir);
   if not links[t][r][c].active then
     exit;
   if ((links[t][r][c].ques) and (MessageBox(FlaunchMainForm.Handle,
@@ -338,23 +375,27 @@ begin
         params := stringreplace(links[t][r][c].dropparams, '%1', GlobParam, [])
       else
         params := links[t][r][c].params;
-      execparams := Format('"%s" %s', [FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec), params]);
-      path := FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir);
+      execparams := Format('"%s" %s', [exec, params]);
 
       ZeroMemory(@si, sizeof(si));
       si.cb := SizeOf(si);
       si.dwFlags := STARTF_USESHOWWINDOW;
       si.wShowWindow := WinType;
-      CreateProcess(nil, PChar(execparams), nil, nil, false, Prior, nil,
-        PChar(path), si, pi);
+      ZeroMemory(@PI, SizeOf(PI));
+
+      SetLastError(ERROR_INVALID_PARAMETER);
+      {$WARN SYMBOL_PLATFORM OFF}
+      Win32Check(CreateProcess(PChar(exec), PChar(execparams), nil, nil, false,
+        Prior or CREATE_DEFAULT_ERROR_MODE or CREATE_UNICODE_ENVIRONMENT, nil,
+        PChar(path), si, pi));
+      {$WARN SYMBOL_PLATFORM ON}
+      CloseHandle(PI.hThread);
+      CloseHandle(PI.hProcess);
+
       if links[t][r][c].hide then FlaunchMainForm.ChWinView(false);
     end;
   if links[t][r][c].ltype = 1 then
-    begin
-      path := FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir);
-      ShellExecute(FlaunchMainForm.Handle, 'open',
-        PChar(FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec)), nil, PChar(path), WinType);
-    end;
+    ShellExecute(FlaunchMainForm.Handle, '', exec, '', path, WinType);
 end;
 
 function TFlaunchMainForm.GetFLVersion: string;
