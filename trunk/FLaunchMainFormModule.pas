@@ -900,7 +900,6 @@ end;
 
 function TFlaunchMainForm.GetFileDescription(FileName: string): string;
 var
-  szName: array[0..255] of Char;
   P: Pointer;
   Value: Pointer;
   Len: UINT;
@@ -932,8 +931,10 @@ begin
       GetTranslationString := IntToHex(MakeLong(HiWord(Longint(P^)), LoWord(Longint(P^))), 8);
     if FValid then
       begin
-        StrPCopy(szName, '\StringFileInfo\' + GetTranslationString + '\FileDescription');
-        if VerQueryValue(FBuffer, szName, Value, Len) then
+        if VerQueryValue(FBuffer,
+          PChar('\StringFileInfo\' + GetTranslationString + '\FileDescription'),
+          Value, Len)
+        then
           Result := StrPas(PChar(Value));
       end;
   finally
@@ -961,7 +962,7 @@ begin
       uFlags := NIF_ICON or NIF_MESSAGE or NIF_TIP;
       hicon := LoadIcon(hinstance, 'RTRAYICON');
       uCallbackMessage := wm_user + 20;
-      strpcopy(szTip, Format('%s %s',[FullDecrypt(cr_progname), GetFLVersion]));
+      StrPLCopy(szTip, Format('%s %s',[FullDecrypt(cr_progname), GetFLVersion]), 126);
     end;
   case n of
     1: begin Shell_NotifyIcon(Nim_Add, @Nim); end;
@@ -2428,22 +2429,22 @@ begin
       end;
   if extractfileext(FileName).ToLower = '.lnk' then
     begin
-      strpcopy(lnkinfo.FullPathAndNameOfLinkFile, FileName);
+      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, MAX_PATH - 1);
       GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
-      links[t,r,c].exec := string(pch);
+      links[t,r,c].exec := pch;
       FileName := links[t,r,c].exec;
       ext := extractfileext(links[t,r,c].exec).ToLower;
       fromlnk := true;
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileContiningIcon,pch,sizeof(pch));
-      links[t,r,c].icon := string(pch);
+      links[t,r,c].icon := pch;
       if links[t,r,c].icon = '' then
         links[t,r,c].icon := links[t,r,c].exec;
       links[t,r,c].iconindex := lnkinfo.IconIndex;
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfWorkingDirectroy,pch,sizeof(pch));
-      links[t,r,c].workdir := string(pch);
-      links[t,r,c].params := string(lnkinfo.ParamStringsOfFileToExecute);
-      links[t,r,c].descr := string(lnkinfo.Description);
+      links[t,r,c].workdir := pch;
+      links[t,r,c].params := lnkinfo.ParamStringsOfFileToExecute;
+      links[t,r,c].descr := lnkinfo.Description;
     end
   else
     begin

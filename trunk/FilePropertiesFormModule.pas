@@ -241,19 +241,19 @@ begin
 
   if extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
-      strpcopy(lnkinfo.FullPathAndNameOfLinkFile, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
+      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
       FlaunchMainForm.GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
       //ext := extractfileext(pch).ToLower;
       //if not ((ext = '.exe') or (ext = '.bat')) then exit;
-      CommandEdit.Text := string(pch);
+      CommandEdit.Text := pch;
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileContiningIcon,pch,sizeof(pch));
-      Ic := string(pch);
+      Ic := pch;
       if Ic = '' then Ic := CommandEdit.Text;
       iconindex := lnkinfo.IconIndex;
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfWorkingDirectroy,pch,sizeof(pch));
-      WorkFolderEdit.Text := string(pch);
-      DescrEdit.Text := string(lnkinfo.Description);
+      WorkFolderEdit.Text := pch;
+      DescrEdit.Text := lnkinfo.Description;
     end
   else
     begin
