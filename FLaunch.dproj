@@ -170,7 +170,6 @@ Dialog Class="TEurekaLogDialog"
 dpMicrosoft=1
 edoSendErrorReportChecked=0
 edoShowCopyToClipOption=0
-edoShowDetailsButton=0
 edoShowInTopMostMode=1
 Encrypt Password=""
 Errors Terminate=2
