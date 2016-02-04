@@ -32,7 +32,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, PanelClass,
-  ComObj, ActiveX, ShlObj, IniFiles, Registry, Shfolder,
+  ComObj, ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
   ProgrammPropertiesFormModule,
   FilePropertiesFormModule,
   RenameTabFormModule,
@@ -1986,6 +1986,7 @@ begin
     else
     begin
       workdir := ExtractFilePath(ParamStr(0));
+      CurrentEurekaLogOptions.OutputPath := workdir;
     end;
   finally
     sini.Free;
