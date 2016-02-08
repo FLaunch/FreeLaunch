@@ -76,6 +76,8 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <DCC_Define>EUREKALOG;EUREKALOG_VER7;$(DCC_Define)</DCC_Define>
+        <DCC_DebugInformation>2</DCC_DebugInformation>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -185,7 +187,7 @@ loEnableMMDebugMode=1
 loNoDuplicateErrors=1
 loResCatchLeaks=1
 NestedExceptionMessage=1
-Output Path="%%AppData%%\\FreeLaunch\\%%_ThisModuleName%%\\"
+Output Path="%%AppData%%\\FreeLaunch\\"
 ProjectID="{9711DF06-EB3F-4BB6-B848-27A0D83251AE}"
 SlowAndSafe=0
 soActCtlsControlClass=1
@@ -202,7 +204,6 @@ soCmpDisplayDPI=1
 soCmpDisplayMode=1
 soCmpFreeDisk=1
 soCmpFreeMemory=1
-soCmpPrinter=1
 soCmpProcessor=1
 soCmpSysUpTime=1
 soCmpTotalDisk=1
