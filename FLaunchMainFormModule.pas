@@ -331,7 +331,7 @@ begin
   end;
 end;
 
-procedure ThreadLaunch(p: pointer);
+function ThreadLaunch(p: pointer): Integer;
 var
   WinType,Prior: integer;
   params: string;
@@ -340,6 +340,7 @@ var
   si : TStartupInfo;
   t,r,c: integer;
 begin
+  Result := 0;
   t := GlobTab;
   r := GlobRow;
   c := GlobCol;
@@ -2360,10 +2361,14 @@ end;
 
 procedure TFlaunchMainForm.NI_RunClick(Sender: TObject);
 var
-  h: cardinal;
+  h, id: cardinal;
 begin
   GlobParam := '';
-  CreateThread(nil,0,@ThreadLaunch,nil,0,h);
+  h := BeginThread(nil, 0, ThreadLaunch, nil, 0, id);
+  if h = 0 then
+    RaiseLastOSError
+  else
+    CloseHandle(h);
 end;
 
 procedure TFlaunchMainForm.NI_SaveClick(Sender: TObject);
@@ -2402,7 +2407,7 @@ end;
 
 procedure TFlaunchMainForm.PanelClick(Sender: TObject);
 var
-  h: cardinal;
+  h, id: cardinal;
   t,r,c: integer;
 begin
   GetCoordinates(Sender, t, r, c);
@@ -2410,7 +2415,11 @@ begin
   GlobRow := r;
   GlobCol := c;
   GlobParam := '';
-  CreateThread(nil,0,@ThreadLaunch,nil,0,h);
+  h := BeginThread(nil, 0, ThreadLaunch, nil, 0, id);
+  if h = 0 then
+    RaiseLastOSError
+  else
+    CloseHandle(h);
 end;
 
 procedure TFlaunchMainForm.DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
@@ -2448,7 +2457,7 @@ var
   lnkinfo: TShellLinkInfoStruct;
   pch: array[0..255] of char;
   t,r,c: integer;
-  h: cardinal;
+  h, id: cardinal;
   ext: string;
   fromlnk: boolean;
 begin
@@ -2459,7 +2468,11 @@ begin
       GlobTab := t;
       GlobRow := r;
       GlobCol := c;
-      CreateThread(nil,0,@ThreadLaunch,nil,0,h);
+      h := BeginThread(nil, 0, ThreadLaunch, nil, 0, id);
+      if h = 0 then
+        RaiseLastOSError
+      else
+        CloseHandle(h);
       exit;
     end;
   if (links[t][r][c].active) and (not ConfirmDialog(lngstrings[13], lngstrings[7])) then
