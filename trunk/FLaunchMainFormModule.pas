@@ -345,10 +345,12 @@ begin
   c := GlobCol;
   exec := FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec);
   path := FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir);
+  if path = '' then
+    path := ExtractFilePath(exec);
   if not links[t][r][c].active then
     exit;
   if ((links[t][r][c].ques) and (MessageBox(FlaunchMainForm.Handle,
-    PChar(Format(lngstrings[9], [ExtractFileName(FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec))])),
+    PChar(Format(lngstrings[9], [ExtractFileName(exec)])),
     PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) = IDNO)) then
     exit;
   case links[t][r][c].wst of
@@ -359,10 +361,10 @@ begin
   end;
   if links[t][r][c].ltype = 0 then
     begin
-      if not FileExists(FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec)) then
+      if not FileExists(exec) then
         begin
           MessageBox(FlaunchMainForm.Handle,
-            PChar(format(lngstrings[18],[ExtractFileName(FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec))])),
+            PChar(format(lngstrings[18],[ExtractFileName(exec)])),
             PChar(lngstrings[17]), MB_ICONWARNING or MB_OK);
           exit;
         end;
@@ -375,6 +377,7 @@ begin
         params := stringreplace(links[t][r][c].dropparams, '%1', GlobParam, [])
       else
         params := links[t][r][c].params;
+      params := FlaunchMainForm.GetAbsolutePath(params);
       execparams := Format('"%s" %s', [exec, params]);
 
       ZeroMemory(@si, sizeof(si));
@@ -409,8 +412,8 @@ end;
 
 function TFlaunchMainForm.GetAbsolutePath(s: string): string;
 begin
-  s := StringReplace(s, '{FL_ROOT}', fl_root, [rfReplaceAll, rfIgnoreCase]);
-  result := StringReplace(s, '{FL_DIR}', fl_dir, [rfReplaceAll, rfIgnoreCase]);
+  result := StringReplace(s, '{FL_ROOT}', fl_root, [rfReplaceAll, rfIgnoreCase]);
+  result := StringReplace(result, '{FL_DIR}', fl_dir, [rfReplaceAll, rfIgnoreCase]);
 end;
 
 function TFlaunchMainForm.parse(s: string; frm: string = ''): string;
@@ -2012,8 +2015,8 @@ begin
   ChPos := true;
   randomize;
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
-  fl_dir := ExtractFilePath(paramstr(0));
-  fl_root := Copy(fl_dir, 1, 3);
+  fl_dir := ExtractFilePath(Application.ExeName);
+  fl_root := IncludeTrailingPathDelimiter(ExtractFileDrive(fl_dir));
 
   sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //—читываем файл первичных настроек дл€ определени€ режима работы программы и места хранени€ настроек
   try
