@@ -1093,7 +1093,7 @@ function TFlaunchMainForm.LoadLinksCfgFileV121_12_11: boolean;
 var
   t,r,c: integer;
   FileName, ext: string;
-  LinksCfgFile: integer;
+  LinksCfgFile: THandle;
 begin
   result := false;
   FileName := workdir + 'FLaunch.dat';
@@ -1130,7 +1130,7 @@ function TFlaunchMainForm.LoadLinksCfgFileV10: boolean;
 var
   t,r,c: integer;
   FileName, ext: string;
-  LinksCfgFile: integer;
+  LinksCfgFile: THandle;
 begin
   result := false;
   FileName := workdir + 'Flaunch.dat';
@@ -1167,7 +1167,7 @@ function TFlaunchMainForm.LoadLinksCfgFile: boolean;
 var
   t,r,c: integer;
   FileName, VerStr: string;
-  LinksCfgFile: integer;
+  LinksCfgFile: THandle;
 begin
   result := false;
   FileName := workdir + 'FLaunch.dat';
@@ -1241,7 +1241,7 @@ procedure TFlaunchMainForm.SaveLinksCfgFile;
 var
   t,r,c: integer;
   FileName: string;
-  LinksCfgFile: integer;
+  LinksCfgFile: THandle;
 begin
   FileName := workdir + 'FLaunch.dat';
   LinksCfgFile := FileCreate(FileName);
@@ -1273,7 +1273,7 @@ procedure TFlaunchMainForm.LoadLinksFromCash;
 var
   t,r,c,tt,rr,cc: integer;
   FileName: string;
-  LinksCashFile: integer;
+  LinksCashFile: THandle;
   bufflen: integer;
   Stream: TMemoryStream;
   iw,ih: integer;
@@ -1347,7 +1347,7 @@ end;
 procedure TFlaunchMainForm.SaveLinksToCash;
 var
   FileName: string;
-  LinksCashFile: integer;
+  LinksCashFile: THandle;
   tt,rr,cc: integer;
   bufflen: integer;
   Stream: TMemoryStream;
