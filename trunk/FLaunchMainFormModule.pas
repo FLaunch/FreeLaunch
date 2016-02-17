@@ -33,11 +33,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, PanelClass,
   ComObj, ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
-  ProgrammPropertiesFormModule,
-  FilePropertiesFormModule,
-  RenameTabFormModule,
-  SettingsFormModule,
-  AboutFormModule;
+  ProgrammPropertiesFormModule, FilePropertiesFormModule, RenameTabFormModule,
+  SettingsFormModule, AboutFormModule, FLFunctions;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -75,21 +72,6 @@ const
 type
   TAByte = array [0..maxInt-1] of byte;
   TPAByte = ^TAByte;
-  TRGBArray = array[Word] of TRGBTriple;
-  pRGBArray = ^TRGBArray;
-  PShellLinkInfoStruct = ^TShellLinkInfoStruct;
-  TShellLinkInfoStruct = record
-    FullPathAndNameOfLinkFile: array[0..MAX_PATH] of Char;
-    FullPathAndNameOfFileToExecute: array[0..MAX_PATH] of Char;
-    ParamStringsOfFileToExecute: array[0..MAX_PATH] of Char;
-    FullPathAndNameOfWorkingDirectroy: array[0..MAX_PATH] of Char;
-    Description: array[0..MAX_PATH] of Char;
-    FullPathAndNameOfFileContiningIcon: array[0..MAX_PATH] of Char;
-    IconIndex: Integer;
-    HotKey: Word;
-    ShowCommand: Integer;
-    FindData: TWIN32FINDDATA;
-  end;
 
   lnk = record
     ltype: byte;
@@ -202,16 +184,11 @@ type
     function Decrypt(const InString: AnsiString; StartKey: integer): string;
     //function FormatStr(s: string): string;
     function DeFormatStr(s: string): string;
-    function GetSpecialDir(const CSIDL: byte): string;
-    function ColorStrToColor(s: string): integer;
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
-    function GetFileIcon(FileName: String; OpenIcon: Boolean; Index: integer): hicon;
-    function MyCutting(s: string; l: integer): string;
     procedure GetCoordinates(Sender: TObject; var t: integer; var r: integer; var c: integer);
-    procedure SmoothResize(Src, Dst: TBitmap);
     //procedure ModColors(Bitmap: TBitmap; Color: TColor);
     procedure DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
     procedure DropFileFolder(FileName: string; t,r,c: integer; fromlnk: boolean);
@@ -249,10 +226,6 @@ type
     procedure SaveCfgFileString(AFileHandle: THandle; AString: string;
       AWriteLength: Boolean = True);
     procedure SaveLinksCfgFile;
-    procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
-    function GetFileDescription(FileName: string): string;
-    function ExtractFileNameNoExt(FileName: string): string;
-    function GetIconCount(FileName: String): integer;
     procedure SaveLinksToCash;
     procedure ChWinView(b: boolean);
     function B64Decode(data: AnsiString): AnsiString;
@@ -768,18 +741,6 @@ begin
   ShellExecuteEx(pInfo);
 end;}
 
-function TFlaunchMainForm.GetSpecialDir(const CSIDL: byte): string;
-var
-  Buf: array[0..255] of Char;
-begin
-  Result := '';
-  if SHGetFolderPath(0, CSIDL, 0, 0, Buf) = 0 then
-    Result := Buf
-  else
-    exit;
-  if Result[length(Result)] <> '\' then Result := Result + '\';
-end;
-
 procedure TFlaunchMainForm.SetAutorun(b: boolean);
 var
    reg: TRegistry;
@@ -849,16 +810,6 @@ begin
   ini.WriteString(inisection, 'tabsfontname', MainTabs.Font.Name);
   ini.WriteInteger(inisection, 'tabsfontsize', MainTabs.Font.Size);
   ini.Free;
-end;
-
-function TFlaunchMainForm.ColorStrToColor(s: string): integer;
-var
-  e: integer;
-begin
-  delete(s, 1, 2);
-  val('$' + s, result, e);
-  if e <> 0 then
-    result := clBtnFace;
 end;
 
 function TFlaunchMainForm.ConfirmDialog(Msg, Title: string): Boolean;
@@ -941,59 +892,6 @@ begin
   except
   end;
   ini.Free;
-end;
-
-function TFlaunchMainForm.GetFileDescription(FileName: string): string;
-var
-  P: Pointer;
-  Value: Pointer;
-  Len: UINT;
-  GetTranslationString:string;
-  FValid:boolean;
-  FSize: DWORD;
-  FHandle: DWORD;
-  FBuffer: PChar;
-begin
-  FSize := 0;
-  FBuffer := nil;
-  try
-    FValid := False;
-    FSize := GetFileVersionInfoSize(PChar(FileName), FHandle);
-    if FSize > 0 then
-      try
-        GetMem(FBuffer, FSize);
-        FValid := GetFileVersionInfo(PChar(FileName), FHandle, FSize, FBuffer);
-      except
-        FValid := False;
-        raise;
-      end;
-    Result := '';
-    if FValid then
-      VerQueryValue(FBuffer, '\VarFileInfo\Translation', p, Len)
-    else
-      p := nil;
-    if P <> nil then
-      GetTranslationString := IntToHex(MakeLong(HiWord(Longint(P^)), LoWord(Longint(P^))), 8);
-    if FValid then
-      begin
-        if VerQueryValue(FBuffer,
-          PChar('\StringFileInfo\' + GetTranslationString + '\FileDescription'),
-          Value, Len)
-        then
-          Result := StrPas(PChar(Value));
-      end;
-  finally
-    if FBuffer <> nil then
-      FreeMem(FBuffer, FSize);
-  end;
-end;
-
-function TFlaunchMainForm.ExtractFileNameNoExt(FileName: string): string;
-var
-  tempstr: string;
-begin
-  tempstr := ExtractFileName(FileName);
-  result := copy(tempstr, 1, length(tempstr) - length(ExtractFileExt(FileName)));
 end;
 
 procedure TFlaunchMainForm.TrayIconProc(n: integer);
@@ -1450,122 +1348,11 @@ begin
   SaveLinksToCash;
 end;
 
-function TFlaunchMainForm.GetIconCount(FileName: String): integer;
-begin
-  Result := ExtractIcon(hinstance, PChar(FileName), MAXDWORD);
-end;
-
-function TFlaunchMainForm.GetFileIcon(FileName: String; OpenIcon: Boolean; Index: integer): hicon;
-var
-  SFI: TShFileInfo;
-  Flags: Integer;
-begin
-  if GetIconCount(FileName) > 0 then
-    begin
-      Result := ExtractIcon(hinstance, PChar(FileName), Index);
-      exit;
-    end;
-  Flags := SHGFI_ICON or SHGFI_LARGEICON or SHGFI_SYSICONINDEX;
-  if OpenIcon then
-    Flags := Flags or SHGFI_OPENICON;
-  FillChar(SFI, sizeof(SFI), 0);
-  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), Flags);
-  Result := SFI.hIcon;
-end;
-
-function TFlaunchMainForm.MyCutting(s: string; l: integer): string;
-begin
-  if length(s) <= l then
-    result := s
-  else
-    result := copy(s, 1, l) + '...';
-end;
-
 procedure TFlaunchMainForm.GetCoordinates(Sender: TObject; var t: integer; var r: integer; var c: integer);
 begin
   t := (Sender as TMyPanel).TabNum;
   r := (Sender as TMyPanel).RowNum;
   c := (Sender as TMyPanel).ColNum;
-end;
-
-procedure TFlaunchMainForm.GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
-var
-  ShellLink: IShellLink;
-  PersistFile: IPersistFile;
-  AnObj: IUnknown;
-begin
-  AnObj  := CreateComObject(CLSID_ShellLink);
-  ShellLink := AnObj as IShellLink;
-  PersistFile := AnObj as IPersistFile;
-  PersistFile.Load(PWChar(WideString(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile)), 0);
-  with ShellLink do
-    begin
-      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile), lpShellLinkInfoStruct^.FindData, SLGP_UNCPRIORITY);
-      GetDescription(lpShellLinkInfoStruct^.Description, SizeOf(lpShellLinkInfoStruct^.Description));
-      GetArguments(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute));
-      GetWorkingDirectory(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
-      GetIconLocation(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon), lpShellLinkInfoStruct^.IconIndex);
-      GetHotKey(lpShellLinkInfoStruct^.HotKey);
-      GetShowCmd(lpShellLinkInfoStruct^.ShowCommand);
-    end;
- end;
-
-procedure TFlaunchMainForm.SmoothResize(Src, Dst: TBitmap);
-var
-  x, y: Integer;
-  xP, yP: Integer; 
-  xP2, yP2: Integer;
-  SrcLine1, SrcLine2: pRGBArray;
-  t3: Integer; 
-  z, z2, iz2: Integer; 
-  DstLine: pRGBArray; 
-  DstGap: Integer; 
-  w1, w2, w3, w4: Integer;
-begin
-  Src.PixelFormat := pf24Bit;
-  Dst.PixelFormat := pf24Bit; 
-  if (Src.Width = Dst.Width) and (Src.Height = Dst.Height) then
-    Dst.Assign(Src) 
-  else 
-    begin
-      DstLine := Dst.ScanLine[0];
-      DstGap  := Integer(Dst.ScanLine[1]) - Integer(DstLine);
-      xP2 := MulDiv(pred(Src.Width), $10000, Dst.Width);
-      yP2 := MulDiv(pred(Src.Height), $10000, Dst.Height);
-      yP  := 0;
-      for y := 0 to pred(Dst.Height) do
-        begin
-          xP := 0;
-          SrcLine1 := Src.ScanLine[yP shr 16];
-          if (yP shr 16 < pred(Src.Height)) then
-            SrcLine2 := Src.ScanLine[succ(yP shr 16)]
-          else
-            SrcLine2 := Src.ScanLine[yP shr 16];
-          z2  := succ(yP and $FFFF);
-          iz2 := succ((not yp) and $FFFF);
-          for x := 0 to pred(Dst.Width) do
-            begin
-              t3 := xP shr 16;
-              z  := xP and $FFFF;
-              w2 := MulDiv(z, iz2, $10000);
-              w1 := iz2 - w2;
-              w4 := MulDiv(z, z2, $10000);
-              w3 := z2 - w4;
-              DstLine[x].rgbtRed := (SrcLine1[t3].rgbtRed * w1 +
-              SrcLine1[t3 + 1].rgbtRed * w2 +
-              SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
-              DstLine[x].rgbtGreen := (SrcLine1[t3].rgbtGreen * w1 + SrcLine1[t3 + 1].rgbtGreen * w2 +
-              SrcLine2[t3].rgbtGreen * w3 + SrcLine2[t3 + 1].rgbtGreen * w4) shr 16;
-              DstLine[x].rgbtBlue := (SrcLine1[t3].rgbtBlue * w1 +
-              SrcLine1[t3 + 1].rgbtBlue * w2 +
-              SrcLine2[t3].rgbtBlue * w3 +
-              SrcLine2[t3 + 1].rgbtBlue * w4) shr 16;
-              Inc(xP, xP2);
-            end;
-          Inc(yP, yP2);
-          DstLine := pRGBArray(Integer(DstLine) + DstGap);
-        end;
-    end;
 end;
 
 {procedure LoadIcFromFile(t, r, c: integer; FileName: string; Index: integer);

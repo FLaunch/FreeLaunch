@@ -29,7 +29,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, PNGExtra, Vcl.Samples.Spin;
+  Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, PNGExtra, Vcl.Samples.Spin,
+  FLFunctions;
 
 type
   TChangeIconForm = class(TForm)
@@ -76,7 +77,7 @@ uses
 procedure TChangeIconForm.RefreshProps;
 begin
   icindex := 1;
-  iconcount := FlaunchMainForm.GetIconCount(FlaunchMainForm.GetAbsolutePath(IconEdit.Text));
+  iconcount := GetIconCount(FlaunchMainForm.GetAbsolutePath(IconEdit.Text));
   if iconcount = 0 then iconcount := 1;
   Label3.Caption := Format(lng_iconselect_strings[4], [iconcount]);
   IndexEdit.Value := icindex;
@@ -181,13 +182,13 @@ begin
   if PropertiesMode = 0 then
     begin
       IconEdit.Text := ProgrammPropertiesFormModule.ic;
-      iconcount := FlaunchMainForm.GetIconCount(FlaunchMainForm.GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+      iconcount := GetIconCount(FlaunchMainForm.GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
       icindex := ProgrammPropertiesFormModule.iconindex + 1;
     end;
   if PropertiesMode = 1 then
     begin
       IconEdit.Text := FilePropertiesFormModule.ic;
-      iconcount := FlaunchMainForm.GetIconCount(FlaunchMainForm.GetAbsolutePath(FilePropertiesFormModule.Ic));
+      iconcount := GetIconCount(FlaunchMainForm.GetAbsolutePath(FilePropertiesFormModule.Ic));
       icindex := FilePropertiesFormModule.iconindex + 1;
     end;
 

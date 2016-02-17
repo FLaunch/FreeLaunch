@@ -90,11 +90,8 @@ end;
 
 //--Функция определяет количество иконок в файле
 function GetIconCount(FileName: string): integer;
-var
-  Ind: integer;
 begin
-  Ind := -1;
-  Result := ExtractIcon(HInstance, PChar(FileName), Ind);
+  Result := ExtractIcon(HInstance, PChar(FileName), MAXDWORD);
 end;
 
 //--Функция извлекает иконку из файла по индексу
@@ -149,7 +146,8 @@ begin
   //--Пытаемся перевести в десятичный вид
   val('$' + ColorStr, Result, e);
   //--Если не получилось, используем стандартный цвет
-  if e <> 0 then Result := clBtnFace;
+  if e <> 0 then
+    Result := clBtnFace;
 end;
 
 //--Функция делает ресайз изображения
@@ -285,29 +283,27 @@ end;
 //--Функция извлекает описание исполняемого файла
 function GetFileDescription(FileName: string): string;
 var
-  szName: array[0..255] of Char;
   P: Pointer;
   Value: Pointer;
   Len: UINT;
   GetTranslationString:string;
-  FFileName: PChar;
   FValid:boolean;
   FSize: DWORD;
   FHandle: DWORD;
   FBuffer: PChar;
 begin
+  FSize := 0;
   FBuffer := nil;
   try
-    FFileName := StrPCopy(StrAlloc(Length(FileName) + 1), FileName);
     FValid := False;
-    FSize := GetFileVersionInfoSize(FFileName, FHandle);
+    FSize := GetFileVersionInfoSize(PChar(FileName), FHandle);
     if FSize > 0 then
       try
         GetMem(FBuffer, FSize);
-        FValid := GetFileVersionInfo(FFileName, FHandle, FSize, FBuffer);
+        FValid := GetFileVersionInfo(PChar(FileName), FHandle, FSize, FBuffer);
       except
         FValid := False;
-        //raise;
+        raise;
       end;
     Result := '';
     if FValid then
@@ -318,20 +314,15 @@ begin
       GetTranslationString := IntToHex(MakeLong(HiWord(Longint(P^)), LoWord(Longint(P^))), 8);
     if FValid then
       begin
-        StrPCopy(szName, '\StringFileInfo\' + GetTranslationString + '\FileDescription');
-        if VerQueryValue(FBuffer, szName, Value, Len) then
+        if VerQueryValue(FBuffer,
+          PChar('\StringFileInfo\' + GetTranslationString + '\FileDescription'),
+          Value, Len)
+        then
           Result := StrPas(PChar(Value));
       end;
   finally
-    try
-      if FBuffer <> nil then
-        FreeMem(FBuffer, FSize);
-    except
-    end;
-    try
-      StrDispose(FFileName);
-    except
-    end;
+    if FBuffer <> nil then
+      FreeMem(FBuffer, FSize);
   end;
 end;
 
