@@ -44,7 +44,9 @@ uses
   ChangeIconFormModule in 'ChangeIconFormModule.pas' {ChangeIconForm},
   RenameTabFormModule in 'RenameTabFormModule.pas' {RenameTabForm},
   SettingsFormModule in 'SettingsFormModule.pas' {SettingsForm},
-  AboutFormModule in 'AboutFormModule.pas' {AboutForm};
+  AboutFormModule in 'AboutFormModule.pas' {AboutForm},
+  FLFunctions in 'FLFunctions.pas',
+  FLClasses in 'FLClasses.pas';
 
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED}
 
