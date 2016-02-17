@@ -29,7 +29,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles, ChangeIconFormModule, PNGExtra, SHlObj;
+  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles,
+  ChangeIconFormModule, PNGExtra, SHlObj, FLFunctions;
 
 type
   TFilePropertiesForm = class(TForm)
@@ -242,7 +243,7 @@ begin
   if extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
       StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
-      FlaunchMainForm.GetLinkInfo(@lnkinfo);
+      GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
       //ext := extractfileext(pch).ToLower;
       //if not ((ext = '.exe') or (ext = '.bat')) then exit;

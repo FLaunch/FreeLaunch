@@ -29,7 +29,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles, ChangeIconFormModule, PNGExtra;
+  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles,
+  ChangeIconFormModule, PNGExtra, FLFunctions;
 
 type
   TProgrammPropertiesForm = class(TForm)
@@ -313,7 +314,7 @@ begin
   if extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
       StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
-      FlaunchMainForm.GetLinkInfo(@lnkinfo);
+      GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
       ext := extractfileext(pch).ToLower;
       if not ((ext = '.exe') or (ext = '.bat')) then exit;
@@ -337,9 +338,9 @@ begin
       iconindex := 0;
     end;
   if DescrEdit.Text = '' then
-    DescrEdit.Text := FlaunchMainForm.GetFileDescription(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
+    DescrEdit.Text := GetFileDescription(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
   if DescrEdit.Text = '' then
-    DescrEdit.Text := FlaunchMainForm.ExtractFileNameNoExt(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
+    DescrEdit.Text := ExtractFileNameNoExt(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(Ic), iconindex);
 end;
 

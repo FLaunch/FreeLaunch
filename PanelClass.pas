@@ -29,7 +29,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Controls, ExtCtrls, ShellApi, Messages, Graphics,
-  Types;
+  Types, FLFunctions;
 
 const
   FocusColor = clred;
@@ -60,7 +60,6 @@ type
     procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
     procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
     procedure DrawFrame(Color: TColor);
-    function GetColorBetween(StartColor, EndColor: TColor; Pointvalue, Von, Bis: Extended): TColor;
   protected
 
   public
@@ -96,76 +95,6 @@ type
   end;
 
 implementation
-
-function TMyPanel.GetColorBetween(StartColor, EndColor: TColor; Pointvalue, Von, Bis: Extended): TColor;
-var
-  F: Extended; 
-  r1, r2, r3, g1, g2, g3, b1, b2, b3: Byte; 
-
-  function CalcColorBytes(fb1, fb2: Byte): Byte;
-    begin
-      result := fb1;
-      if fb1 < fb2 then
-        Result := FB1 + Trunc(F * (fb2 - fb1));
-      if fb1 > fb2 then
-        Result := FB1 - Trunc(F * (fb1 - fb2));
-    end;
-
-begin 
-  if Pointvalue <= Von then
-    begin
-      result := StartColor;
-      exit;
-    end;
-  if Pointvalue >= Bis then 
-    begin
-      result := EndColor;
-      exit;
-    end;
-  F := (Pointvalue - von) / (Bis - Von); 
-  asm
-    mov EAX, Startcolor
-    cmp EAX, EndColor
-    je @@exit
-    mov r1, AL
-    shr EAX,8
-    mov g1, AL
-    shr Eax,8
-    mov b1, AL
-    mov Eax, Endcolor
-    mov r2, AL
-    shr EAX,8
-    mov g2, AL
-    shr EAX,8
-    mov b2, AL
-    push ebp
-    mov al, r1
-    mov dl, r2
-    call CalcColorBytes
-    pop ecx
-    push ebp
-    Mov r3, al
-    mov dL, g2
-    mov al, g1
-    call CalcColorBytes
-    pop ecx
-    push ebp
-    mov g3, Al
-    mov dL, B2
-    mov Al, B1
-    call CalcColorBytes
-    pop ecx
-    mov b3, al
-    XOR EAX,EAX
-    mov AL, B3
-    SHL EAX,8
-    mov AL, G3
-    SHL EAX,8
-    mov AL, R3
-    @@Exit:
-    mov @result, eax
-  end;
-end;
 
 constructor TMyPanel.Create(AOwner: TComponent; P: TWinControl; W, H: integer; Col: Tcolor);
 var
