@@ -140,6 +140,7 @@ type
     NI_TypeProgramm: TMenuItem;
     N1: TMenuItem;
     NI_TypeFile: TMenuItem;
+    TrayIcon: TTrayIcon;
     procedure FormCreate(Sender: TObject);
     procedure MainTabsDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
     procedure NI_propClick(Sender: TObject);
@@ -166,15 +167,16 @@ type
     procedure NI_TypeProgrammClick(Sender: TObject);
     procedure NI_TypeFileClick(Sender: TObject);
     procedure NI_SettingsClick(Sender: TObject);
+    procedure TrayMenuPopup(Sender: TObject);
+    procedure TrayIconClick(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
   private
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging); message WM_WINDOWPOSCHANGING;
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
     procedure WMDisplayChange(var Msg: TWMDisplayChange); message WM_DISPLAYCHANGE;
-    procedure TrayIconMouse(var Msg: TMessage); message WM_USER + 20;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
 
-    procedure TrayIconProc(n: integer);
     procedure LoadLinksFromCash;
     procedure LoadPanelLinks(Index: integer);
     procedure ClearLinks(Index: integer);
@@ -213,7 +215,6 @@ type
     procedure SetAutorun(b: boolean);
     procedure LoadIni;
     procedure SaveIni;
-    procedure DefaultHandler(var Msg); override;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
     function GetFLVersion: string;
@@ -261,7 +262,6 @@ var
   lng_tabname_strings: array[1..1] of string;
   lng_settings_strings: array[1..22] of string;
   ChPos: boolean = false;
-  WM_TASKBARCREATED: Cardinal;
 
 implementation
 
@@ -894,24 +894,10 @@ begin
   ini.Free;
 end;
 
-procedure TFlaunchMainForm.TrayIconProc(n: integer);
+procedure TFlaunchMainForm.TrayMenuPopup(Sender: TObject);
 begin
-  FillChar(NIm, SizeOf(NotifyIconData), 0);
-  with Nim do
-    begin
-      cbSize := SizeOf;
-      Wnd := FlaunchMainForm.Handle;
-      uID := 1;
-      uFlags := NIF_ICON or NIF_MESSAGE or NIF_TIP;
-      hicon := LoadIcon(hinstance, 'RTRAYICON');
-      uCallbackMessage := wm_user + 20;
-      StrPLCopy(szTip, Format('%s %s',[FullDecrypt(cr_progname), GetFLVersion]), 126);
-    end;
-  case n of
-    1: begin Shell_NotifyIcon(Nim_Add, @Nim); end;
-    2: begin Shell_NotifyIcon(Nim_Delete, @Nim); end;
-    3: begin Shell_NotifyIcon(Nim_Modify, @Nim); end;
-  end;
+  NI_About.Enabled := not aboutshowing;
+  NI_Settings.Enabled := not settingsshowing;
 end;
 
 procedure TFlaunchMainForm.WMQueryEndSession(var Msg: TWMQueryEndSession);
@@ -944,28 +930,9 @@ begin
     end;
 end;
 
-procedure TFlaunchMainForm.TrayIconMouse(var Msg: TMessage);
-var
-  p: tpoint;
+procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
 begin
-  GetCursorPos(p);
-  case Msg.LParam of
-    WM_MOUSEMOVE: nowactive := FlaunchMainForm.Active;
-    WM_RBUTTONUP:
-      begin
-        SetForegroundWindow(Handle);
-        NI_About.Enabled := not aboutshowing;
-        NI_Settings.Enabled := not settingsshowing;
-        TrayMenu.Popup(p.X, p.Y);
-        PostMessage(Handle, WM_NULL, 0, 0);
-      end;
-    WM_LBUTTONDOWN, WM_LBUTTONDBLCLK:
-      begin
-       ChWinView((not nowactive) or not (FlaunchMainForm.Showing));
-       Application.ProcessMessages;
-       nowactive := FlaunchMainForm.Active;
-      end;
-  end;
+  ChWinView((not nowactive) or not (FlaunchMainForm.Showing));
 end;
 
 function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -1343,7 +1310,6 @@ begin
   unregisterhotkey(Handle, HotKeyID);
   DeleteFile(workdir + '.session');
   SaveIni;
-  TrayIconProc(2);
   SaveLinksCfgFile;
   SaveLinksToCash;
 end;
@@ -1780,20 +1746,16 @@ begin
     Accept := false;
 end;
 
+procedure TFlaunchMainForm.FormActivate(Sender: TObject);
+begin
+  nowactive := FlaunchMainForm.Active;
+end;
+
 procedure TFlaunchMainForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
   canclose := false;
   Showwindow(Handle, SW_HIDE);
-end;
-
-procedure TFlaunchMainForm.DefaultHandler(var Msg);
-begin
-  inherited;
-  if (WM_TASKBARCREATED <> 0) and (TMessage(Msg).Msg = WM_TASKBARCREATED) then
-    begin
-      TrayIconProc(1);
-    end;
 end;
 
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
@@ -1840,11 +1802,12 @@ begin
       FileClose(FileCreate(workdir + '.session'));
       SetFileAttributes(PChar(workdir + '.session'), FILE_ATTRIBUTE_HIDDEN);
     end;
-  TrayIconProc(1);
+  TrayIcon.Hint := Format('%s %s',[FullDecrypt(cr_progname), GetFLVersion]);
   if not StartHide then
-    Show;
+    Show
+  else
+    Application.ShowMainForm := False;
   //ChangeWndSize;
-  WM_TASKBARCREATED := RegisterWindowMessage('TaskbarCreated');
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
   ChPos := false;
 end;
