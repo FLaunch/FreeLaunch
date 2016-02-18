@@ -69,13 +69,13 @@ begin
   aboutshowing := true;
   //--Loading language
   Caption := lng_about_strings[1];
-  Label1.Caption := FlaunchMainForm.FullDecrypt(cr_progname);
+  Label1.Caption := cr_progname;
   Label2.Caption := format('%s: %s (%s)',[lng_about_strings[2], FlaunchMainForm.GetFLVersion, releasedate]);
-  Label3.Caption := format('%s: %s (%s)',[lng_about_strings[3], FlaunchMainForm.FullDecrypt(cr_author), FlaunchMainForm.FullDecrypt(cr_authormail)]);
-  Label4.Caption := format('%s: %s',[lng_about_strings[4], FlaunchMainForm.FullDecrypt(lng_about_strings[5])]);
+  Label3.Caption := format('%s: %s (%s)',[lng_about_strings[3], cr_author, cr_authormail]);
+  Label4.Caption := format('%s: %s',[lng_about_strings[4], lng_about_strings[5]]);
   Label7.Caption := lng_about_strings[6] + ':';
-  Edit1.Text := FlaunchMainForm.FullDecrypt(cr_wmr);
-  Edit2.Text := FlaunchMainForm.FullDecrypt(cr_wmz);
+  Edit1.Text := cr_wmr;
+  Edit2.Text := cr_wmz;
 
   Image1.Picture.Icon.Handle := LoadIcon(hinstance, 'MAINICON');
 end;
