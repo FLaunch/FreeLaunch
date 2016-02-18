@@ -146,7 +146,6 @@ type
     procedure NI_propClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure NI_ClearClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure NI_CloseClick(Sender: TObject);
     procedure NI_RunClick(Sender: TObject);
     procedure MainTabsMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -181,17 +180,13 @@ type
     procedure LoadPanelLinks(Index: integer);
     procedure ClearLinks(Index: integer);
     procedure ImportButton(filename: string; t,r,c: integer);
-    //function B64Encode(data:string): string;
-    //function Encrypt(const InString: string; StartKey: integer): string;
     function Decrypt(const InString: AnsiString; StartKey: integer): string;
-    //function FormatStr(s: string): string;
     function DeFormatStr(s: string): string;
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
     procedure GetCoordinates(Sender: TObject; var t: integer; var r: integer; var c: integer);
-    //procedure ModColors(Bitmap: TBitmap; Color: TColor);
     procedure DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
     procedure DropFileFolder(FileName: string; t,r,c: integer; fromlnk: boolean);
     function ConfirmDialog(Msg, Title: string): Boolean;
@@ -401,51 +396,6 @@ begin
     end;
 end;
 
-{function TFlaunchMainForm.B64Encode(data:string): string;
-const
-  b64 : array [0..63] of char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-var
-  ic,len : integer;
-  pi, po : TPAByte;
-  c1 : dword;
-begin
-  len:=length(data);
-  if len > 0 then
-    begin
-      SetLength(result, ((len + 2) div 3) * 4);
-      pi := pointer(data);
-      po := pointer(result);
-      for ic := 1 to len div 3 do
-        begin
-          c1 := pi^[0] shl 16 + pi^[1] shl 8 + pi^[2];
-          po^[0] := byte(b64[(c1 shr 18) and $3f]);
-          po^[1] := byte(b64[(c1 shr 12) and $3f]);
-          po^[2] := byte(b64[(c1 shr 6) and $3f]);
-          po^[3] := byte(b64[(c1 ) and $3f]);
-          inc(dword(po), 4);
-          inc(dword(pi), 3);
-        end;
-      case len mod 3 of
-        1 : begin
-          c1 := pi^[0] shl 16;
-          po^[0] := byte(b64[(c1 shr 18) and $3f]);
-          po^[1] := byte(b64[(c1 shr 12) and $3f]);
-          po^[2] := byte('=');
-          po^[3] := byte('=');
-        end;
-        2 : begin
-          c1 := pi^[0] shl 16 + pi^[1] shl 8;
-          po^[0] := byte(b64[(c1 shr 18) and $3f]);
-          po^[1] := byte(b64[(c1 shr 12) and $3f]);
-          po^[2] := byte(b64[(c1 shr 6) and $3f]);
-          po^[3] := byte('=');
-        end;
-      end;
-    end
-  else
-    result := '';
-end;}
-
 function TFlaunchMainForm.B64Decode(data: AnsiString): AnsiString;
 var
   i1,i2,len : integer;
@@ -504,18 +454,6 @@ begin
     result := '';
 end;
 
-{function TFlaunchMainForm.Encrypt(const InString: string; StartKey: integer): string;
-var
-  I: Byte;
-begin
-  Result := '';
-  for I := 1 to Length(InString) do
-  begin
-    Result := Result + CHAR(Byte(InString[I]) xor (StartKey shr 8));
-    StartKey := (Byte(Result[I]) + StartKey) * MultKey + AddKey;
-  end;
-end;}
-
 function TFlaunchMainForm.Decrypt(const InString: AnsiString; StartKey: integer): string;
 var
   I: Byte;
@@ -529,20 +467,6 @@ begin
     CurrentKey := (Byte(InString[I]) + CurrentKey) * MultKey + AddKey;
   end;
 end;
-
-{function TFlaunchMainForm.FormatStr(s: string): string;
-var
-  pos, len, i: byte;
-begin
-  result := '';
-  len := byte(length(s));
-  pos := random(86 - len) + 4;
-  result := chr(pos) + chr(len);
-  for i := 3 to 100 do
-    result := result + chr(random(256));
-  for i := 1 to len do
-    result[pos + i - 1] := s[i];
-end;}
 
 function TFlaunchMainForm.DeFormatStr(s: string): string;
 var
@@ -560,11 +484,6 @@ begin
   if length(s) <> 136 then exit;
   result := DeFormatStr(Decrypt(B64Decode(s), 674));
 end;
-
-{function TFlaunchMainForm.FullEncrypt(s: string): string;
-begin
-  result := B64Encode(Encrypt(FormatStr(s), 674));
-end;}
 
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 var
@@ -705,41 +624,6 @@ begin
 
   lfile.Free;
 end;
-
-{
- - CSIDL_APPDATA - Application Data
- - CSIDL_BITBUCKET - Корзина
- - CSIDL_CONTROLS - Панель управления
- - CSIDL_COOKIES - Cookies
- - CSIDL_DESKTOP - Рабочий стол
- - CSIDL_DESKTOPDIRECTORY - папка Рабочего стола
- - CSIDL_DRIVES - Мой компьютер
- - CSIDL_FAVORITES - Избранное
- - CSIDL_FONTS - Шрифты
-
-procedure TFlaunchMainForm.OpenSpecialDir(const CSIDL: byte);
-var
-  PIDL: PItemIDList;
-  Info: TShellExecuteInfo;
-  pInfo: PShellExecuteInfo;
-begin
-  SHGetSpecialFolderLocation(0, CSIDL, PIDL);
-  pInfo := @Info;
-  with Info do
-    begin
-      cbSize := SizeOf(Info);
-      fMask := SEE_MASK_NOCLOSEPROCESS+SEE_MASK_IDLIST;
-      wnd := 0;
-      lpVerb := nil;
-      lpFile := nil;
-      lpParameters := nil;
-      lpDirectory := nil;
-      nShow := SW_ShowNormal;
-      hInstApp := 0;
-      lpIDList := PIDL;
-    end;
-  ShellExecuteEx(pInfo);
-end;}
 
 procedure TFlaunchMainForm.SetAutorun(b: boolean);
 var
@@ -1287,7 +1171,6 @@ begin
         end;
       LeftPer := PositionToPercent(Left, true);
       TopPer := PositionToPercent(Top, false);
-      //Caption := inttostr(LeftPer) + ':' + inttostr(TopPer);
     end;
   inherited;
 end;
@@ -1298,10 +1181,6 @@ begin
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
   ChPos := false;
-  {if Left + Width > Msg.Width then
-    Left := Msg.Width - Width;
-  if Top + Height > Msg.Height then
-    Top := Msg.Height - Height; }
   inherited;
 end;
 
@@ -1320,109 +1199,6 @@ begin
   r := (Sender as TMyPanel).RowNum;
   c := (Sender as TMyPanel).ColNum;
 end;
-
-{procedure LoadIcFromFile(t, r, c: integer; FileName: string; Index: integer);
-var
-  icx,icy,i,j: integer;
-  icon: TIcon;
-  IconInfo: TIconInfo;
-  TempBmp,NewBmp,Mask: TBitMap;
-begin
-  icon := TIcon.Create;
-  if (not fileexists(FileName)) and (not directoryexists(FileName)) then
-    icon.Handle := LoadIcon(hinstance, 'RBLANKICON')
-  else
-    icon.Handle := GetFileIcon(FileName, true, Index);
-  if icon.Handle = 0 then
-    icon.Handle := LoadIcon(hinstance, 'RBLANKICON');
-  icx := GetSystemMetrics(SM_CXICON);
-  icy := GetSystemMetrics(SM_CYICON);
-
-  TempBmp := TBitMap.Create;
-  TempBmp.Width := icx;
-  TempBmp.Height := icy;
-  TempBmp.Canvas.Brush.Color := PanelColor;
-  TempBmp.Canvas.FillRect(TempBmp.Canvas.ClipRect);
-  DrawIcon(TempBmp.Canvas.Handle,0,0,icon.Handle);
-
-  if (icx = iconwidth - panelzoom) and (icy = iconheight - panelzoom) then
-    panels[t,r,c].Icon.Assign(TempBmp)
-  else
-    SmoothResize(TempBmp, panels[t,r,c].Icon);
-
-  if (icx = iconwidth - 7) and (icy = iconheight - 7) then
-    panels[t,r,c].PushedIcon.Assign(TempBmp)
-  else
-    SmoothResize(TempBmp, panels[t,r,c].PushedIcon);
-
-  panels[t,r,c].HasIcon := true;
-  panels[t,r,c].Repaint;
-  icon.Free;
-  TempBmp.Free;
-end;   }
-
-{procedure TFlaunchMainForm.ModColors(Bitmap: TBitmap; Color: TColor);
-
-function GetR(const Color: TColor): Byte;
-begin
-  Result := Lo(Color);
-end;
-
-function GetG(const Color: TColor): Byte;
-begin
-  Result := Lo(Color shr 8);
-end;
-
-function GetB(const Color: TColor): Byte;
-begin
-  Result := Lo((Color shr 8) shr 8);
-end;
- 
-function BLimit(B: Integer): Byte;
-begin
-  if B < 0 then
-    Result := 0
-  else 
-    if B > 255 then
-      Result := 255
-    else
-      Result := B;
-end;
- 
-type
-  TRGB = record
-    B, G, R: Byte;
-  end;
-  pRGB = ^TRGB;
-var
-  r1, g1, b1: Byte;
-  x, y: Integer;
-  Dest: pRGB;
-  A: Double;
-begin
-  Bitmap.PixelFormat := pf24Bit;
-  r1 := Round(255 / 100 * GetR(Color));
-  g1 := Round(255 / 100 * GetG(Color));
-  b1 := Round(255 / 100 * GetB(Color));
-  for y := 0 to Bitmap.Height - 1 do
-    begin
-      Dest := Bitmap.ScanLine[y];
-      for x := 0 to Bitmap.Width - 1 do
-        begin
-          with Dest^ do
-            begin
-              A := (r + b + g) / 300;
-              with Dest^ do
-                begin
-                  R := BLimit(Round(r1 * A));
-                  G := BLimit(Round(g1 * A));
-                  B := BLimit(Round(b1 * A));
-                end;
-            end;
-          Inc(Dest);
-        end;
-    end;
-end; }
 
 procedure TFlaunchMainForm.LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
 var
@@ -1556,12 +1332,6 @@ begin
     end;
 end;
 
-procedure TFlaunchMainForm.FormShow(Sender: TObject);
-begin
-  ShowWindow(Application.handle, SW_HIDE);
-  Application.ProcessMessages;
-end;
-
 procedure TFlaunchMainForm.CreatePanel(PanelIndex: integer);
 var
   rr,cc,tt: integer;
@@ -1601,7 +1371,6 @@ begin
   tt := PanelIndex;
   for rr := 0 to rowscount - 1 do
     for cc := 0 to colscount - 1 do
-      //panels[tt][rr][cc].Free;
       panels[tt][rr][cc].Destroy;
 end;
 
@@ -1613,8 +1382,6 @@ end;
 
 procedure TFlaunchMainForm.ChangeWndSize;
 begin
- //GroupPanel1.Width := 500;
- //GroupPanel1.Height := 500;
   StatusBar.Height := MulDiv(19, Screen.PixelsPerInch, DesignDPI);
   Width := Width + (lpadding*(colscount + 1)) + (iconwidth*colscount) - GroupPanel1.Width;
   Height := Height + (lpadding*(rowscount + 1)) + (iconheight*rowscount) - GroupPanel1.Height;
@@ -1807,7 +1574,6 @@ begin
     Show
   else
     Application.ShowMainForm := False;
-  //ChangeWndSize;
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
   ChPos := false;
 end;

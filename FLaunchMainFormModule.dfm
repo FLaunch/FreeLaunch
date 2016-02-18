@@ -20,7 +20,6 @@ object FlaunchMainForm: TFlaunchMainForm
   OnDestroy = FormDestroy
   OnDeactivate = FormActivate
   OnKeyDown = FormKeyDown
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object StatusBar: TStatusBar
