@@ -61,11 +61,11 @@ const
   dev_version = '2.0.xxx beta'; // xxx is revision number, may be replaced
   releasedate = '__BUILDDATE__'; // build date in dd-mm-yyyy format
 
-  cr_wmr = 'LwdGh0Gehoi5S8vIsRwbUkYGR/yi6o4mEjQsjPYydAtpExXAvpcd2NJKwIEGb/zT9+fiVy+wLE/bm83PjfhnJb4eEd6K3W8/2PSbJau1/NBsTQllniOKilzhthmOdvnPNj3Cew==';
-  cr_wmz = 'CPvMa7jQbIiPoQQLkNiH/SgUxBOi08nhPIGBYQEmFwgEqvdjJlgbiiQ2v246uZJSsj92oKN4D9L6tzKGHw36VapUjhR9nOx7/HcnpuE5vy7w8oENw4mZX6Hird+Bd3UYQzNlcg==';
-  cr_author = 'MqAVLYAp+ClMW0OvEbG72b+iQDhRquregVJVIjOGUDOLS1FnkDRTYpcF7yaseE7WloZhVOTry3gHi56YZOM6JokvdlHd6fzDGNiqA1j0KrxaeL1/zycevC4Cie1i2e+QmqNtsw==';
-  cr_authormail = 'RxA9cIJJqF4Z4YkH7ZgDB8P5TBlbTAugS+pTNXN7b3lTVTngf6HkEnvHI4s9osqBuqYE6Tz8WFbbijvbbDJUOGHlA65BWVIoZB+NKBoGSPP9vyhG4OwCRoZfw5TaLXZiAdWz+g==';
-  cr_progname = 'M9QS02WOy2aVszJjgS9A3pATAVKX+OJBUawqI/WDDBjbx2uEpfseaVLC5gxHXj63Hr7eXYlmkwFc1ZryCzofRotorHA3hs1EhMA9y92GkyvZw6zmMhGQXQtXB7J5vlZTXCkdkQ==';
+  cr_wmr = 'R273772850462';
+  cr_wmz = 'Z234078607788';
+  cr_author = 'Joker-jar';
+  cr_authormail = 'joker-jar@yandex.ru';
+  cr_progname = 'FreeLaunch';
 
   DesignDPI = 96;
 
@@ -180,8 +180,6 @@ type
     procedure LoadPanelLinks(Index: integer);
     procedure ClearLinks(Index: integer);
     procedure ImportButton(filename: string; t,r,c: integer);
-    function Decrypt(const InString: AnsiString; StartKey: integer): string;
-    function DeFormatStr(s: string): string;
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
@@ -217,14 +215,12 @@ type
     function GetAbsolutePath(s: string): string;
     procedure LoadLinks;
     function parse(s: string; frm: string = ''): string;
-    function FullDecrypt(s: string): string;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
     procedure SaveCfgFileString(AFileHandle: THandle; AString: string;
       AWriteLength: Boolean = True);
     procedure SaveLinksCfgFile;
     procedure SaveLinksToCash;
     procedure ChWinView(b: boolean);
-    function B64Decode(data: AnsiString): AnsiString;
   end;
 
 var
@@ -396,95 +392,6 @@ begin
     end;
 end;
 
-function TFlaunchMainForm.B64Decode(data: AnsiString): AnsiString;
-var
-  i1,i2,len : integer;
-  pi, po : TPAByte;
-  ch1 : AnsiChar;
-  c1 : dword;
-begin
-  len:=length(data);
-  if (len > 0) and (len mod 4 = 0) then
-    begin
-      len := len shr 2;
-      SetLength(result, len * 3);
-      pi := pointer(data);
-      po := pointer(result);
-      for i1 := 1 to len do
-        begin
-          c1 := 0;
-          i2 := 0;
-          while true do
-            begin
-              ch1 := AnsiChar(pi^[i2]);
-              case ch1 of
-                'A'..'Z' : c1 := c1 or (dword(ch1) - byte('A') );
-                'a'..'z' : c1 := c1 or (dword(ch1) - byte('a') + 26);
-                '0'..'9' : c1 := c1 or (dword(ch1) - byte('0') + 52);
-                '+' : c1 := c1 or 62;
-                '/' : c1 := c1 or 63;
-              else
-                begin
-                  if i2 = 3 then
-                    begin
-                      po^[0] := c1 shr 16;
-                      po^[1] := byte(c1 shr 8);
-                      SetLength(result, Length(result) - 1);
-                    end
-                  else
-                    begin
-                      po^[0] := c1 shr 10;
-                      SetLength(result, Length(result) - 2);
-                    end;
-                  exit;
-                end;
-              end;
-              if i2 = 3 then break;
-              inc(i2);
-              c1 := c1 shl 6;
-            end;
-          po^[0] := c1 shr 16;
-          po^[1] := byte(c1 shr 8);
-          po^[2] := byte(c1);
-          inc(dword(pi), 4);
-          inc(dword(po), 3);
-        end;
-    end
-  else
-    result := '';
-end;
-
-function TFlaunchMainForm.Decrypt(const InString: AnsiString; StartKey: integer): string;
-var
-  I: Byte;
-  CurrentKey: Int64;
-begin
-  Result := '';
-  CurrentKey := StartKey;
-  for I := 1 to Length(InString) do
-  begin
-    Result := Result + AnsiCHAR(Byte(InString[I]) xor (CurrentKey shr 8));
-    CurrentKey := (Byte(InString[I]) + CurrentKey) * MultKey + AddKey;
-  end;
-end;
-
-function TFlaunchMainForm.DeFormatStr(s: string): string;
-var
-  pos, len: byte;
-begin
-  result := '';
-  pos := ord(AnsiChar(s[1]));
-  len := ord(AnsiChar(s[2]));
-  result := copy(s, pos, len);
-end;
-
-function TFlaunchMainForm.FullDecrypt(s: string): string;
-begin
-  result := '';
-  if length(s) <> 136 then exit;
-  result := DeFormatStr(Decrypt(B64Decode(s), 674));
-end;
-
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 var
   WorkArea: TRect;
@@ -522,7 +429,7 @@ var
   lfile: TIniFile;
 begin
   lfile := TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Languages\' + filename);
-  Caption := FullDecrypt(cr_progname);
+  Caption := cr_progname;
   lngstrings[1] := parse(lfile.ReadString(mainsect,'tabname',''), '%d');
   for i := 1 to maxt do
     if FlaunchMainForm.MainTabs.Pages[i-1].Caption = '' then FlaunchMainForm.MainTabs.Pages[i-1].Caption := Format(lngstrings[1],[i]);
@@ -643,10 +550,10 @@ begin
     reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Run', false);
     if b then
       begin
-        reg.WriteString(FullDecrypt(cr_progname), Application.ExeName);
+        reg.WriteString(cr_progname, Application.ExeName);
       end
     else
-      reg.DeleteValue(FullDecrypt(cr_progname));
+      reg.DeleteValue(cr_progname);
     reg.CloseKey;
   finally
     reg.free;
@@ -1569,7 +1476,7 @@ begin
       FileClose(FileCreate(workdir + '.session'));
       SetFileAttributes(PChar(workdir + '.session'), FILE_ATTRIBUTE_HIDDEN);
     end;
-  TrayIcon.Hint := Format('%s %s',[FullDecrypt(cr_progname), GetFLVersion]);
+  TrayIcon.Hint := Format('%s %s',[cr_progname, GetFLVersion]);
   if not StartHide then
     Show
   else
