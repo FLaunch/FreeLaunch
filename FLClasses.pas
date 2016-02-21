@@ -732,7 +732,7 @@ end;
 //--Метод генерируется при перетаскивании файла на кнопку
 procedure TFLButton.WMDropFiles(var Msg: TWMDropFiles);
 var
-  buf: array[0..255] of char;
+  buf: array[0..MAX_PATH] of char;
 begin
   if Assigned(Father.fDropFile) then
     begin

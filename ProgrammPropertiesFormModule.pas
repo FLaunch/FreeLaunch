@@ -306,7 +306,7 @@ end;
 procedure TProgrammPropertiesForm.RefreshProps;
 var
   lnkinfo: TShellLinkInfoStruct;
-  pch: array[0..255] of char;
+  pch: array[0..MAX_PATH] of char;
   ext: string;
 begin
   if (not fileexists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) then exit;
