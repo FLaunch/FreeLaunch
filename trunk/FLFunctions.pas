@@ -126,7 +126,7 @@ end;
 //--  CSIDL_FONTS - ״נטפעû
 function GetSpecialDir(const CSIDL: byte): string;
 var
-  Buf: array[0..255] of Char;
+  Buf: array[0..MAX_PATH] of Char;
 begin
   Result := '';
   if SHGetFolderPath(0, CSIDL, 0, 0, Buf) = 0 then

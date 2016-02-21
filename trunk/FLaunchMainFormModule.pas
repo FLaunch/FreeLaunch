@@ -1878,7 +1878,7 @@ end;
 procedure TFlaunchMainForm.PanelDragFile(Sender: TObject; FileName: string);
 var
   lnkinfo: TShellLinkInfoStruct;
-  pch: array[0..255] of char;
+  pch: array[0..MAX_PATH] of char;
   t,r,c: integer;
   h, id: cardinal;
   ext: string;
