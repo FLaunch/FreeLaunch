@@ -29,7 +29,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, inifiles;
+  Dialogs, ExtCtrls, StdCtrls, FLLanguage;
 
 type
   TAboutForm = class(TForm)
@@ -68,12 +68,12 @@ begin
   Color := FormColor;
   aboutshowing := true;
   //--Loading language
-  Caption := lng_about_strings[1];
+  Caption := Language.About.Caption;
   Label1.Caption := cr_progname;
-  Label2.Caption := format('%s: %s (%s)',[lng_about_strings[2], FlaunchMainForm.GetFLVersion, releasedate]);
-  Label3.Caption := format('%s: %s (%s)',[lng_about_strings[3], cr_author, cr_authormail]);
-  Label4.Caption := format('%s: %s',[lng_about_strings[4], lng_about_strings[5]]);
-  Label7.Caption := lng_about_strings[6] + ':';
+  Label2.Caption := format('%s: %s (%s)',[Language.About.Version, FlaunchMainForm.GetFLVersion, releasedate]);
+  Label3.Caption := format('%s: %s (%s)',[Language.About.Author, cr_author, cr_authormail]);
+  Label4.Caption := format('%s: %s',[Language.About.Translate, Language.Info.Author]);
+  Label7.Caption := Language.About.Donate + ':';
   Edit1.Text := cr_wmr;
   Edit2.Text := cr_wmz;
 

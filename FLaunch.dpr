@@ -46,7 +46,8 @@ uses
   SettingsFormModule in 'SettingsFormModule.pas' {SettingsForm},
   AboutFormModule in 'AboutFormModule.pas' {AboutForm},
   FLFunctions in 'FLFunctions.pas',
-  FLClasses in 'FLClasses.pas';
+  FLClasses in 'FLClasses.pas',
+  FLLanguage in 'FLLanguage.pas';
 
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED}
 

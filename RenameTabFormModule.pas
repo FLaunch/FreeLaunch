@@ -29,7 +29,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, IniFiles;
+  Dialogs, StdCtrls, FLLanguage;
 
 type
   TRenameTabForm = class(TForm)
@@ -79,9 +79,9 @@ procedure TRenameTabForm.FormShow(Sender: TObject);
 begin
   Color := FormColor;
   //--Loading language
-  OKButton.Caption := lngstrings[15];
-  CancelButton.Caption := lngstrings[16];
-  Caption := lng_tabname_strings[1];
+  OKButton.Caption := Language.BtnOk;
+  CancelButton.Caption := Language.BtnCancel;
+  Caption := Language.TabRename;
   Label1.Caption := Caption + ':';
 
   TabNameEdit.Text := FlaunchMainForm.MainTabs.Pages[GlobTabNum].Caption;

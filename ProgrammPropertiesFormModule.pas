@@ -29,7 +29,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles,
+  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles, FLLanguage,
   ChangeIconFormModule, PNGExtra, FLFunctions;
 
 type
@@ -71,7 +71,6 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure DropBoxClick(Sender: TObject);
-    procedure LoadLanguage(filename: string);
     procedure RefPropsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
@@ -94,47 +93,6 @@ uses
   FLaunchMainFormModule;
 
 {$R *.dfm}
-
-procedure TProgrammPropertiesForm.LoadLanguage(filename: string);
-const
-  mainsect = 'properties';
-var
-  lfile: TIniFile;
-begin
-  lfile := TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Languages\' + filename);
-  OKButton.Caption := lngstrings[15];
-  CancelButton.Caption := lngstrings[16];
-  PageControl1.Pages[0].Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'properties',''));
-  Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'properties',''));
-  Label9.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'folder','')) + ':';
-  Label1.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'object','')) + ':';
-  Label2.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'parameters','')) + ':';
-  Label8.Caption := Label2.Caption;
-  Label4.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'description','')) + ':';
-  Label3.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'priority','')) + ':';
-  PriorBox.Items.Add(FlaunchMainForm.parse(lfile.ReadString(mainsect,'priority_normal','')));
-  PriorBox.Items.Add(FlaunchMainForm.parse(lfile.ReadString(mainsect,'priority_high','')));
-  PriorBox.Items.Add(FlaunchMainForm.parse(lfile.ReadString(mainsect,'priority_low','')));
-  Label7.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'view','')) + ':';
-  WStyleBox.Items.Add(FlaunchMainForm.parse(lfile.ReadString(mainsect,'view_normal','')));
-  WStyleBox.Items.Add(FlaunchMainForm.parse(lfile.ReadString(mainsect,'view_max','')));
-  WStyleBox.Items.Add(FlaunchMainForm.parse(lfile.ReadString(mainsect,'view_min','')));
-  WStyleBox.Items.Add(FlaunchMainForm.parse(lfile.ReadString(mainsect,'view_hidden','')));
-  BrowseExec.Hint := FlaunchMainForm.parse(lfile.ReadString(mainsect,'be_hint',''));
-  RefProps.Hint := FlaunchMainForm.parse(lfile.ReadString(mainsect,'rp_hint',''));
-  Label5.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'options',''));
-  Bevel2.Left := Label5.Left + Label5.Width + 7;
-  Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
-  Label6.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'icon',''));
-  Bevel3.Left := Label6.Left + Label6.Width + 7;
-  Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
-  ChangeIconButton.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'change',''));
-  DropBox.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'chb_drop',''));
-  QuesCheckBox.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'chb_question',''));
-  HideCheckBox.Caption := FlaunchMainForm.parse(lfile.ReadString(mainsect,'chb_hide',''));
-  OpenExec.Filter := FlaunchMainForm.parse(lfile.ReadString(mainsect,'tprogramfilter','')) + '|*.exe;*.bat';
-  lfile.Free;
-end;
 
 procedure TProgrammPropertiesForm.ChangeIconButtonClick(Sender: TObject);
 var
@@ -251,38 +209,38 @@ begin
   Color := FormColor;
   panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
   //--Loading language
-  OKButton.Caption := lngstrings[15];
-  CancelButton.Caption := lngstrings[16];
-  PageControl1.Pages[0].Caption := lng_properties_strings[1];
-  Caption := lng_properties_strings[1];
-  Label9.Caption := lng_properties_strings[2] + ':';
-  Label1.Caption := lng_properties_strings[3] + ':';
+  OKButton.Caption := Language.BtnOk;
+  CancelButton.Caption := Language.BtnCancel;
+  PageControl1.Pages[0].Caption := Language.Properties.Caption;
+  Caption := Language.Properties.Caption;
+  Label9.Caption := Language.Properties.Folder + ':';
+  Label1.Caption := Language.Properties.LblObject + ':';
 
-  Label2.Caption := lng_properties_strings[4] + ':';
+  Label2.Caption := Language.Properties.Parameters + ':';
   Label8.Caption := Label2.Caption;
-  Label4.Caption := lng_properties_strings[5] + ':';
-  Label3.Caption := lng_properties_strings[6] + ':';
-  PriorBox.Items.Add(lng_properties_strings[7]);
-  PriorBox.Items.Add(lng_properties_strings[8]);
-  PriorBox.Items.Add(lng_properties_strings[9]);
-  Label7.Caption := lng_properties_strings[10] + ':';
-  WStyleBox.Items.Add(lng_properties_strings[11]);
-  WStyleBox.Items.Add(lng_properties_strings[12]);
-  WStyleBox.Items.Add(lng_properties_strings[13]);
-  WStyleBox.Items.Add(lng_properties_strings[14]);
-  BrowseExec.Hint := lng_properties_strings[15];
-  RefProps.Hint := lng_properties_strings[16];
-  Label5.Caption := lng_properties_strings[17];
+  Label4.Caption := Language.Properties.Description + ':';
+  Label3.Caption := Language.Properties.Priority + ':';
+  PriorBox.Items.Add(Language.Properties.PriorityNormal);
+  PriorBox.Items.Add(Language.Properties.PriorityHigh);
+  PriorBox.Items.Add(Language.Properties.PriorityLow);
+  Label7.Caption := Language.Properties.View + ':';
+  WStyleBox.Items.Add(Language.Properties.ViewNormal);
+  WStyleBox.Items.Add(Language.Properties.ViewMax);
+  WStyleBox.Items.Add(Language.Properties.ViewMin);
+  WStyleBox.Items.Add(Language.Properties.ViewHidden);
+  BrowseExec.Hint := Language.Properties.BeHint;
+  RefProps.Hint := Language.Properties.RpHint;
+  Label5.Caption := Language.Properties.Options;
   Bevel2.Left := Label5.Left + Label5.Width + 7;
   Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
-  Label6.Caption := lng_properties_strings[18];
+  Label6.Caption := Language.Properties.Icon;
   Bevel3.Left := Label6.Left + Label6.Width + 7;
   Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
-  ChangeIconButton.Caption := lng_properties_strings[19];
-  DropBox.Caption := lng_properties_strings[20];
-  QuesCheckBox.Caption := lng_properties_strings[21];
-  HideCheckBox.Caption := lng_properties_strings[22];
-  OpenExec.Filter := lng_properties_strings[23] + '|*.exe;*.bat';
+  ChangeIconButton.Caption := Language.Properties.Change;
+  DropBox.Caption := Language.Properties.ChbDrop;
+  QuesCheckBox.Caption := Language.Properties.ChbQuestion;
+  HideCheckBox.Caption := Language.Properties.ChbHide;
+  OpenExec.Filter := Language.Properties.ProgramFilter + '|*.exe;*.bat';
 
   CommandEdit.Text := string(links[GlobTab][GlobRow][GlobCol].exec);
   WorkFolderEdit.Text := string(links[GlobTab][GlobRow][GlobCol].workdir);
