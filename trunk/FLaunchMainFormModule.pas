@@ -34,7 +34,7 @@ uses
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, PanelClass,
   ComObj, ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
   ProgrammPropertiesFormModule, FilePropertiesFormModule, RenameTabFormModule,
-  SettingsFormModule, AboutFormModule, FLFunctions;
+  SettingsFormModule, AboutFormModule, FLFunctions, FLLanguage;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -203,7 +203,7 @@ type
     procedure PanelDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure PanelMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure PanelMouseLeave(Sender: TObject);
-    procedure LoadLanguage(filename: string);
+    procedure LoadLanguage;
     function DefNameOfTab(tn: string): boolean;
     procedure SetAutorun(b: boolean);
     procedure LoadIni;
@@ -214,7 +214,6 @@ type
     procedure LoadIc(t, r, c: integer);
     function GetAbsolutePath(s: string): string;
     procedure LoadLinks;
-    function parse(s: string; frm: string = ''): string;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
     procedure SaveCfgFileString(AFileHandle: THandle; AString: string;
       AWriteLength: Boolean = True);
@@ -246,12 +245,6 @@ var
   PanelColor, FormColor: TColor;
   lngfilename: string;
   workdir, fl_root, fl_dir: string;
-  lngstrings: array[1..20] of string;
-  lng_about_strings: array[1..6] of string;
-  lng_iconselect_strings: array[1..4] of string;
-  lng_properties_strings: array[1..23] of string;
-  lng_tabname_strings: array[1..1] of string;
-  lng_settings_strings: array[1..22] of string;
   ChPos: boolean = false;
 
 implementation
@@ -315,8 +308,8 @@ begin
   if not links[t][r][c].active then
     exit;
   if ((links[t][r][c].ques) and (MessageBox(FlaunchMainForm.Handle,
-    PChar(Format(lngstrings[9], [ExtractFileName(exec)])),
-    PChar(lngstrings[7]), MB_ICONQUESTION or MB_YESNO) = IDNO)) then
+    PChar(Format(Language.Messages.RunProgram, [ExtractFileName(exec)])),
+    PChar(Language.Messages.Confirmation), MB_ICONQUESTION or MB_YESNO) = IDNO)) then
     exit;
   case links[t][r][c].wst of
     0: WinType := SW_SHOW;
@@ -329,8 +322,8 @@ begin
       if not FileExists(exec) then
         begin
           MessageBox(FlaunchMainForm.Handle,
-            PChar(format(lngstrings[18],[ExtractFileName(exec)])),
-            PChar(lngstrings[17]), MB_ICONWARNING or MB_OK);
+            PChar(format(Language.Messages.NotFound,[ExtractFileName(exec)])),
+            PChar(Language.Messages.Caution), MB_ICONWARNING or MB_OK);
           exit;
         end;
       case links[t][r][c].pr of
@@ -381,17 +374,6 @@ begin
   result := StringReplace(result, '{FL_DIR}', fl_dir, [rfReplaceAll, rfIgnoreCase]);
 end;
 
-function TFlaunchMainForm.parse(s: string; frm: string = ''): string;
-begin
-  result := StringReplace(s, '\n', #13#10, [rfReplaceAll, rfIgnoreCase]);
-  if frm <> '' then
-    begin
-      result := StringReplace(result, '%%', frm, [rfReplaceAll]);
-      if pos(frm, result) = 0 then
-        result := result + ' ' + frm;
-    end;
-end;
-
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 var
   WorkArea: TRect;
@@ -416,120 +398,33 @@ begin
     result := round(p * (WorkArea.Bottom - Height) / 100);
 end;
 
-procedure TFlaunchMainForm.LoadLanguage(filename: string);
-const
-  mainsect = 'main';
-  aboutsect = 'about';
-  iconselectsect = 'iconselect';
-  propertiessect = 'properties';
-  tabnamesect = 'tabname';
-  settingssect = 'settings';
+procedure TFlaunchMainForm.LoadLanguage;
 var
   i: integer;
-  lfile: TIniFile;
 begin
-  lfile := TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Languages\' + filename);
   Caption := cr_progname;
-  lngstrings[1] := parse(lfile.ReadString(mainsect,'tabname',''), '%d');
   for i := 1 to maxt do
-    if FlaunchMainForm.MainTabs.Pages[i-1].Caption = '' then FlaunchMainForm.MainTabs.Pages[i-1].Caption := Format(lngstrings[1],[i]);
-  lngstrings[2] := parse(lfile.ReadString(mainsect,'ni_settings',''));
-  lngstrings[3] := parse(lfile.ReadString(mainsect,'ni_about',''));
-  lngstrings[4] := parse(lfile.ReadString(mainsect,'location',''), '%s');
-  lngstrings[5] := parse(lfile.ReadString(mainsect,'parameters',''), '%s');
-  lngstrings[6] := parse(lfile.ReadString(mainsect,'description',''), '%s');
-  lngstrings[7] := parse(lfile.ReadString(mainsect,'confirmation',''));
-  lngstrings[8] := parse(lfile.ReadString(mainsect,'message1',''), '%s');
-  lngstrings[9] := parse(lfile.ReadString(mainsect,'message2',''), '%s');
-  lngstrings[10] := parse(lfile.ReadString(mainsect,'message3',''), '%s');
-  lngstrings[11] := parse(lfile.ReadString(mainsect,'message4',''), '%s');
-  lngstrings[12] := parse(lfile.ReadString(mainsect,'message5',''), '%s');
-  lngstrings[13] := parse(lfile.ReadString(mainsect,'message6',''));
-  lngstrings[14] := parse(lfile.ReadString(mainsect,'message7',''), '%s');
-  lngstrings[17] := parse(lfile.ReadString(mainsect,'caution',''));
-  lngstrings[18] := parse(lfile.ReadString(mainsect,'message8',''), '%s');
-  NI_Show.Caption := parse(lfile.ReadString(mainsect,'ni_show',''));
-  NI_Settings.Caption := lngstrings[2];
-  NI_About.Caption := lngstrings[3];
-  NI_Close.Caption := parse(lfile.ReadString(mainsect,'ni_close',''));
-  NI_Run.Caption := parse(lfile.ReadString(mainsect,'ni_run',''));
-  NI_TypeProgramm.Caption := parse(lfile.ReadString(mainsect,'ni_tprogram',''));
-  NI_TypeFile.Caption := parse(lfile.ReadString(mainsect,'ni_tfile',''));
-  NI_Export.Caption := parse(lfile.ReadString(mainsect,'ni_export',''));
-  NI_Import.Caption := parse(lfile.ReadString(mainsect,'ni_import',''));
-  NI_Clear.Caption := parse(lfile.ReadString(mainsect,'ni_clear',''));
-  NI_Prop.Caption := parse(lfile.ReadString(mainsect,'ni_prop',''));
-  NI_Rename.Caption := parse(lfile.ReadString(mainsect,'ni_rename',''));
-  NI_ClearTab.Caption := parse(lfile.ReadString(mainsect,'ni_cleartab',''));
-  NI_DeleteTab.Caption := parse(lfile.ReadString(mainsect,'ni_deletetab',''));
-  NI_Group.Caption := parse(lfile.ReadString(mainsect,'ni_group',''));
-  SaveButtonDialog.Filter := parse(lfile.ReadString(mainsect,'flbfilter','')) + '|*.flb';
-  OpenButtonDialog.Filter := parse(lfile.ReadString(mainsect,'flbfilter','')) + '|*.flb';
-  lngstrings[15] := parse(lfile.ReadString(mainsect,'ok',''));
-  lngstrings[16] := parse(lfile.ReadString(mainsect,'cancel',''));
+    if FlaunchMainForm.MainTabs.Pages[i-1].Caption = '' then
+      FlaunchMainForm.MainTabs.Pages[i-1].Caption :=
+        Format(Language.Main.TabName,[i]);
 
-  lng_about_strings[1] := parse(lfile.ReadString(aboutsect,'about',''));
-  lng_about_strings[2] := parse(lfile.ReadString(aboutsect,'version',''));
-  lng_about_strings[3] := parse(lfile.ReadString(aboutsect,'author',''));
-  lng_about_strings[4] := parse(lfile.ReadString(aboutsect,'translate',''));
-  lng_about_strings[5] := parse(lfile.ReadString('information','author',''));
-  lng_about_strings[6] := parse(lfile.ReadString(aboutsect,'donate',''));
-
-  lng_iconselect_strings[1] := parse(lfile.ReadString(iconselectsect,'iconselect',''));
-  lng_iconselect_strings[2] := parse(lfile.ReadString(iconselectsect,'file',''));
-  lng_iconselect_strings[3] := parse(lfile.ReadString(iconselectsect,'index',''));
-  lng_iconselect_strings[4] := parse(lfile.ReadString(iconselectsect,'of',''), '%d');
-
-  lng_properties_strings[1] := parse(lfile.ReadString(propertiessect,'properties',''));
-  lng_properties_strings[2] := parse(lfile.ReadString(propertiessect,'folder',''));
-  lng_properties_strings[3] := parse(lfile.ReadString(propertiessect,'object',''));
-  lng_properties_strings[4] := parse(lfile.ReadString(propertiessect,'parameters',''));
-  lng_properties_strings[5] := parse(lfile.ReadString(propertiessect,'description',''));
-  lng_properties_strings[6] := parse(lfile.ReadString(propertiessect,'priority',''));
-  lng_properties_strings[7] := parse(lfile.ReadString(propertiessect,'priority_normal',''));
-  lng_properties_strings[8] := parse(lfile.ReadString(propertiessect,'priority_high',''));
-  lng_properties_strings[9] := parse(lfile.ReadString(propertiessect,'priority_low',''));
-  lng_properties_strings[10] := parse(lfile.ReadString(propertiessect,'view',''));
-  lng_properties_strings[11] := parse(lfile.ReadString(propertiessect,'view_normal',''));
-  lng_properties_strings[12] := parse(lfile.ReadString(propertiessect,'view_max',''));
-  lng_properties_strings[13] := parse(lfile.ReadString(propertiessect,'view_min',''));
-  lng_properties_strings[14] := parse(lfile.ReadString(propertiessect,'view_hidden',''));
-  lng_properties_strings[15] := parse(lfile.ReadString(propertiessect,'be_hint',''));
-  lng_properties_strings[16] := parse(lfile.ReadString(propertiessect,'rp_hint',''));
-  lng_properties_strings[17] := parse(lfile.ReadString(propertiessect,'options',''));
-  lng_properties_strings[18] := parse(lfile.ReadString(propertiessect,'icon',''));
-  lng_properties_strings[19] := parse(lfile.ReadString(propertiessect,'change',''));
-  lng_properties_strings[20] := parse(lfile.ReadString(propertiessect,'chb_drop',''));
-  lng_properties_strings[21] := parse(lfile.ReadString(propertiessect,'chb_question',''));
-  lng_properties_strings[22] := parse(lfile.ReadString(propertiessect,'chb_hide',''));
-  lng_properties_strings[23] := parse(lfile.ReadString(propertiessect,'tprogramfilter',''));
-
-  lng_tabname_strings[1] := parse(lfile.ReadString(tabnamesect,'tabname',''));
-
-  lng_settings_strings[1] := parse(lfile.ReadString(settingssect,'general',''));
-  lng_settings_strings[2] := parse(lfile.ReadString(settingssect,'settings',''));
-  lng_settings_strings[3] := parse(lfile.ReadString(settingssect,'tabs',''));
-  lng_settings_strings[4] := parse(lfile.ReadString(settingssect,'rows',''));
-  lng_settings_strings[5] := parse(lfile.ReadString(settingssect,'buttons',''));
-  lng_settings_strings[6] := parse(lfile.ReadString(settingssect,'spacing',''));
-  lng_settings_strings[7] := parse(lfile.ReadString(settingssect,'chb_autorun',''));
-  lng_settings_strings[8] := parse(lfile.ReadString(settingssect,'chb_alwaysontop',''));
-  lng_settings_strings[9] := parse(lfile.ReadString(settingssect,'chb_starthide',''));
-  lng_settings_strings[10] := parse(lfile.ReadString(settingssect,'chb_statusbar',''));
-  lng_settings_strings[11] := parse(lfile.ReadString(settingssect,'titlebar',''));
-  lng_settings_strings[12] := parse(lfile.ReadString(settingssect,'titlebar_normal',''));
-  lng_settings_strings[13] := parse(lfile.ReadString(settingssect,'titlebar_mini',''));
-  lng_settings_strings[14] := parse(lfile.ReadString(settingssect,'titlebar_hidden',''));
-  lng_settings_strings[15] := parse(lfile.ReadString(settingssect,'tabstyle',''));
-  lng_settings_strings[16] := parse(lfile.ReadString(settingssect,'tabstyle_pages',''));
-  lng_settings_strings[17] := parse(lfile.ReadString(settingssect,'tabstyle_buttons',''));
-  lng_settings_strings[18] := parse(lfile.ReadString(settingssect,'tabstyle_fbuttons',''));
-  lng_settings_strings[19] := parse(lfile.ReadString(settingssect,'language',''));
-  lng_settings_strings[20] := parse(lfile.ReadString(settingssect,'icons',''));
-  lng_settings_strings[21] := parse(lfile.ReadString(settingssect,'size',''));
-  lng_settings_strings[22] := parse(lfile.ReadString(settingssect,'reloadicons',''));
-
-  lfile.Free;
+  NI_Show.Caption := Language.Menu.Show;
+  NI_Settings.Caption := Language.Menu.Settings;
+  NI_About.Caption := Language.Menu.About;
+  NI_Close.Caption := Language.Menu.Close;
+  NI_Run.Caption := Language.Menu.Run;
+  NI_TypeProgramm.Caption := Language.Menu.TypeProgramm;
+  NI_TypeFile.Caption := Language.Menu.TypeFile;
+  NI_Export.Caption := Language.Menu.Export;
+  NI_Import.Caption := Language.Menu.Import;
+  NI_Clear.Caption := Language.Menu.Clear;
+  NI_Prop.Caption := Language.Menu.Prop;
+  NI_Rename.Caption := Language.Menu.Rename;
+  NI_ClearTab.Caption := Language.Menu.ClearTab;
+  NI_DeleteTab.Caption := Language.Menu.DeleteTab;
+  NI_Group.Caption := Language.Menu.Group;
+  SaveButtonDialog.Filter := Language.FlbFilter + '|*.flb';
+  OpenButtonDialog.Filter := Language.FlbFilter + '|*.flb';
 end;
 
 procedure TFlaunchMainForm.SetAutorun(b: boolean);
@@ -567,7 +462,7 @@ begin
   result := true;
   if tn = '' then exit;
   for i := 1 to maxt do
-    if tn = Format(lngstrings[1], [i]) then exit;
+    if tn = Format(Language.Main.TabName, [i]) then exit;
   result := false;
 end;
 
@@ -840,13 +735,15 @@ begin
     begin
       FileClose(LinksCfgFile);
       if (VerStr = '1.21') or (VerStr = '1.2') or ((VerStr = '1.1')) then
-        if ConfirmDialog(format(lngstrings[8],[VerStr]), lngstrings[7]) then
+        if ConfirmDialog(format(Language.Messages.OldSettings,[VerStr]),
+          Language.Messages.Confirmation) then
           begin
             LoadLinksCfgFileV121_12_11;
             exit;
           end;
       if VerStr = '1.0' then
-        if ConfirmDialog(format(lngstrings[8],[VerStr]), lngstrings[7]) then
+        if ConfirmDialog(format(Language.Messages.OldSettings,[VerStr]),
+          Language.Messages.Confirmation) then
           begin
             LoadLinksCfgFileV10;
             exit;
@@ -1462,7 +1359,8 @@ begin
   end;
 
   LoadIni;
-  LoadLanguage(lngfilename);
+  Language.AddNotifier(LoadLanguage);
+  Language.Load(lngfilename);
   SetAutorun(Autorun);
   GenerateWnd;
   MainTabs.TabIndex := tabind;
@@ -1597,8 +1495,8 @@ procedure TFlaunchMainForm.NI_DeleteTabClick(Sender: TObject);
 var
   i: integer;
 begin
-  if not ConfirmDialog(format(lngstrings[10], [MainTabs.Pages[GlobTabNum].Caption]),
-    lngstrings[7]) then exit;
+  if not ConfirmDialog(format(Language.Messages.DeleteTab, [MainTabs.Pages[GlobTabNum].Caption]),
+    Language.Messages.Confirmation) then exit;
   ClearLinks(GlobTabNum);
   for i := GlobTabNum to tabscount - 2 do
     begin
@@ -1744,8 +1642,8 @@ begin
   r := GlobRow;
   c := GlobCol;
   panels[t][r][c].SetBlueFrame;
-  if ConfirmDialog(format(lngstrings[11],[ExtractFileName(GetAbsolutePath(links[t][r][c].exec))]),
-    lngstrings[7]) then
+  if ConfirmDialog(format(Language.Messages.DeleteButton,[ExtractFileName(GetAbsolutePath(links[t][r][c].exec))]),
+    Language.Messages.Confirmation) then
     begin
       fillchar(links[t][r][c],sizeof(lnk),0);
       panels[t][r][c].HasIcon := false;
@@ -1757,8 +1655,8 @@ end;
 
 procedure TFlaunchMainForm.NI_ClearTabClick(Sender: TObject);
 begin
-  if not ConfirmDialog(format(lngstrings[12], [MainTabs.Pages[GlobTabNum].Caption]),
-    lngstrings[7]) then exit;
+  if not ConfirmDialog(format(Language.Messages.ClearTab, [MainTabs.Pages[GlobTabNum].Caption]),
+    Language.Messages.Confirmation) then exit;
   ClearLinks(GlobTabNum);
   LoadPanelLinks(GlobTabNum);
   SaveLinksCfgFile;
@@ -1898,11 +1796,12 @@ begin
         CloseHandle(h);
       exit;
     end;
-  if (links[t][r][c].active) and (not ConfirmDialog(lngstrings[13], lngstrings[7])) then
+  if (links[t][r][c].active) and (not ConfirmDialog(Language.Messages.BusyReplace,
+    Language.Messages.Confirmation)) then
     exit;
   fillchar(links[t,r,c],sizeof(lnk),0);
   if extractfileext(FileName).ToLower = '.flb' then
-    if ConfirmDialog(format(lngstrings[14],[FileName]), lngstrings[7]) then
+    if ConfirmDialog(format(Language.Messages.ImportButton,[FileName]), Language.Messages.Confirmation) then
       begin
         ImportButton(FileName, t, r, c);
         exit;
@@ -1948,7 +1847,9 @@ begin
   GetCoordinates(Sender, t, r, c);
   if links[t][r][c].active then
     begin
-      panels[t][r][c].Hint := Format(lngstrings[4] + #13#10 +lngstrings[5] +#13#10 + lngstrings[6],[links[t][r][c].exec, links[t][r][c].params, MyCutting(links[t][r][c].descr, 60)]);
+      panels[t][r][c].Hint := Format(Language.Main.Location + #13#10 +
+        Language.Main.Parameters + #13#10 + Language.Main.Description,
+        [links[t][r][c].exec, links[t][r][c].params, MyCutting(links[t][r][c].descr, 60)]);
       StatusBar.Panels[0].Text := MyCutting(links[t][r][c].descr, 60);
     end
   else

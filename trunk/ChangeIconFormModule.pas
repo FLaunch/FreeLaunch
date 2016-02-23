@@ -30,7 +30,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, PNGExtra, Vcl.Samples.Spin,
-  FLFunctions;
+  FLFunctions, FLLanguage;
 
 type
   TChangeIconForm = class(TForm)
@@ -79,7 +79,7 @@ begin
   icindex := 1;
   iconcount := GetIconCount(FlaunchMainForm.GetAbsolutePath(IconEdit.Text));
   if iconcount = 0 then iconcount := 1;
-  Label3.Caption := Format(lng_iconselect_strings[4], [iconcount]);
+  Label3.Caption := Format(Language.IconSelect.LblOf, [iconcount]);
   IndexEdit.Value := icindex;
   IndexEdit.Enabled := iconcount > 1;
   IndexEdit.MaxValue := iconcount;
@@ -173,11 +173,11 @@ procedure TChangeIconForm.FormShow(Sender: TObject);
 begin
   Color := FormColor;
   //--Loading language
-  OKButton.Caption := lngstrings[15];
-  CancelButton.Caption := lngstrings[16];
-  Caption := lng_iconselect_strings[1];
-  Label1.Caption := lng_iconselect_strings[2] + ':';
-  Label2.Caption := lng_iconselect_strings[3] + ':';
+  OKButton.Caption := Language.BtnOk;
+  CancelButton.Caption := Language.BtnCancel;
+  Caption := Language.IconSelect.Caption;
+  Label1.Caption := Language.IconSelect.FileName + ':';
+  Label2.Caption := Language.IconSelect.Index + ':';
 
   if PropertiesMode = 0 then
     begin
@@ -193,7 +193,7 @@ begin
     end;
 
   if iconcount = 0 then iconcount := 1;
-  Label3.Caption := Format(lng_iconselect_strings[4], [iconcount]);
+  Label3.Caption := Format(Language.IconSelect.LblOf, [iconcount]);
   IndexEdit.Value := icindex;
   IndexEdit.Enabled := iconcount > 1;
   IndexEdit.MaxValue := iconcount;

@@ -29,18 +29,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, IniFiles, Vcl.Samples.Spin;
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, IniFiles, Vcl.Samples.Spin,
+  FLLanguage;
 
 const
-  base64ABC='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   DesignDPI = 96;
 
 type
-  TBase64 = record
-    ByteArr: array[0..2] of Byte;
-    ByteCount: Byte;
-  end;
-
   TSettingsForm = class(TForm)
     PageControl1: TPageControl;
     TabSheet1: TTabSheet;
@@ -84,17 +79,13 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure LanguagesBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-  private
-    function DecodeBase64(StringValue: string): TBase64;
   public
+    Langs: array of TLngInfo;
+    LngFiles: array of string;
+    NoPopup: TPopupMenu;
     procedure ProcLanguage(FileName: string);
     procedure ScanLanguagesDir;
   end;
-
-var
-  Flags: array of TBitMap;
-  Langs: array of string;
-  NoPopup: TPopupMenu;
 
 implementation
 
@@ -103,74 +94,25 @@ uses
 
 {$R *.dfm}
 
-function TSettingsForm.DecodeBase64(StringValue: string): TBase64;
-var
-  M,N: Integer;
-  Dest,Sour: Byte;
-  NextNum: Byte;
-  CurPos: Byte;
-begin
-  CurPos := 0;
-  Dest := 0;
-  NextNum := 1;
-  FillChar(Result, SizeOf(Result), 0);
-  for N := 1 to 4 do
-    begin
-      for M := 0 to 5 do
-        begin
-          if StringValue[N] = '=' then Sour := 0
-          else
-            Sour := Pos(StringValue[N],base64ABC) - 1;
-          Sour := (Sour shl M) and 255;
-          Dest := (Dest shl 1) and 255;
-          if (Sour and 32)=32 then Dest := Dest or 1;
-          Inc(NextNum);
-          if NextNum > 8 then
-            begin
-              NextNum := 1;
-              Result.ByteArr[CurPos] := Dest;
-              if StringValue[N] = '=' then
-                Result.ByteArr[CurPos] := 0
-              else
-                Result.ByteCount := CurPos + 1;
-              Inc(CurPos);
-              Dest:=0;
-            end;
-        end;
-    end;
-end;
-
 procedure TSettingsForm.ProcLanguage(FileName: string);
-const
-  sect = 'information';
 var
   lngfile: TIniFile;
-  Stream: TMemoryStream;
-  Base64: TBase64;
-  Str, B64Str: string;
+  LangCount: Integer;
 begin
   lngfile := TIniFile.Create(FileName);
-  Str := lngfile.ReadString(sect, 'image', '');
+  try
+    LangCount := Length(Langs);
+    SetLength(Langs, LangCount + 1);
+    SetLength(LngFiles, LangCount + 1);
+    LngFiles[LangCount] := ExtractFileName(FileName);
+    Langs[LangCount].Load(lngfile);
 
-  Stream := TMemoryStream.Create;
-  while Length(Str) > 0 do
-    begin
-      B64Str := Copy(Str,1,4);
-      Delete(Str,1,4);
-      Base64 := DecodeBase64(B64Str);
-      Stream.WriteBuffer(Base64.ByteArr, Base64.ByteCount);
-    end;
-  SetLength(Langs, Length(Langs) + 1);
-  Langs[High(Langs)] := ExtractFileName(FileName);
-  SetLength(Flags, Length(Flags) + 1);
-  Flags[High(Flags)] := TBitMap.Create;
-  Stream.Seek(0,0);
-  Flags[High(Flags)].LoadFromStream(Stream);
-  Stream.Free;
-  LanguagesBox.Items.Add(lngfile.ReadString(sect,'name',''));
-  if lngfilename = ExtractFileName(FileName) then
-    LanguagesBox.ItemIndex := LanguagesBox.Items.Count - 1;
-  lngfile.Free;
+    LanguagesBox.Items.Add(Langs[LangCount].Name);
+    if Language.Info.Name = Langs[LangCount].Name then
+      LanguagesBox.ItemIndex := LanguagesBox.Items.Count - 1;
+  finally
+    lngfile.Free;
+  end;
 end;
 
 procedure TSettingsForm.ScanLanguagesDir;
@@ -179,15 +121,13 @@ var
   Dir: string;
 begin
   LanguagesBox.Clear;
-  SetLength(Flags, 0);
-  Dir := ExtractFilePath(ParamStr(0)) + 'Languages\';
-  if FindFirst(Dir+'*.*', faAnyFile, SearchRec) = 0 then
+  Dir := ExtractFilePath(Application.ExeName) + 'Languages\';
+  if FindFirst(Dir + '*.*', faAnyFile, SearchRec) = 0 then
     repeat
-      if (SearchRec.name='.') or (SearchRec.name='..') then continue;
+      if (SearchRec.name = '.') or (SearchRec.name = '..') then
+        continue;
       if (extractfileext(SearchRec.name).ToLower = '.lng') then
-        begin
-          ProcLanguage(Dir + SearchRec.name);
-        end;
+        ProcLanguage(Dir + SearchRec.name);
     until
       FindNext(SearchRec) <> 0;
   FindClose(SearchRec);
@@ -209,15 +149,17 @@ procedure TSettingsForm.LanguagesBoxDrawItem(Control: TWinControl; Index: Intege
 var
   Multiplier: Double;
   FlagRect: TRect;
+  Image: TBitmap;
 begin
-  Multiplier := (Rect.Height - 4) / Flags[Index].Height;
+  Image := Langs[Index].Image;
+  Multiplier := (Rect.Height - 4) / Image.Height;
   FlagRect.Left := Rect.Left + 2;
   FlagRect.Top := Rect.Top + 2;
   FlagRect.Height := Rect.Height - 4;
-  FlagRect.Width := Round(Flags[Index].Width * Multiplier);
+  FlagRect.Width := Round(Image.Width * Multiplier);
 
   LanguagesBox.Canvas.fillrect(rect);
-  LanguagesBox.Canvas.StretchDraw(FlagRect, Flags[Index]);
+  LanguagesBox.Canvas.StretchDraw(FlagRect, Image);
   LanguagesBox.Canvas.textout(rect.left + FlagRect.Width + 4, rect.top + 2,
     LanguagesBox.items[index]);
 end;
@@ -227,9 +169,9 @@ var
   i: integer;
 begin
   NoPopup.Free;
-  for i := 0 to high(Flags) do
-    Flags[i].Free;
-  SetLength(Flags, 0);
+  for i := 0 to high(Langs) do
+    Langs[i].Image.Free;
+  SetLength(Langs, 0);
   settingsshowing := false;
   action := CAFree;
 end;
@@ -264,46 +206,46 @@ begin
   Color := FormColor;
   settingsshowing := true;
   //--Loading language
-  OKButton.Caption := lngstrings[15];
-  CancelButton.Caption := lngstrings[16];
-  PageControl1.Pages[0].Caption := lng_settings_strings[1];
-  Caption := lng_settings_strings[2];
-  Label2.Caption := lng_settings_strings[3] + ':';
-  Label1.Caption := lng_settings_strings[4] + ':';
-  Label3.Caption := lng_settings_strings[5] + ':';
-  Label5.Caption := lng_settings_strings[6] + ':';
-  AutorunCheckBox.Caption := lng_settings_strings[7];
-  TopCheckBox.Caption := lng_settings_strings[8];
-  StartHideBox.Caption := lng_settings_strings[9];
-  StatusBarBox.Caption := lng_settings_strings[10];
-  Label6.Caption := lng_settings_strings[11];
-  TBarBox.Items.Add(lng_settings_strings[12]);
-  TBarBox.Items.Add(lng_settings_strings[13]);
-  TBarBox.Items.Add(lng_settings_strings[14]);
+  OKButton.Caption := Language.BtnOk;
+  CancelButton.Caption := Language.BtnCancel;
+  PageControl1.Pages[0].Caption := Language.Settings.General;
+  Caption := Language.Settings.Caption;
+  Label2.Caption := Language.Settings.Tabs + ':';
+  Label1.Caption := Language.Settings.Rows + ':';
+  Label3.Caption := Language.Settings.Buttons + ':';
+  Label5.Caption := Language.Settings.Spacing + ':';
+  AutorunCheckBox.Caption := Language.Settings.ChbAutorun;
+  TopCheckBox.Caption := Language.Settings.ChbAlwaysOnTop;
+  StartHideBox.Caption := Language.Settings.ChbStartHide;
+  StatusBarBox.Caption := Language.Settings.ChbStatusbar;
+  Label6.Caption := Language.Settings.Titlebar;
+  TBarBox.Items.Add(Language.Settings.TitlebarNormal);
+  TBarBox.Items.Add(Language.Settings.TitlebarMini);
+  TBarBox.Items.Add(Language.Settings.TitlebarHidden);
   Bevel3.Left := Label6.Left + Label6.Width + 7;
   w := 337 - Bevel3.Left;
   if w < 0 then w := 0;
   Bevel3.Width := w;
-  Label4.Caption := lng_settings_strings[15];
-  TabsBox.Items.Add(lng_settings_strings[16]);
-  TabsBox.Items.Add(lng_settings_strings[17]);
-  TabsBox.Items.Add(lng_settings_strings[18]);
+  Label4.Caption := Language.Settings.TabStyle;
+  TabsBox.Items.Add(Language.Settings.TabStylePages);
+  TabsBox.Items.Add(Language.Settings.Buttons);
+  TabsBox.Items.Add(Language.Settings.TabStyleFButtons);
   Bevel2.Left := Label4.Left + Label4.Width + 7;
   w := 337 - Bevel2.Left;
   if w < 0 then w := 0;
   Bevel2.Width := w;
-  Label10.Caption := lng_settings_strings[19];
+  Label10.Caption := Language.Settings.Language;
   Bevel5.Left := Label10.Left + Label10.Width + 7;
   w := 337 - Bevel5.Left;
   if w < 0 then w := 0;
   Bevel5.Width := w;
-  Label9.Caption := lng_settings_strings[20];
+  Label9.Caption := Language.Settings.Icons;
   Bevel4.Left := Label9.Left + Label9.Width + 7;
   w := 337 - Bevel4.Left;
   if w < 0 then w := 0;
   Bevel4.Width := w;
-  Label7.Caption := lng_settings_strings[21] + ':';
-  ReloadIconsButton.Caption := lng_settings_strings[22];
+  Label7.Caption := Language.Settings.Size + ':';
+  ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
 
   ScanLanguagesDir;
   TabsEdit.Text := inttostr(tabscount);
@@ -341,13 +283,13 @@ var
   i,tabnum: integer;
 begin
   ChPos := true;
-  ShowWindow(FlaunchMainForm.Handle, SW_HIDE);
+  FlaunchMainForm.ChWinView(False);
   Autorun := AutorunCheckBox.Checked;
   AlwaysOnTop := TopCheckBox.Checked;
   StartHide := StartHideBox.Checked;
   StatusBarVis := StatusBarBox.Checked;
   FlaunchMainForm.SetAutorun(Autorun);
-  lngfilename := Langs[LanguagesBox.ItemIndex];
+  lngfilename := LngFiles[LanguagesBox.ItemIndex];
   tabsview := TabsBox.ItemIndex;
   titlebar := TBarBox.ItemIndex;
   //FlaunchMainForm.MainTabs.SetFocus;
@@ -374,7 +316,7 @@ begin
   else
     FlaunchMainForm.MainTabs.TabIndex := 0;
   FlaunchMainForm.SaveIni;
-  FlaunchMainForm.LoadLanguage(lngfilename);
+  Language.Load(lngfilename);
   FlaunchMainForm.ChWinView(true);
   ChPos := false;
   Close;

@@ -29,7 +29,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles,
+  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles, FLLanguage,
   ChangeIconFormModule, PNGExtra, SHlObj, FLFunctions;
 
 type
@@ -194,29 +194,29 @@ begin
   Color := FormColor;
   panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
   //--Loading language
-  OKButton.Caption := lngstrings[15];
-  CancelButton.Caption := lngstrings[16];
-  PageControl1.Pages[0].Caption := lng_properties_strings[1];
-  Caption := lng_properties_strings[1];
-  Label9.Caption := lng_properties_strings[2] + ':';
-  Label1.Caption := lng_properties_strings[3] + ':';
-  Label4.Caption := lng_properties_strings[5] + ':';
-  Label7.Caption := lng_properties_strings[10] + ':';
-  WStyleBox.Items.Add(lng_properties_strings[11]);
-  WStyleBox.Items.Add(lng_properties_strings[12]);
-  WStyleBox.Items.Add(lng_properties_strings[13]);
-  WStyleBox.Items.Add(lng_properties_strings[14]);
-  BrowseExec.Hint := lng_properties_strings[15];
-  RefProps.Hint := lng_properties_strings[16];
-  Label5.Caption := lng_properties_strings[17];
+  OKButton.Caption := Language.BtnOk;
+  CancelButton.Caption := Language.BtnCancel;
+  PageControl1.Pages[0].Caption := Language.Properties.Caption;
+  Caption := Language.Properties.Caption;
+  Label9.Caption := Language.Properties.Folder + ':';
+  Label1.Caption := Language.Properties.LblObject + ':';
+  Label4.Caption := Language.Properties.Description + ':';
+  Label7.Caption := Language.Properties.View + ':';
+  WStyleBox.Items.Add(Language.Properties.ViewNormal);
+  WStyleBox.Items.Add(Language.Properties.ViewMax);
+  WStyleBox.Items.Add(Language.Properties.ViewMin);
+  WStyleBox.Items.Add(Language.Properties.ViewHidden);
+  BrowseExec.Hint := Language.Properties.BeHint;
+  RefProps.Hint := Language.Properties.RpHint;
+  Label5.Caption := Language.Properties.Options;
   Bevel2.Left := Label5.Left + Label5.Width + 7;
   Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
-  Label6.Caption := lng_properties_strings[18];
+  Label6.Caption := Language.Properties.Icon;
   Bevel3.Left := Label6.Left + Label6.Width + 7;
   Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
-  ChangeIconButton.Caption := lng_properties_strings[19];
-  QuesCheckBox.Caption := lng_properties_strings[21];
-  HideCheckBox.Caption := lng_properties_strings[22];
+  ChangeIconButton.Caption := Language.Properties.Change;
+  QuesCheckBox.Caption := Language.Properties.ChbQuestion;
+  HideCheckBox.Caption := Language.Properties.ChbHide;
 
   CommandEdit.Text := string(links[GlobTab][GlobRow][GlobCol].exec);
   WorkFolderEdit.Text := string(links[GlobTab][GlobRow][GlobCol].workdir);
