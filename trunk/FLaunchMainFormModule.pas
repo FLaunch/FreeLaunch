@@ -601,14 +601,13 @@ begin
       FlaunchMainForm.Visible := true;
       Timer1.Enabled := statusbarvis;
       Timer1Timer(Self);
-      ShowWindow(FlaunchMainForm.Handle, SW_SHOW);
-      SetForegroundWindow(application.Handle);
+      ShowWindow(Application.Handle, SW_HIDE);
+      SetForegroundWindow(Application.Handle);
     end
   else
     begin
       FlaunchMainForm.Visible := false;
       Timer1.Enabled := False;
-      ShowWindow(FlaunchMainForm.Handle, SW_HIDE);
     end;
 end;
 
@@ -1196,19 +1195,17 @@ var
 begin
   StatusBar.Visible := statusbarvis;
   case titlebar of
-    0: FlaunchMainForm.BorderStyle := bsSingle;
-    1: FlaunchMainForm.BorderStyle := bsToolWindow;
-    2: FlaunchMainForm.BorderStyle := bsNone;
+    0: BorderStyle := bsSingle;
+    1: BorderStyle := bsToolWindow;
+    2: BorderStyle := bsNone;
   end;
   case tabsview of
-    0: FlaunchMainForm.MainTabs.Style := tsTabs;
-    1: FlaunchMainForm.MainTabs.Style := tsButtons;
-    2: FlaunchMainForm.MainTabs.Style := tsFlatButtons;
+    0: MainTabs.Style := tsTabs;
+    1: MainTabs.Style := tsButtons;
+    2: MainTabs.Style := tsFlatButtons;
   end;
   if AlwaysOnTop then
-    SetWindowPos( handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE)
-  else
-    SetWindowPos( handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE or SWP_NOMOVE);
+    FormStyle := fsStayOnTop;
   if tabscount = 1 then
     MainTabs.Pages[0].TabVisible := false
   else
