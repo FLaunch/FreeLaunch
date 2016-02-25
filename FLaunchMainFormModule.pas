@@ -429,18 +429,14 @@ end;
 
 procedure TFlaunchMainForm.SetAutorun(b: boolean);
 var
-   reg: TRegistry;
-   rkey: Cardinal;
+  reg: TRegistry;
 begin
-  case SettingsMode of
-    0: rkey := HKEY_CURRENT_USER;
-    1: rkey := HKEY_LOCAL_MACHINE;
-    2: exit;
-  end;
+  if SettingsMode = 2 then
+    Exit;
 
   reg := TRegistry.Create;
   try
-    reg.RootKey := rkey;
+    reg.RootKey := HKEY_CURRENT_USER;
     reg.LazyWrite := false;
     reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Run', false);
     if b then
