@@ -1002,7 +1002,7 @@ begin
   {*--Инициализируем коллекцию данных--*}
   {**} for i := 0 to fPagesCount - 1 do
   {**}   begin
-  {**}     GetMem(DataCurrent, SizeOf(DataCurrent));
+  {**}     New(DataCurrent);
   {**}     if i > 0 then
   {**}       begin
   {**}         DataPrev.NextNode := DataCurrent;
@@ -1056,7 +1056,7 @@ begin
   {**} repeat
   {**}   DataNext := DataCurrent.NextNode;
   {**}   DataCurrent.Node.Destroy;
-  {**}   FreeMem(DataCurrent, SizeOf(DataCurrent));
+  {**}   Dispose(DataCurrent);
   {**}   DataCurrent := DataNext;
   {**} until
   {**}   DataCurrent = nil;
