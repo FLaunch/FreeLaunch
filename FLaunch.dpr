@@ -47,7 +47,8 @@ uses
   AboutFormModule in 'AboutFormModule.pas' {AboutForm},
   FLFunctions in 'FLFunctions.pas',
   FLClasses in 'FLClasses.pas',
-  FLLanguage in 'FLLanguage.pas';
+  FLLanguage in 'FLLanguage.pas',
+  FLDialogs in 'FLDialogs.pas';
 
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED}
 

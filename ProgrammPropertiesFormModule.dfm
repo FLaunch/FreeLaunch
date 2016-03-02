@@ -33,10 +33,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         513
         236)
@@ -232,11 +228,5 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Anchors = [akLeft, akBottom]
     TabOrder = 2
     OnClick = CancelButtonClick
-  end
-  object OpenExec: TOpenDialog
-    Filter = #1051#1102#1073#1086#1081' '#1092#1072#1081#1083' (*.*)|*.*'
-    Options = [ofHideReadOnly, ofFileMustExist, ofNoDereferenceLinks, ofEnableSizing]
-    Left = 16
-    Top = 280
   end
 end

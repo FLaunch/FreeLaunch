@@ -30,7 +30,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles, FLLanguage,
-  ChangeIconFormModule, PNGExtra, SHlObj, FLFunctions;
+  ChangeIconFormModule, PNGExtra, FLFunctions;
 
 type
   TFilePropertiesForm = class(TForm)
@@ -66,7 +66,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
   private
-    function BrowseDialog(Handle: HWnd; Title: string; var OutDir: string): boolean;
+    BrowseExec, RefProps: TPNGButton;
   public
     procedure RefreshProps;
   end;
@@ -74,29 +74,13 @@ type
 var
   ic: string;
   iconindex: integer;
-  ques: boolean;
-  CurHelp: boolean = false;
-  BrowseExec, RefProps: TPNGButton;
-  CurDir: array [0..MAX_PATH] of char;
 
 implementation
 
 uses
-  FLaunchMainFormModule;
+  FLaunchMainFormModule, FLDialogs;
 
 {$R *.dfm}
-
-function BffCallBackF(Wnd: HWND; uMsg: UINT; lParam, lpData: lParam): Integer; stdcall;
-begin
-  if (uMsg = BFFM_INITIALIZED) then
-    begin
-      if (lpData <> 0) then
-        begin
-          SendMessage(Wnd, BFFM_SETSELECTION, 1, Longint(@CurDir));
-        end;
-    end;
-  result := 0;
-end;
 
 procedure TFilePropertiesForm.ChangeIconButtonClick(Sender: TObject);
 var
@@ -270,47 +254,9 @@ begin
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
 end;
 
-function TFilePropertiesForm.BrowseDialog(Handle: HWnd; Title: string; var OutDir: string): boolean;
-var
-  lpItemID: PItemIDList;
-  BrowseInfo: TBrowseInfo;
-  DisplayName: array [0..MAX_PATH] of char;
-  TempPath: array [0..MAX_PATH] of char;
-begin
-  Result := false;
-  FillChar(BrowseInfo, sizeof(TBrowseInfo), #0);
-  with BrowseInfo do
-  begin
-    hwndOwner := Handle;
-    pszDisplayName := @DisplayName;
-    lpszTitle := PChar(Title);
-    lParam := 16561;
-    lpfn := @BffCallBackF;  //BrowseCallbackProc
-    ulFlags := BIF_RETURNONLYFSDIRS or BIF_BROWSEINCLUDEFILES;
-  end;
-  lpItemID := SHBrowseForFolder(BrowseInfo);
-  if lpItemId <> nil then
-  begin
-    SHGetPathFromIDList(lpItemID, TempPath);
-    OutDir := TempPath;
-    Result := true;
-    GlobalFreePtr(lpItemID);
-  end;
-end;
-
 procedure TFilePropertiesForm.BrowseExecClick(Sender: TObject);
-var
-  OutDir: string;
 begin
-  StrPCopy(CurDir, GetAbsolutePath(CommandEdit.Text));
-  if BrowseDialog(Handle, 'Select file or directory', OutDir) then
-    CommandEdit.Text := OutDir;
-  {if fileexists(GetAbsolutePath(CommandEdit.Text)) then
-    OpenExec.FileName := GetAbsolutePath(CommandEdit.Text);
-  if OpenExec.Execute(Handle) then
-    begin
-      CommandEdit.Text := OpenExec.FileName;
-    end; }
+  CommandEdit.Text := FileOrDirSelect(CommandEdit.Text);
 end;
 
 end.

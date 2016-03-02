@@ -87,10 +87,4 @@ object ChangeIconForm: TChangeIconForm
     TabOrder = 1
     OnClick = OKButtonClick
   end
-  object OpenIcon: TOpenDialog
-    Filter = #1051#1102#1073#1086#1081' '#1092#1072#1081#1083' (*.*)|*.*'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 16
-    Top = 112
-  end
 end

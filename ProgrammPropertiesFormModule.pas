@@ -56,7 +56,6 @@ type
     WStyleBox: TComboBox;
     OKButton: TButton;
     CancelButton: TButton;
-    OpenExec: TOpenDialog;
     DropBox: TCheckBox;
     DropParamsEdit: TEdit;
     Label8: TLabel;
@@ -75,7 +74,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
   private
-
+    BrowseExec, RefProps: TPNGButton;
   public
     procedure RefreshProps;
   end;
@@ -83,14 +82,11 @@ type
 var
   ic: string;
   iconindex: integer;
-  ques: boolean;
-  CurHelp: boolean = false;
-  BrowseExec, RefProps: TPNGButton;
 
 implementation
 
 uses
-  FLaunchMainFormModule;
+  FLaunchMainFormModule, FLDialogs;
 
 {$R *.dfm}
 
@@ -240,7 +236,6 @@ begin
   DropBox.Caption := Language.Properties.ChbDrop;
   QuesCheckBox.Caption := Language.Properties.ChbQuestion;
   HideCheckBox.Caption := Language.Properties.ChbHide;
-  OpenExec.Filter := Language.Properties.ProgramFilter + '|*.exe;*.bat';
 
   CommandEdit.Text := string(links[GlobTab][GlobRow][GlobCol].exec);
   WorkFolderEdit.Text := string(links[GlobTab][GlobRow][GlobCol].workdir);
@@ -304,12 +299,7 @@ end;
 
 procedure TProgrammPropertiesForm.BrowseExecClick(Sender: TObject);
 begin
-  if fileexists(GetAbsolutePath(CommandEdit.Text)) then
-    OpenExec.FileName := GetAbsolutePath(CommandEdit.Text);
-  if OpenExec.Execute(Handle) then
-    begin
-      CommandEdit.Text := OpenExec.FileName;
-    end;
+  CommandEdit.Text := ProgramSelect(CommandEdit.Text);
 end;
 
 end.
