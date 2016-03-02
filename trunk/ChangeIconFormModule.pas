@@ -77,19 +77,19 @@ uses
 procedure TChangeIconForm.RefreshProps;
 begin
   icindex := 1;
-  iconcount := GetIconCount(FlaunchMainForm.GetAbsolutePath(IconEdit.Text));
+  iconcount := GetIconCount(GetAbsolutePath(IconEdit.Text));
   if iconcount = 0 then iconcount := 1;
   Label3.Caption := Format(Language.IconSelect.LblOf, [iconcount]);
   IndexEdit.Value := icindex;
   IndexEdit.Enabled := iconcount > 1;
   IndexEdit.MaxValue := iconcount;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(IconEdit.Text), icindex - 1);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex - 1);
 end;
 
 procedure TChangeIconForm.BrowseIconClick(Sender: TObject);
 begin
-  if fileexists(FlaunchMainForm.GetAbsolutePath(IconEdit.Text)) then
-    OpenIcon.FileName := FlaunchMainForm.GetAbsolutePath(IconEdit.Text);
+  if fileexists(GetAbsolutePath(IconEdit.Text)) then
+    OpenIcon.FileName := GetAbsolutePath(IconEdit.Text);
  { else
     if directoryexists(IconEdit.Text) then
       OpenIcon.InitialDir := IconEdit.Text;}
@@ -182,13 +182,13 @@ begin
   if PropertiesMode = 0 then
     begin
       IconEdit.Text := ProgrammPropertiesFormModule.ic;
-      iconcount := GetIconCount(FlaunchMainForm.GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+      iconcount := GetIconCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
       icindex := ProgrammPropertiesFormModule.iconindex + 1;
     end;
   if PropertiesMode = 1 then
     begin
       IconEdit.Text := FilePropertiesFormModule.ic;
-      iconcount := GetIconCount(FlaunchMainForm.GetAbsolutePath(FilePropertiesFormModule.Ic));
+      iconcount := GetIconCount(GetAbsolutePath(FilePropertiesFormModule.Ic));
       icindex := FilePropertiesFormModule.iconindex + 1;
     end;
 
@@ -197,14 +197,14 @@ begin
   IndexEdit.Value := icindex;
   IndexEdit.Enabled := iconcount > 1;
   IndexEdit.MaxValue := iconcount;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(IconEdit.Text), icindex - 1);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex - 1);
   IconEdit.SetFocus;
 end;
 
 procedure TChangeIconForm.IndexEditChange(Sender: TObject);
 begin
   icindex := IndexEdit.Value;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(IconEdit.Text), icindex - 1);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex - 1);
 end;
 
 end.

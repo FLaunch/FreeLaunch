@@ -212,7 +212,6 @@ type
     function PercentToPosition(p: integer; iswidth: boolean): integer;
     function GetFLVersion: string;
     procedure LoadIc(t, r, c: integer);
-    function GetAbsolutePath(s: string): string;
     procedure LoadLinks;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
     procedure SaveCfgFileString(AFileHandle: THandle; AString: string;
@@ -244,7 +243,7 @@ var
   titlebar, tabsview: integer;
   PanelColor, FormColor: TColor;
   lngfilename: string;
-  workdir, fl_root, fl_dir: string;
+  workdir: string;
   ChPos: boolean = false;
 
 implementation
@@ -301,8 +300,8 @@ begin
   t := GlobTab;
   r := GlobRow;
   c := GlobCol;
-  exec := FlaunchMainForm.GetAbsolutePath(links[t][r][c].exec);
-  path := FlaunchMainForm.GetAbsolutePath(links[t][r][c].workdir);
+  exec := GetAbsolutePath(links[t][r][c].exec);
+  path := GetAbsolutePath(links[t][r][c].workdir);
   if path = '' then
     path := ExtractFilePath(exec);
   if not links[t][r][c].active then
@@ -335,7 +334,7 @@ begin
         params := stringreplace(links[t][r][c].dropparams, '%1', GlobParam, [])
       else
         params := links[t][r][c].params;
-      params := FlaunchMainForm.GetAbsolutePath(params);
+      params := GetAbsolutePath(params);
       execparams := Format('"%s" %s', [exec, params]);
 
       ZeroMemory(@si, sizeof(si));
@@ -366,12 +365,6 @@ begin
   {$ELSE}
     result := version;
   {$ENDIF}
-end;
-
-function TFlaunchMainForm.GetAbsolutePath(s: string): string;
-begin
-  result := StringReplace(s, '{FL_ROOT}', fl_root, [rfReplaceAll, rfIgnoreCase]);
-  result := StringReplace(result, '{FL_DIR}', fl_dir, [rfReplaceAll, rfIgnoreCase]);
 end;
 
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;

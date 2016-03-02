@@ -104,17 +104,17 @@ var
 begin
   Application.CreateForm(TChangeIconForm, frm);
   frm.ShowModal;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(ic), iconindex);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(ic), iconindex);
 end;
 
 procedure TFilePropertiesForm.CommandEditChange(Sender: TObject);
 begin
-  OKButton.Enabled := FileExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)) or DirectoryExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
+  OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) or DirectoryExists(GetAbsolutePath(CommandEdit.Text));
 end;
 
 procedure TFilePropertiesForm.OKButtonClick(Sender: TObject);
 begin
-  if (not FileExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) then
+  if (not FileExists(GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(GetAbsolutePath(CommandEdit.Text))) then
     begin
       fillchar(links[GlobTab][GlobRow][GlobCol], sizeof(lnk), 0);
       FlaunchMainForm.LoadIc(GlobTab, GlobRow, GlobCol);
@@ -226,7 +226,7 @@ begin
   QuesCheckBox.Checked := links[GlobTab][GlobRow][GlobCol].ques;
   HideCheckBox.Checked := links[GlobTab][GlobRow][GlobCol].hide;
   WStyleBox.ItemIndex := links[GlobTab][GlobRow][GlobCol].wst;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(links[GlobTab][GlobRow][GlobCol].icon), links[GlobTab][GlobRow][GlobCol].iconindex);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(links[GlobTab][GlobRow][GlobCol].icon), links[GlobTab][GlobRow][GlobCol].iconindex);
   CommandEditChange(nil);
   //CommandEdit.SetFocus;
   //CommandEdit.Text := FullEncrypt('Joker-jar (joker-jar@yandex.ru)');
@@ -238,11 +238,11 @@ var
   pch: array[0..MAX_PATH] of char;
   //ext: string;
 begin
-  if (not FileExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) then exit;
+  if (not FileExists(GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(GetAbsolutePath(CommandEdit.Text))) then exit;
 
-  if extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
+  if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
-      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
+      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
       GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
       //ext := extractfileext(pch).ToLower;
@@ -266,8 +266,8 @@ begin
       iconindex := 0;
     end;
   if DescrEdit.Text = '' then
-    DescrEdit.Text := ExtractFileName(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(Ic), iconindex);
+    DescrEdit.Text := ExtractFileName(GetAbsolutePath(CommandEdit.Text));
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
 end;
 
 function TFilePropertiesForm.BrowseDialog(Handle: HWnd; Title: string; var OutDir: string): boolean;
@@ -302,7 +302,7 @@ procedure TFilePropertiesForm.BrowseExecClick(Sender: TObject);
 var
   OutDir: string;
 begin
-  StrPCopy(CurDir, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
+  StrPCopy(CurDir, GetAbsolutePath(CommandEdit.Text));
   if BrowseDialog(Handle, 'Select file or directory', OutDir) then
     CommandEdit.Text := OutDir;
   {if fileexists(GetAbsolutePath(CommandEdit.Text)) then

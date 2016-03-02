@@ -62,6 +62,7 @@ function GetIconCount(FileName: string): integer;
 function GetFileIcon(FileName: string; OpenIcon: boolean; Index: integer): HIcon;
 //--Функция возвращает путь к специальным папкам в Windows
 function GetSpecialDir(const CSIDL: byte): string;
+function GetAbsolutePath(s: string): string;
 //--Функция бреобразует строку вида 0xXXXXXX в цвет
 function ColorStrToColor(ColorStr: string): TColor;
 //--Функция делает ресайз изображения
@@ -76,6 +77,9 @@ function ExtractFileNameNoExt(FileName: string): string;
 procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 //--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
 function MyCutting(Str: string; Len: byte): string;
+
+var
+  fl_root, fl_dir: string;
 
 implementation
 
@@ -134,6 +138,12 @@ begin
   else
     exit;
   if Result[length(Result)] <> '\' then Result := Result + '\';
+end;
+
+function GetAbsolutePath(s: string): string;
+begin
+  result := StringReplace(s, '{FL_ROOT}', fl_root, [rfReplaceAll, rfIgnoreCase]);
+  result := StringReplace(result, '{FL_DIR}', fl_dir, [rfReplaceAll, rfIgnoreCase]);
 end;
 
 //--Функция бреобразует строку вида 0xXXXXXX в цвет

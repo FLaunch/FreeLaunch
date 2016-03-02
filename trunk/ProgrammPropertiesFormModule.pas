@@ -100,20 +100,20 @@ var
 begin
   Application.CreateForm(TChangeIconForm, frm);
   frm.ShowModal;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(ic), iconindex);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(ic), iconindex);
 end;
 
 procedure TProgrammPropertiesForm.CommandEditChange(Sender: TObject);
 var
   ext: string;
 begin
-  ext := extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)).ToLower;
-  OKButton.Enabled := FileExists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)) and ((ext = '.exe') or (ext = '.bat'));
+  ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
+  OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) and ((ext = '.exe') or (ext = '.bat'));
 end;
 
 procedure TProgrammPropertiesForm.OKButtonClick(Sender: TObject);
 begin
-  if (not fileexists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) then
+  if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then
     begin
       fillchar(links[GlobTab][GlobRow][GlobCol], sizeof(lnk), 0);
       FlaunchMainForm.LoadIc(GlobTab, GlobRow, GlobCol);
@@ -255,7 +255,7 @@ begin
   HideCheckBox.Checked := links[GlobTab][GlobRow][GlobCol].hide;
   PriorBox.ItemIndex := links[GlobTab][GlobRow][GlobCol].pr;
   WStyleBox.ItemIndex := links[GlobTab][GlobRow][GlobCol].wst;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(links[GlobTab][GlobRow][GlobCol].icon), links[GlobTab][GlobRow][GlobCol].iconindex);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(links[GlobTab][GlobRow][GlobCol].icon), links[GlobTab][GlobRow][GlobCol].iconindex);
   CommandEditChange(nil);
   //CommandEdit.SetFocus;
   //CommandEdit.Text := FullEncrypt('Joker-jar (joker-jar@yandex.ru)');
@@ -267,11 +267,11 @@ var
   pch: array[0..MAX_PATH] of char;
   ext: string;
 begin
-  if (not fileexists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text))) then exit;
+  if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then exit;
 
-  if extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
+  if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
-      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FlaunchMainForm.GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
+      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
       GetLinkInfo(@lnkinfo);
       ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
       ext := extractfileext(pch).ToLower;
@@ -288,7 +288,7 @@ begin
     end
   else
     begin
-      ext := extractfileext(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)).ToLower;
+      ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
       if not ((ext = '.exe') or (ext = '.bat')) then exit;
       Ic := CommandEdit.Text;
       //ParamsEdit.Text := '';
@@ -296,16 +296,16 @@ begin
       iconindex := 0;
     end;
   if DescrEdit.Text = '' then
-    DescrEdit.Text := GetFileDescription(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
+    DescrEdit.Text := GetFileDescription(GetAbsolutePath(CommandEdit.Text));
   if DescrEdit.Text = '' then
-    DescrEdit.Text := ExtractFileNameNoExt(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text));
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, FlaunchMainForm.GetAbsolutePath(Ic), iconindex);
+    DescrEdit.Text := ExtractFileNameNoExt(GetAbsolutePath(CommandEdit.Text));
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
 end;
 
 procedure TProgrammPropertiesForm.BrowseExecClick(Sender: TObject);
 begin
-  if fileexists(FlaunchMainForm.GetAbsolutePath(CommandEdit.Text)) then
-    OpenExec.FileName := FlaunchMainForm.GetAbsolutePath(CommandEdit.Text);
+  if fileexists(GetAbsolutePath(CommandEdit.Text)) then
+    OpenExec.FileName := GetAbsolutePath(CommandEdit.Text);
   if OpenExec.Execute(Handle) then
     begin
       CommandEdit.Text := OpenExec.FileName;
