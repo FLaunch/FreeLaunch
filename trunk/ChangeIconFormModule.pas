@@ -42,7 +42,6 @@ type
     OKButton: TButton;
     IcImage: TImage;
     Label3: TLabel;
-    OpenIcon: TOpenDialog;
     IndexEdit: TSpinEdit;
     procedure FormShow(Sender: TObject);
     procedure BrowseIconClick(Sender: TObject);
@@ -54,23 +53,19 @@ type
     procedure FormCreate(Sender: TObject);
     procedure IndexEditChange(Sender: TObject);
   private
-
+    icindex, iconcount: integer;
+    BrowseIcon, RefProps: TPNGButton;
+    _ic: string;
+    _icindex: integer;
   public
     procedure RefreshProps;
   end;
 
-var
-  icindex, iconcount: integer;
-  BrowseIcon, RefProps: TPNGButton;
-  _ic: string;
-  _icindex: integer;
-
 implementation
 
 uses
-  FLaunchMainFormModule,
-  ProgrammPropertiesFormModule,
-  FilePropertiesFormModule;
+  FLaunchMainFormModule, ProgrammPropertiesFormModule, FilePropertiesFormModule,
+  FLDialogs;
 
 {$R *.dfm}
 
@@ -87,17 +82,16 @@ begin
 end;
 
 procedure TChangeIconForm.BrowseIconClick(Sender: TObject);
+var
+  FileName: string;
 begin
-  if fileexists(GetAbsolutePath(IconEdit.Text)) then
-    OpenIcon.FileName := GetAbsolutePath(IconEdit.Text);
- { else
-    if directoryexists(IconEdit.Text) then
-      OpenIcon.InitialDir := IconEdit.Text;}
-  if OpenIcon.Execute(Handle) then
-    begin
-      IconEdit.Text := OpenIcon.FileName;
-      RefreshProps;
-    end;
+  FileName := FileOrDirSelect(IconEdit.Text);
+
+  if FileName <> IconEdit.Text then
+  begin
+    IconEdit.Text := FileName;
+    RefreshProps;
+  end;
 end;
 
 procedure TChangeIconForm.OKButtonClick(Sender: TObject);
