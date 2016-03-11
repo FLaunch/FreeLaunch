@@ -32,6 +32,7 @@ uses
 
 const
   TCM_GETITEMRECT = $130A;
+  UM_ShowMainForm = WM_USER + 1;
   UM_HideMainForm = WM_USER + 2;
 
 type

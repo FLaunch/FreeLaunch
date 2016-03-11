@@ -60,10 +60,7 @@ var
 begin
   Wnd := FindWindow('TFlaunchMainForm', nil);
   if Wnd <> 0 then
-  begin
-    ShowWindow(Wnd, SW_SHOW);
-    SetForegroundWindow(Wnd);
-  end
+    PostMessage(Wnd, UM_ShowMainForm, 0, 0)
   else
   begin
     Application.Initialize;
