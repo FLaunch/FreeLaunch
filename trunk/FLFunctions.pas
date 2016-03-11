@@ -28,10 +28,11 @@ unit FLFunctions;
 interface
 
 uses
-  Windows, ShellApi, Graphics, ShFolder, SysUtils, ActiveX, ComObj, ShlObj;
+  Windows, Messages, Graphics;
 
 const
   TCM_GETITEMRECT = $130A;
+  UM_HideMainForm = WM_USER + 2;
 
 type
   TAByte = array [0..maxInt-1] of byte;
@@ -39,7 +40,23 @@ type
   TRGBArray = array[Word] of TRGBTriple;
   pRGBArray = ^TRGBArray;
 
-  PShellLinkInfoStruct = ^TShellLinkInfoStruct;
+  lnk = record
+    ltype: byte;
+    active: boolean;
+    exec: string;
+    workdir: string;
+    icon: string;
+    iconindex: integer;
+    params: string;
+    dropfiles: boolean;
+    dropparams: string;
+    descr: string;
+    ques: boolean;
+    hide: boolean;
+    pr: byte;
+    wst: byte;
+  end;
+
   //--Структура информации о ярлыке
   TShellLinkInfoStruct = record
     FullPathAndNameOfLinkFile: array[0..MAX_PATH] of Char;
@@ -53,6 +70,7 @@ type
     ShowCommand: Integer;
     FindData: TWIN32FINDDATA;
   end;
+  PShellLinkInfoStruct = ^TShellLinkInfoStruct;
 
 //--Функция не позволяет уйти значению за пределы допустимых
 function InRange(Value, FromV, ToV: byte): byte;
@@ -77,11 +95,16 @@ function ExtractFileNameNoExt(FileName: string): string;
 procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 //--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
 function MyCutting(Str: string; Len: byte): string;
+//--Процедура для запуска процесса в потоке (при клике по кнопке)
+procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string = '');
 
 var
   fl_root, fl_dir: string;
 
 implementation
+
+uses
+  ShellApi, ShFolder, SysUtils, Classes, ActiveX, ComObj, ShlObj, FLLanguage;
 
 //--Функция не позволяет уйти значению за пределы допустимых
 //--Входные параметры: значение, минимальное значение, максимальное значение
@@ -375,6 +398,115 @@ begin
     Result := Str
   else
     Result := Copy(Str, 1, Len) + '...';
+end;
+
+procedure ShellExecute(const AWnd: HWND; const AOperation, AFileName: String;
+  const AParameters: String = ''; const ADirectory: String = ''; const AShowCmd: Integer = SW_SHOWNORMAL);
+var
+  ExecInfo: TShellExecuteInfo;
+  NeedUninitialize: Boolean;
+begin
+  Assert(AFileName <> '');
+
+  NeedUninitialize := SUCCEEDED(CoInitializeEx(nil, COINIT_APARTMENTTHREADED or COINIT_DISABLE_OLE1DDE));
+  try
+    FillChar(ExecInfo, SizeOf(ExecInfo), 0);
+    ExecInfo.cbSize := SizeOf(ExecInfo);
+
+    ExecInfo.Wnd := AWnd;
+    ExecInfo.lpVerb := Pointer(AOperation);
+    ExecInfo.lpFile := PChar(AFileName);
+    ExecInfo.lpParameters := Pointer(AParameters);
+    ExecInfo.lpDirectory := Pointer(ADirectory);
+    ExecInfo.nShow := AShowCmd;
+    ExecInfo.fMask := SEE_MASK_NOASYNC { = SEE_MASK_FLAG_DDEWAIT для старых версий Delphi }
+                   or SEE_MASK_FLAG_NO_UI;
+    {$IFDEF UNICODE}
+    // Необязательно, см. http://www.transl-gunsmoker.ru/2015/01/what-does-SEEMASKUNICODE-flag-in-ShellExecuteEx-actually-do.html
+    ExecInfo.fMask := ExecInfo.fMask or SEE_MASK_UNICODE;
+    {$ENDIF}
+
+    {$WARN SYMBOL_PLATFORM OFF}
+    Win32Check(ShellExecuteEx(@ExecInfo));
+    {$WARN SYMBOL_PLATFORM ON}
+  finally
+    if NeedUninitialize then
+      CoUninitialize;
+  end;
+end;
+
+procedure ThreadLaunch(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
+var
+  WinType, Prior: integer;
+  execparams, path, exec, params: string;
+  pi: TProcessInformation;
+  si: TStartupInfo;
+begin
+  exec := GetAbsolutePath(ALink.exec);
+  path := GetAbsolutePath(ALink.workdir);
+  if path = '' then
+    path := ExtractFilePath(exec);
+  if not ALink.active then
+    exit;
+  if ((ALink.ques) and (MessageBox(AMainHandle,
+    PChar(Format(Language.Messages.RunProgram, [ExtractFileName(exec)])),
+    PChar(Language.Messages.Confirmation), MB_ICONQUESTION or MB_YESNO) = IDNO)) then
+    exit;
+  case ALink.wst of
+    0: WinType := SW_SHOW;
+    1: WinType := SW_SHOWMAXIMIZED;
+    2: WinType := SW_SHOWMINIMIZED;
+    3: WinType := SW_HIDE;
+  end;
+  if ALink.ltype = 0 then
+    begin
+      if not FileExists(exec) then
+        begin
+          MessageBox(AMainHandle,
+            PChar(format(Language.Messages.NotFound,[ExtractFileName(exec)])),
+            PChar(Language.Messages.Caution), MB_ICONWARNING or MB_OK);
+          exit;
+        end;
+      case ALink.pr of
+        0: Prior := NORMAL_PRIORITY_CLASS;
+        1: Prior := HIGH_PRIORITY_CLASS;
+        2: Prior := IDLE_PRIORITY_CLASS;
+      end;
+      if ADroppedFile <> '' then
+        params := stringreplace(ALink.dropparams, '%1', ADroppedFile, [])
+      else
+        params := ALink.params;
+      params := GetAbsolutePath(params);
+      execparams := Format('"%s" %s', [exec, params]);
+
+      ZeroMemory(@si, sizeof(si));
+      si.cb := SizeOf(si);
+      si.dwFlags := STARTF_USESHOWWINDOW;
+      si.wShowWindow := WinType;
+      ZeroMemory(@PI, SizeOf(PI));
+
+      SetLastError(ERROR_INVALID_PARAMETER);
+      {$WARN SYMBOL_PLATFORM OFF}
+      Win32Check(CreateProcess(PChar(exec), PChar(execparams), nil, nil, false,
+        Prior or CREATE_DEFAULT_ERROR_MODE or CREATE_UNICODE_ENVIRONMENT, nil,
+        PChar(path), si, pi));
+      {$WARN SYMBOL_PLATFORM ON}
+      CloseHandle(PI.hThread);
+      CloseHandle(PI.hProcess);
+
+      if ALink.hide then
+        PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
+    end;
+  if ALink.ltype = 1 then
+    ShellExecute(AMainHandle, '', exec, '', path, WinType);
+end;
+
+procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
+begin
+  TThread.CreateAnonymousThread(procedure
+    begin
+      ThreadLaunch(ALink, AMainHandle, ADroppedFile);
+    end).Start;
 end;
 
 end.

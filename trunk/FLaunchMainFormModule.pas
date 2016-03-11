@@ -73,23 +73,6 @@ type
   TAByte = array [0..maxInt-1] of byte;
   TPAByte = ^TAByte;
 
-  lnk = record
-    ltype: byte;
-    active: boolean;
-    exec: string;
-    workdir: string;
-    icon: string;
-    iconindex: integer;
-    params: string;
-    dropfiles: boolean;
-    dropparams: string;
-    descr: string;
-    ques: boolean;
-    hide: boolean;
-    pr: byte;
-    wst: byte;
-  end;
-
   link = array[0..maxr - 1,0..maxc - 1] of lnk;
   panel = array[0..maxr - 1,0..maxc - 1] of TMyPanel;
 
@@ -175,6 +158,7 @@ type
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
     procedure WMDisplayChange(var Msg: TWMDisplayChange); message WM_DISPLAYCHANGE;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
+    procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
 
     procedure LoadLinksFromCash;
     procedure LoadPanelLinks(Index: integer);
@@ -229,7 +213,6 @@ var
   templinks: link;
   links: array[0..maxt - 1] of link;
   panels: array[0..maxt - 1] of panel;
-  GlobParam: string;
   GlobTab: integer = -1;
   GlobRow: integer = -1;
   GlobCol: integer = -1;
@@ -251,112 +234,6 @@ implementation
 {$R Manifest.res}
 {$R png.res}
 {$R *.dfm}
-
-procedure ShellExecute(const AWnd: HWND; const AOperation, AFileName: String;
-  const AParameters: String = ''; const ADirectory: String = ''; const AShowCmd: Integer = SW_SHOWNORMAL);
-var
-  ExecInfo: TShellExecuteInfo;
-  NeedUninitialize: Boolean;
-begin
-  Assert(AFileName <> '');
-
-  NeedUninitialize := SUCCEEDED(CoInitializeEx(nil, COINIT_APARTMENTTHREADED or COINIT_DISABLE_OLE1DDE));
-  try
-    FillChar(ExecInfo, SizeOf(ExecInfo), 0);
-    ExecInfo.cbSize := SizeOf(ExecInfo);
-
-    ExecInfo.Wnd := AWnd;
-    ExecInfo.lpVerb := Pointer(AOperation);
-    ExecInfo.lpFile := PChar(AFileName);
-    ExecInfo.lpParameters := Pointer(AParameters);
-    ExecInfo.lpDirectory := Pointer(ADirectory);
-    ExecInfo.nShow := AShowCmd;
-    ExecInfo.fMask := SEE_MASK_NOASYNC { = SEE_MASK_FLAG_DDEWAIT для старых версий Delphi }
-                   or SEE_MASK_FLAG_NO_UI;
-    {$IFDEF UNICODE}
-    // Необязательно, см. http://www.transl-gunsmoker.ru/2015/01/what-does-SEEMASKUNICODE-flag-in-ShellExecuteEx-actually-do.html
-    ExecInfo.fMask := ExecInfo.fMask or SEE_MASK_UNICODE;
-    {$ENDIF}
-
-    {$WARN SYMBOL_PLATFORM OFF}
-    Win32Check(ShellExecuteEx(@ExecInfo));
-    {$WARN SYMBOL_PLATFORM ON}
-  finally
-    if NeedUninitialize then
-      CoUninitialize;
-  end;
-end;
-
-function ThreadLaunch(p: pointer): Integer;
-var
-  WinType,Prior: integer;
-  params: string;
-  execparams, path, exec: string;
-  pi : TProcessInformation;
-  si : TStartupInfo;
-  t,r,c: integer;
-begin
-  Result := 0;
-  t := GlobTab;
-  r := GlobRow;
-  c := GlobCol;
-  exec := GetAbsolutePath(links[t][r][c].exec);
-  path := GetAbsolutePath(links[t][r][c].workdir);
-  if path = '' then
-    path := ExtractFilePath(exec);
-  if not links[t][r][c].active then
-    exit;
-  if ((links[t][r][c].ques) and (MessageBox(FlaunchMainForm.Handle,
-    PChar(Format(Language.Messages.RunProgram, [ExtractFileName(exec)])),
-    PChar(Language.Messages.Confirmation), MB_ICONQUESTION or MB_YESNO) = IDNO)) then
-    exit;
-  case links[t][r][c].wst of
-    0: WinType := SW_SHOW;
-    1: WinType := SW_SHOWMAXIMIZED;
-    2: WinType := SW_SHOWMINIMIZED;
-    3: WinType := SW_HIDE;
-  end;
-  if links[t][r][c].ltype = 0 then
-    begin
-      if not FileExists(exec) then
-        begin
-          MessageBox(FlaunchMainForm.Handle,
-            PChar(format(Language.Messages.NotFound,[ExtractFileName(exec)])),
-            PChar(Language.Messages.Caution), MB_ICONWARNING or MB_OK);
-          exit;
-        end;
-      case links[t][r][c].pr of
-        0: Prior := NORMAL_PRIORITY_CLASS;
-        1: Prior := HIGH_PRIORITY_CLASS;
-        2: Prior := IDLE_PRIORITY_CLASS;
-      end;
-      if GlobParam <> '' then
-        params := stringreplace(links[t][r][c].dropparams, '%1', GlobParam, [])
-      else
-        params := links[t][r][c].params;
-      params := GetAbsolutePath(params);
-      execparams := Format('"%s" %s', [exec, params]);
-
-      ZeroMemory(@si, sizeof(si));
-      si.cb := SizeOf(si);
-      si.dwFlags := STARTF_USESHOWWINDOW;
-      si.wShowWindow := WinType;
-      ZeroMemory(@PI, SizeOf(PI));
-
-      SetLastError(ERROR_INVALID_PARAMETER);
-      {$WARN SYMBOL_PLATFORM OFF}
-      Win32Check(CreateProcess(PChar(exec), PChar(execparams), nil, nil, false,
-        Prior or CREATE_DEFAULT_ERROR_MODE or CREATE_UNICODE_ENVIRONMENT, nil,
-        PChar(path), si, pi));
-      {$WARN SYMBOL_PLATFORM ON}
-      CloseHandle(PI.hThread);
-      CloseHandle(PI.hProcess);
-
-      if links[t][r][c].hide then FlaunchMainForm.ChWinView(false);
-    end;
-  if links[t][r][c].ltype = 1 then
-    ShellExecute(FlaunchMainForm.Handle, '', exec, '', path, WinType);
-end;
 
 function TFlaunchMainForm.GetFLVersion: string;
 begin
@@ -573,6 +450,11 @@ procedure TFlaunchMainForm.TrayMenuPopup(Sender: TObject);
 begin
   NI_About.Enabled := not aboutshowing;
   NI_Settings.Enabled := not settingsshowing;
+end;
+
+procedure TFlaunchMainForm.UMHideMainForm(var Msg: TMessage);
+begin
+  ChWinView(False);
 end;
 
 procedure TFlaunchMainForm.WMQueryEndSession(var Msg: TWMQueryEndSession);
@@ -1667,15 +1549,8 @@ begin
 end;
 
 procedure TFlaunchMainForm.NI_RunClick(Sender: TObject);
-var
-  h, id: cardinal;
 begin
-  GlobParam := '';
-  h := BeginThread(nil, 0, ThreadLaunch, nil, 0, id);
-  if h = 0 then
-    RaiseLastOSError
-  else
-    CloseHandle(h);
+  NewProcess(links[GlobTab][GlobRow][GlobCol], Handle);
 end;
 
 procedure TFlaunchMainForm.NI_SaveClick(Sender: TObject);
@@ -1714,19 +1589,13 @@ end;
 
 procedure TFlaunchMainForm.PanelClick(Sender: TObject);
 var
-  h, id: cardinal;
   t,r,c: integer;
 begin
   GetCoordinates(Sender, t, r, c);
   GlobTab := t;
   GlobRow := r;
   GlobCol := c;
-  GlobParam := '';
-  h := BeginThread(nil, 0, ThreadLaunch, nil, 0, id);
-  if h = 0 then
-    RaiseLastOSError
-  else
-    CloseHandle(h);
+  NewProcess(links[GlobTab][GlobRow][GlobCol], Handle);
 end;
 
 procedure TFlaunchMainForm.DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
@@ -1771,15 +1640,10 @@ begin
   GetCoordinates(Sender, t, r, c);
   if (links[t][r][c].active) and (links[t][r][c].dropfiles) then
     begin
-      GlobParam := FileName;
       GlobTab := t;
       GlobRow := r;
       GlobCol := c;
-      h := BeginThread(nil, 0, ThreadLaunch, nil, 0, id);
-      if h = 0 then
-        RaiseLastOSError
-      else
-        CloseHandle(h);
+      NewProcess(links[GlobTab][GlobRow][GlobCol], Handle, FileName);
       exit;
     end;
   if (links[t][r][c].active) and (not ConfirmDialog(Language.Messages.BusyReplace,
