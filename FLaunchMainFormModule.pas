@@ -158,6 +158,7 @@ type
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
     procedure WMDisplayChange(var Msg: TWMDisplayChange); message WM_DISPLAYCHANGE;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
+    procedure UMShowMainForm(var Msg: TMessage); message UM_ShowMainForm;
     procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
 
     procedure LoadLinksFromCash;
@@ -455,6 +456,11 @@ end;
 procedure TFlaunchMainForm.UMHideMainForm(var Msg: TMessage);
 begin
   ChWinView(False);
+end;
+
+procedure TFlaunchMainForm.UMShowMainForm(var Msg: TMessage);
+begin
+  ChWinView(True);
 end;
 
 procedure TFlaunchMainForm.WMQueryEndSession(var Msg: TWMQueryEndSession);
