@@ -431,7 +431,10 @@ end;
 //--»нициализаци€ €чейки данных текущей кнопки текущей страницы
 function TFLButton.InitializeData: TFLDataItem;
 begin
-  Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber] := TFLDataItem.Create(Father.fButtonWidth, Father.fButtonHeight, Father.fPanelColor);
+  if not Assigned(Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber]) then
+    Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber] :=
+      TFLDataItem.Create(Father.fButtonWidth, Father.fButtonHeight, Father.fPanelColor);
+
   Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber].Father := Father;
   Result := Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber];
   fCurPage := 255;
@@ -440,8 +443,7 @@ end;
 //--ќсвобождение €чейки данных текущей кнопки текущей страницы
 procedure TFLButton.FreeData;
 begin
-  Father.fCurrentData.Node.fItems[fRowNumber, fColNumber].Destroy;
-  Father.fCurrentData.Node.fItems[fRowNumber, fColNumber] := nil;
+  FreeAndNil(Father.fCurrentData.Node.fItems[fRowNumber, fColNumber]);
   Repaint;
 end;
 
