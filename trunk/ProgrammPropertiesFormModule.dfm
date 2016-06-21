@@ -15,7 +15,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
   OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
-  OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
@@ -33,6 +32,10 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         513
         236)
@@ -217,6 +220,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    ModalResult = 1
     TabOrder = 1
     OnClick = OKButtonClick
   end
@@ -226,7 +230,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    ModalResult = 2
     TabOrder = 2
-    OnClick = CancelButtonClick
   end
 end
