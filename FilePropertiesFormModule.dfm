@@ -15,7 +15,6 @@ object FilePropertiesForm: TFilePropertiesForm
   OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
-  OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
@@ -165,6 +164,7 @@ object FilePropertiesForm: TFilePropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    ModalResult = 1
     TabOrder = 1
     OnClick = OKButtonClick
   end
@@ -174,7 +174,7 @@ object FilePropertiesForm: TFilePropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    ModalResult = 2
     TabOrder = 2
-    OnClick = CancelButtonClick
   end
 end

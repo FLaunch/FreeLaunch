@@ -57,18 +57,18 @@ type
     Label9: TLabel;
     procedure FormShow(Sender: TObject);
     procedure BrowseExecClick(Sender: TObject);
-    procedure CancelButtonClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
     procedure ChangeIconButtonClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefPropsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
   private
+    Link: lnk;
     BrowseExec, RefProps: TPNGButton;
   public
     procedure RefreshProps;
+    class function Execute(ALink: lnk): lnk;
   end;
 
 var
@@ -96,42 +96,40 @@ begin
   OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) or DirectoryExists(GetAbsolutePath(CommandEdit.Text));
 end;
 
+class function TFilePropertiesForm.Execute(ALink: lnk): lnk;
+begin
+  with TFilePropertiesForm.Create(Application.MainForm) do
+  try
+    Link := ALink;
+    ShowModal;
+  finally
+    Result := Link;
+    Free;
+  end;
+end;
+
 procedure TFilePropertiesForm.OKButtonClick(Sender: TObject);
 begin
   if (not FileExists(GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(GetAbsolutePath(CommandEdit.Text))) then
     begin
-      fillchar(links[GlobTab][GlobRow][GlobCol], sizeof(lnk), 0);
-      FlaunchMainForm.LoadIc(GlobTab, GlobRow, GlobCol);
+      fillchar(Link, sizeof(lnk), 0);
       exit;
     end;
-  links[GlobTab][GlobRow][GlobCol].active := true;
-  links[GlobTab][GlobRow][GlobCol].exec := CommandEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].workdir := WorkFolderEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].descr := DescrEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].icon := ic;
-  links[GlobTab][GlobRow][GlobCol].iconindex := iconindex;
-  links[GlobTab][GlobRow][GlobCol].ques := QuesCheckBox.Checked;
-  links[GlobTab][GlobRow][GlobCol].hide := HideCheckBox.Checked;
-  links[GlobTab][GlobRow][GlobCol].wst := WStyleBox.ItemIndex;
-  FlaunchMainForm.LoadIc(GlobTab, GlobRow, GlobCol);
-  FlaunchMainForm.SaveLinksCfgFile;
-  Close;
+  Link.active := true;
+  Link.ltype := 1;
+  Link.exec := CommandEdit.Text;
+  Link.workdir := WorkFolderEdit.Text;
+  Link.descr := DescrEdit.Text;
+  Link.icon := ic;
+  Link.iconindex := iconindex;
+  Link.ques := QuesCheckBox.Checked;
+  Link.hide := HideCheckBox.Checked;
+  Link.wst := WStyleBox.ItemIndex;
 end;
 
 procedure TFilePropertiesForm.RefPropsClick(Sender: TObject);
 begin
   RefreshProps;
-end;
-
-procedure TFilePropertiesForm.CancelButtonClick(Sender: TObject);
-begin
-  Close;
-end;
-
-procedure TFilePropertiesForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  panels[GlobTab][GlobRow][GlobCol].RemoveFrame;
-  action := CAFree;
 end;
 
 procedure TFilePropertiesForm.FormCreate(Sender: TObject);
@@ -168,15 +166,14 @@ procedure TFilePropertiesForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if key = vk_return then
-    OKButtonClick(OKButton);
+    OKButton.Click;
   if key = vk_escape then
-    CancelButtonClick(CancelButton);
+    ModalResult := mrCancel;
 end;
 
 procedure TFilePropertiesForm.FormShow(Sender: TObject);
 begin
   Color := FormColor;
-  panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
   //--Loading language
   OKButton.Caption := Language.BtnOk;
   CancelButton.Caption := Language.BtnCancel;
@@ -202,18 +199,17 @@ begin
   QuesCheckBox.Caption := Language.Properties.ChbQuestion;
   HideCheckBox.Caption := Language.Properties.ChbHide;
 
-  CommandEdit.Text := string(links[GlobTab][GlobRow][GlobCol].exec);
-  WorkFolderEdit.Text := string(links[GlobTab][GlobRow][GlobCol].workdir);
-  DescrEdit.Text := string(links[GlobTab][GlobRow][GlobCol].descr);
-  ic := string(links[GlobTab][GlobRow][GlobCol].icon);
-  iconindex := links[GlobTab][GlobRow][GlobCol].iconindex;
-  QuesCheckBox.Checked := links[GlobTab][GlobRow][GlobCol].ques;
-  HideCheckBox.Checked := links[GlobTab][GlobRow][GlobCol].hide;
-  WStyleBox.ItemIndex := links[GlobTab][GlobRow][GlobCol].wst;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(links[GlobTab][GlobRow][GlobCol].icon), links[GlobTab][GlobRow][GlobCol].iconindex);
+  CommandEdit.Text := Link.exec;
+  WorkFolderEdit.Text := Link.workdir;
+  DescrEdit.Text := Link.descr;
+  ic := Link.icon;
+  iconindex := Link.iconindex;
+  QuesCheckBox.Checked := Link.ques;
+  HideCheckBox.Checked := Link.hide;
+  WStyleBox.ItemIndex := Link.wst;
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
+    Link.iconindex);
   CommandEditChange(nil);
-  //CommandEdit.SetFocus;
-  //CommandEdit.Text := FullEncrypt('Joker-jar (joker-jar@yandex.ru)');
 end;
 
 procedure TFilePropertiesForm.RefreshProps;

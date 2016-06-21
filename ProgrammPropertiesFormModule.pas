@@ -64,19 +64,19 @@ type
     Label9: TLabel;
     procedure FormShow(Sender: TObject);
     procedure BrowseExecClick(Sender: TObject);
-    procedure CancelButtonClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
     procedure ChangeIconButtonClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure DropBoxClick(Sender: TObject);
     procedure RefPropsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
   private
+    Link: lnk;
     BrowseExec, RefProps: TPNGButton;
   public
     procedure RefreshProps;
+    class function Execute(ALink: lnk): lnk;
   end;
 
 var
@@ -111,36 +111,28 @@ procedure TProgrammPropertiesForm.OKButtonClick(Sender: TObject);
 begin
   if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then
     begin
-      fillchar(links[GlobTab][GlobRow][GlobCol], sizeof(lnk), 0);
-      FlaunchMainForm.LoadIc(GlobTab, GlobRow, GlobCol);
+      fillchar(Link, sizeof(lnk), 0);
       exit;
     end;
-  links[GlobTab][GlobRow][GlobCol].active := true;
-  links[GlobTab][GlobRow][GlobCol].exec := CommandEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].workdir := WorkFolderEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].params := ParamsEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].dropfiles := DropBox.Checked;
-  links[GlobTab][GlobRow][GlobCol].dropparams := DropParamsEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].descr := DescrEdit.Text;
-  links[GlobTab][GlobRow][GlobCol].icon := ic;
-  links[GlobTab][GlobRow][GlobCol].iconindex := iconindex;
-  links[GlobTab][GlobRow][GlobCol].ques := QuesCheckBox.Checked;
-  links[GlobTab][GlobRow][GlobCol].hide := HideCheckBox.Checked;
-  links[GlobTab][GlobRow][GlobCol].pr := PriorBox.ItemIndex;
-  links[GlobTab][GlobRow][GlobCol].wst := WStyleBox.ItemIndex;
-  FlaunchMainForm.LoadIc(GlobTab, GlobRow, GlobCol);
-  FlaunchMainForm.SaveLinksCfgFile;
-  Close;
+  link.active := true;
+  link.ltype := 0;
+  link.exec := CommandEdit.Text;
+  link.workdir := WorkFolderEdit.Text;
+  link.params := ParamsEdit.Text;
+  link.dropfiles := DropBox.Checked;
+  link.dropparams := DropParamsEdit.Text;
+  link.descr := DescrEdit.Text;
+  link.icon := ic;
+  link.iconindex := iconindex;
+  link.ques := QuesCheckBox.Checked;
+  link.hide := HideCheckBox.Checked;
+  link.pr := PriorBox.ItemIndex;
+  link.wst := WStyleBox.ItemIndex;
 end;
 
 procedure TProgrammPropertiesForm.RefPropsClick(Sender: TObject);
 begin
   RefreshProps;
-end;
-
-procedure TProgrammPropertiesForm.CancelButtonClick(Sender: TObject);
-begin
-  Close;
 end;
 
 procedure TProgrammPropertiesForm.DropBoxClick(Sender: TObject);
@@ -155,10 +147,16 @@ begin
     end;
 end;
 
-procedure TProgrammPropertiesForm.FormClose(Sender: TObject; var Action: TCloseAction);
+class function TProgrammPropertiesForm.Execute(ALink: lnk): lnk;
 begin
-  panels[GlobTab][GlobRow][GlobCol].RemoveFrame;
-  action := CAFree;
+  with TProgrammPropertiesForm.Create(Application.MainForm) do
+  try
+    Link := ALink;
+    ShowModal;
+  finally
+    Result := Link;
+    Free;
+  end;
 end;
 
 procedure TProgrammPropertiesForm.FormCreate(Sender: TObject);
@@ -195,15 +193,14 @@ procedure TProgrammPropertiesForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if key = vk_return then
-    OKButtonClick(OKButton);
+    OKButton.Click;
   if key = vk_escape then
-    CancelButtonClick(CancelButton);
+    ModalResult := mrCancel;
 end;
 
 procedure TProgrammPropertiesForm.FormShow(Sender: TObject);
 begin
   Color := FormColor;
-  panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
   //--Loading language
   OKButton.Caption := Language.BtnOk;
   CancelButton.Caption := Language.BtnCancel;
@@ -237,23 +234,22 @@ begin
   QuesCheckBox.Caption := Language.Properties.ChbQuestion;
   HideCheckBox.Caption := Language.Properties.ChbHide;
 
-  CommandEdit.Text := string(links[GlobTab][GlobRow][GlobCol].exec);
-  WorkFolderEdit.Text := string(links[GlobTab][GlobRow][GlobCol].workdir);
-  ParamsEdit.Text := string(links[GlobTab][GlobRow][GlobCol].params);
-  DropBox.Checked := links[GlobTab][GlobRow][GlobCol].dropfiles;
+  CommandEdit.Text := Link.exec;
+  WorkFolderEdit.Text := Link.workdir;
+  ParamsEdit.Text := Link.params;
+  DropBox.Checked := Link.dropfiles;
   DropBoxClick(nil);
-  DropParamsEdit.Text := string(links[GlobTab][GlobRow][GlobCol].dropparams);
-  DescrEdit.Text := string(links[GlobTab][GlobRow][GlobCol].descr);
-  ic := string(links[GlobTab][GlobRow][GlobCol].icon);
-  iconindex := links[GlobTab][GlobRow][GlobCol].iconindex;
-  QuesCheckBox.Checked := links[GlobTab][GlobRow][GlobCol].ques;
-  HideCheckBox.Checked := links[GlobTab][GlobRow][GlobCol].hide;
-  PriorBox.ItemIndex := links[GlobTab][GlobRow][GlobCol].pr;
-  WStyleBox.ItemIndex := links[GlobTab][GlobRow][GlobCol].wst;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(links[GlobTab][GlobRow][GlobCol].icon), links[GlobTab][GlobRow][GlobCol].iconindex);
+  DropParamsEdit.Text := Link.dropparams;
+  DescrEdit.Text := Link.descr;
+  ic := Link.icon;
+  iconindex := Link.iconindex;
+  QuesCheckBox.Checked := Link.ques;
+  HideCheckBox.Checked := Link.hide;
+  PriorBox.ItemIndex := Link.pr;
+  WStyleBox.ItemIndex := Link.wst;
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
+    Link.iconindex);
   CommandEditChange(nil);
-  //CommandEdit.SetFocus;
-  //CommandEdit.Text := FullEncrypt('Joker-jar (joker-jar@yandex.ru)');
 end;
 
 procedure TProgrammPropertiesForm.RefreshProps;

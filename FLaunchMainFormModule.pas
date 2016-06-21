@@ -1537,21 +1537,18 @@ begin
 end;
 
 procedure TFlaunchMainForm.NI_propClick(Sender: TObject);
-var
-  prfrm: TProgrammPropertiesForm;
-  flfrm: TFilePropertiesForm;
 begin
+  panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
   PropertiesMode := links[GlobTab][GlobRow][GlobCol].ltype;
   if links[GlobTab][GlobRow][GlobCol].ltype = 0 then
-    begin
-      Application.CreateForm(TProgrammPropertiesForm, prfrm);
-      prfrm.ShowModal;
-    end;
+    links[GlobTab][GlobRow][GlobCol] :=
+      TProgrammPropertiesForm.Execute(links[GlobTab][GlobRow][GlobCol]);
   if links[GlobTab][GlobRow][GlobCol].ltype = 1 then
-    begin
-      Application.CreateForm(TFilePropertiesForm, flfrm);
-      flfrm.ShowModal;
-    end;
+    links[GlobTab][GlobRow][GlobCol] :=
+      TFilePropertiesForm.Execute(links[GlobTab][GlobRow][GlobCol]);
+  panels[GlobTab][GlobRow][GlobCol].RemoveFrame;
+  LoadIc(GlobTab, GlobRow, GlobCol);
+  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.NI_RunClick(Sender: TObject);
