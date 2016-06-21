@@ -14,7 +14,6 @@ object RenameTabForm: TRenameTabForm
   KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
@@ -45,15 +44,15 @@ object RenameTabForm: TRenameTabForm
     Top = 71
     Width = 75
     Height = 25
+    ModalResult = 1
     TabOrder = 1
-    OnClick = OKButtonClick
   end
   object CancelButton: TButton
     Left = 254
     Top = 71
     Width = 75
     Height = 25
+    ModalResult = 2
     TabOrder = 2
-    OnClick = CancelButtonClick
   end
 end

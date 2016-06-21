@@ -38,15 +38,12 @@ type
     Label1: TLabel;
     OKButton: TButton;
     CancelButton: TButton;
-    procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure OKButtonClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
 
   public
-
+    class function Execute(ACaption: string): string;
   end;
 
 implementation
@@ -56,23 +53,26 @@ uses
 
 {$R *.dfm}
 
-procedure TRenameTabForm.CancelButtonClick(Sender: TObject);
+class function TRenameTabForm.Execute(ACaption: string): string;
 begin
-  Close;
-end;
-
-procedure TRenameTabForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  action := CAFree;
+  with TRenameTabForm.Create(Application.MainForm) do
+  try
+    Result := ACaption;
+    TabNameEdit.Text := ACaption;
+    if ShowModal = mrOk then
+      Result := TabNameEdit.Text;
+  finally
+    Free;
+  end;
 end;
 
 procedure TRenameTabForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if key = vk_return then
-    OKButtonClick(OKButton);
+    OKButton.Click;
   if key = vk_escape then
-    CancelButtonClick(CancelButton);
+    CancelButton.Click;
 end;
 
 procedure TRenameTabForm.FormShow(Sender: TObject);
@@ -84,17 +84,8 @@ begin
   Caption := Language.TabRename;
   Label1.Caption := Caption + ':';
 
-  TabNameEdit.Text := FlaunchMainForm.MainTabs.Pages[GlobTabNum].Caption;
   TabNameEdit.SelectAll;
   TabNameEdit.SetFocus;
-end;
-
-procedure TRenameTabForm.OKButtonClick(Sender: TObject);
-begin
-  if TabNameEdit.Text <> '' then
-    FlaunchMainForm.MainTabs.Pages[GlobTabNum].Caption := TabNameEdit.Text;
-  FlaunchMainForm.SaveIni;
-  Close;
 end;
 
 end.

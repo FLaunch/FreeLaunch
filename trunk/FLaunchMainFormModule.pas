@@ -1358,11 +1358,10 @@ begin
 end;
 
 procedure TFlaunchMainForm.NI_RenameClick(Sender: TObject);
-var
-  frm: TRenameTabForm;
 begin
-  Application.CreateForm(TRenameTabForm, frm);
-  frm.ShowModal;
+  MainTabs.Pages[GlobTabNum].Caption :=
+    TRenameTabForm.Execute(MainTabs.Pages[GlobTabNum].Caption);
+  SaveIni;
 end;
 
 procedure TFlaunchMainForm.NI_DeleteTabClick(Sender: TObject);
