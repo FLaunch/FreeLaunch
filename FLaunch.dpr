@@ -64,7 +64,6 @@ begin
   else
   begin
     Application.Initialize;
-    Application.ShowMainForm := false;
     Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
     Application.Run;
   end;
