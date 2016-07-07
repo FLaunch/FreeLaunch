@@ -275,8 +275,8 @@ var
 begin
   Caption := cr_progname;
   for i := 1 to maxt do
-    if FlaunchMainForm.MainTabs.Pages[i-1].Caption = '' then
-      FlaunchMainForm.MainTabs.Pages[i-1].Caption :=
+    if MainTabs.Pages[i-1].Caption = '' then
+      MainTabs.Pages[i-1].Caption :=
         Format(Language.Main.TabName,[i]);
 
   NI_Show.Caption := Language.Menu.Show;
@@ -344,10 +344,10 @@ begin
   ini.WriteInteger(inisection, 'padding', lpadding);
   ini.WriteInteger(inisection, 'iconwidth', iconwidth - panelzoom);
   ini.WriteInteger(inisection, 'iconheight', iconheight - panelzoom);
-  ini.WriteInteger(inisection, 'activetab', FlaunchMainForm.MainTabs.TabIndex);
+  ini.WriteInteger(inisection, 'activetab', MainTabs.TabIndex);
   for i := 1 to maxt do
     if not DefNameOfTab(MainTabs.Pages[i-1].Caption) then
-      ini.WriteString(inisection, Format('tab%dname',[i]), FlaunchMainForm.MainTabs.Pages[i-1].Caption)
+      ini.WriteString(inisection, Format('tab%dname',[i]), MainTabs.Pages[i-1].Caption)
     else
       ini.WriteString(inisection, Format('tab%dname',[i]), '');
 
@@ -479,7 +479,7 @@ procedure TFlaunchMainForm.ChWinView(b: boolean);
 begin
   if b then
     begin
-      FlaunchMainForm.Visible := true;
+      Visible := true;
       Timer1.Enabled := statusbarvis;
       Timer1Timer(Self);
       ShowWindow(Application.Handle, SW_HIDE);
@@ -487,14 +487,14 @@ begin
     end
   else
     begin
-      FlaunchMainForm.Visible := false;
+      Visible := false;
       Timer1.Enabled := False;
     end;
 end;
 
 procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
 begin
-  ChWinView((not nowactive) or not (FlaunchMainForm.Showing));
+  ChWinView((not nowactive) or not (Showing));
 end;
 
 function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -824,8 +824,8 @@ begin
     begin
       if Msg.HotKey = HotKeyID then
         begin
-          nowactive := FlaunchMainForm.Active;
-          ChWinView((not nowactive) or not (FlaunchMainForm.Showing));
+          nowactive := Active;
+          ChWinView((not nowactive) or not (Showing));
         end;
     end;
   inherited;
@@ -1193,14 +1193,14 @@ end;
 
 procedure TFlaunchMainForm.FormActivate(Sender: TObject);
 begin
-  nowactive := FlaunchMainForm.Active;
+  nowactive := Active;
 end;
 
 procedure TFlaunchMainForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
-  canclose := false;
-  Showwindow(Handle, SW_HIDE);
+  CanClose := false;
+  ChWinView(False);
 end;
 
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
@@ -1250,7 +1250,7 @@ begin
     end;
   TrayIcon.Hint := Format('%s %s',[cr_progname, GetFLVersion]);
   if not StartHide then
-    Show
+    ChWinView(True)
   else
     Application.ShowMainForm := False;
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
@@ -1378,14 +1378,14 @@ begin
     end;
   DestroyPanel(tabscount - 1);
   dec(tabscount);
-  FlaunchMainForm.MainTabs.Pages[tabscount].Caption := '';
+  MainTabs.Pages[tabscount].Caption := '';
   MainTabs.Pages[tabscount].TabVisible := false;
   if tabscount = 1 then
     begin
-      FlaunchMainForm.DestroyPanel(0);
+      DestroyPanel(0);
       MainTabs.Pages[0].TabVisible := false;
       MainTabs.TabIndex := 0;
-      FlaunchMainForm.CreatePanel(0);
+      CreatePanel(0);
     end;
   ChangeWndSize;
   LoadLinks;
