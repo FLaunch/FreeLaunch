@@ -141,19 +141,20 @@ type
       //--Ссылка на родительскую панель
       fFather: TFLPanel;
       {*--Поля свойств--*}
-      {**} fLType: byte;
-      {**} fExec: string;
-      {**} fWorkDir: string;
-      {**} fIcon: string;
-      {**} fIconIndex: integer;
-      {**} fParams: string;
-      {**} fDropFiles: boolean;
-      {**} fDropParams: string;
-      {**} fDescr: string;
-      {**} fQues: boolean;
-      {**} fHide: boolean;
-      {**} fPr: byte;
-      {**} fWSt: byte;
+      fLType: byte;
+      fExec: string;
+      fWorkDir: string;
+      fIcon: string;
+      fIconIndex: integer;
+      fIconCache: string;
+      fParams: string;
+      fDropFiles: boolean;
+      fDropParams: string;
+      fDescr: string;
+      fQues: boolean;
+      fHide: boolean;
+      fPr: byte;
+      fWSt: byte;
       {*----------------*}
       //--Цвет кнопок
       fPanelColor: TColor;
@@ -165,6 +166,7 @@ type
       function GetWorkDir: string;
       //--read для свойства Icon
       function GetIcon: string;
+      function GetIconCache: string;
       //--read для свойства Params
       function GetParams: string;
       //--read для свойства DropParams
@@ -192,6 +194,7 @@ type
       property Icon: string read GetIcon write fIcon;
       //--Индекс иконки
       property IconIndex: integer read fIconIndex write fIconIndex;
+      property IconCache: string read GetIconCache write fIconCache;
       //--Параметры
       property Params: string read GetParams write fParams;
       //--Принимать ли перетягиваемые файлы
@@ -395,6 +398,9 @@ type
   end;
 
 implementation
+
+uses
+  IOUtils;
 
 {*******************************}
 {*****-- Класс TFLButton --*****}
@@ -797,6 +803,14 @@ begin
   Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
 end;
 
+function TFLDataItem.GetIconCache: string;
+begin
+  Result := fIconCache;
+  if not Father.ExpandStrings then Exit;
+  Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
+  Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+end;
+
 //--read для свойства Params
 function TFLDataItem.GetParams: string;
 begin
@@ -854,6 +868,8 @@ begin
   {**} else
   {**}   SmoothResize(TempBmp, PushedIconBmp);
   {*---------------------------------------------*}
+  IconCache := ExtractFileNameNoExt(Exec) + '_' + TPath.GetGUIDFileName();
+
   fHasIcon := true;
   TempIcon.Free;
   TempBmp.Free;
