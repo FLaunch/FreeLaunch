@@ -35,6 +35,7 @@ const
   //--Цвет полупрозрачной рамки у кнопки с фокусом
   FocusColor = clRed;
   DraggedColor = clBlue;
+  IconCacheDir = 'IconCache';
 
 type
 
@@ -211,6 +212,7 @@ type
       property Pr: byte read fPr write fPr;
       //--Состояние окна
       property WSt: byte read fWSt write fWSt;
+      function GetIconCacheRaw: string;
   end;
 
   //--Класс описывает страницу данных (матрица данных для кнопок одной вкладки)
@@ -772,6 +774,8 @@ end;
 //--Деструктор
 destructor TFLDataItem.Destroy;
 begin
+  if TFile.Exists(IconCache) then
+    TFile.Delete(IconCache);
   IconBmp.Free;
   PushedIconBmp.Free;
 end;
@@ -809,6 +813,11 @@ begin
   if not Father.ExpandStrings then Exit;
   Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
   Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+end;
+
+function TFLDataItem.GetIconCacheRaw: string;
+begin
+  Result := fIconCache;
 end;
 
 //--read для свойства Params
@@ -868,7 +877,8 @@ begin
   {**} else
   {**}   SmoothResize(TempBmp, PushedIconBmp);
   {*---------------------------------------------*}
-  IconCache := ExtractFileNameNoExt(Exec) + '_' + TPath.GetGUIDFileName();
+  IconCache := '%FL_DIR%' + IconCacheDir + TPath.DirectorySeparatorChar +
+    ExtractFileNameNoExt(Exec) + '_' + TPath.GetGUIDFileName() + '.png';
 
   fHasIcon := true;
   TempIcon.Free;
