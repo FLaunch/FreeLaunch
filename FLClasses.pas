@@ -29,7 +29,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Controls, ExtCtrls, ShellApi, Messages, Graphics, Menus, Dialogs,
-  FLFunctions;
+  FLFunctions, System.Generics.Collections;
 
 const
   //--Цвет полупрозрачной рамки у кнопки с фокусом
@@ -241,15 +241,8 @@ type
       property IsActive[RowNumber, ColNumber: byte]: boolean read GetIsActive;
   end;
 
-  //--Указатель на коллекцию данных
-  PFLDataCollection = ^TFLDataCollection;
-
   //--Коллекция данных - двусвязный список страниц данных ;)
-  TFLDataCollection = packed record
-    PrevNode: PFLDataCollection;
-    Node: TFLDataTable;
-    NextNode: PFLDataCollection;
-  end;
+  TFLDataCollection = TObjectList<TFLDataTable>;
 
   {*--Типы для создания событий--*}
   {**} TButtonClickEvent = procedure(Sender: TObject; Button: TFLButton) of object;
@@ -268,8 +261,6 @@ type
       fLColor, fDColor1, fDColor2: TColor;
       //--Кол-во страниц, колонок и строк
       fPagesCount, fColsCount, fRowsCount: byte;
-      //--Номер текущей страницы
-      fPageNumber: byte;
       //--Ширина и высота кнопок
       fButtonWidth, fButtonHeight: byte;
       //--Зазор между кнопками
@@ -277,9 +268,9 @@ type
       //--Массив кнопок
       fButtons: array of array of TFLButton;
       //--Указатель на коллекцию данных
-      fDataCollection: PFLDataCollection;
-      //--Указатель на текущую страницу данных (активная страница)
-      fCurrentData: PFLDataCollection;
+      fDataCollection: TFLDataCollection;
+      //--Номер текущей страницы данных (активная страница)
+      fCurrentDataIndex: Integer;
       //--Заменять ли в строковых параметрах в ячейках данных переменные FL_*
       fExpandStrings: boolean;
       {*--Переменные FL_*--*}
@@ -315,15 +306,15 @@ type
       //--Установка контекстного меню для кнопок (write для ButtonsPopup)
       procedure SetButtonsPopup(ButtonsPopup: TPopupMenu);
       //--Установка номера текущей страницы (write для PageNumber)
-      procedure SetPageNumber(PageNumber: byte);
+      procedure SetPageNumber(PageNumber: Integer);
       //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
       procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
       //--Определение актуального размера компонента (согласно количеству строк и колонок кнопок, а также их размера. write для ActualSize)
       function GetActualSize: TSize;
       //--Метод возвращает указатель на страницу данных по номеру страницы
-      function GetDataPageByPageNumber(PageNumber: byte): PFLDataCollection;
-      //--Метод возвращает указатель на последнюю страницу данных ("хвост")
-      function GetLastDataPage: PFLDataCollection;
+      function GetDataPageByPageNumber(PageNumber: byte): TFLDataTable;
+      //--Метод возвращает указатель на текущую страницу данных
+      function GetCurrentDataPage: TFLDataTable;
     protected
 
     public
@@ -378,7 +369,7 @@ type
       //--Например: Buttons[0, 0, 0].IsActive
       property LastDraggedButton: TFLButton read GetLastDraggedButton;
       //--Номер текущей страницы
-      property PageNumber: byte read fPageNumber write SetPageNumber;
+      property PageNumber: Integer read fCurrentDataIndex write SetPageNumber;
       //--Актуальный размер компонента
       property ActualSize: TSize read GetActualSize;
       //--Контекстное меню для кнопок
@@ -439,19 +430,19 @@ end;
 //--Инициализация ячейки данных текущей кнопки текущей страницы
 function TFLButton.InitializeData: TFLDataItem;
 begin
-  if not Assigned(Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber]) then
-    Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber] :=
+  if not Assigned(Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber]) then
+    Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber] :=
       TFLDataItem.Create(Father.fButtonWidth, Father.fButtonHeight, Father.fPanelColor);
 
-  Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber].Father := Father;
-  Result := Father.GetDataPageByPageNumber(fCurPage).Node.fItems[fRowNumber, fColNumber];
+  Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber].Father := Father;
+  Result := Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber];
   fCurPage := 255;
 end;
 
 //--Освобождение ячейки данных текущей кнопки текущей страницы
 procedure TFLButton.FreeData;
 begin
-  FreeAndNil(Father.fCurrentData.Node.fItems[fRowNumber, fColNumber]);
+  FreeAndNil(Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber]);
   Repaint;
 end;
 
@@ -468,7 +459,9 @@ var
   DrawColor: TColor;
 begin
   //--Если сейчас выполняется перетягивание этой кнопки, то рисуется рамка цвета DraggedColor
-  if (IsActive) and (Father.fDragNow) and (Self = Father.fLastUsedButton) and (Father.fPageNumber = Father.fDraggedButtonPageNumber) then
+  if (IsActive) and (Father.fDragNow) and (Self = Father.fLastUsedButton) and
+    (Father.fCurrentDataIndex = Father.fDraggedButtonPageNumber)
+  then
     DrawColor := DraggedColor
   else
     if Focused then
@@ -498,7 +491,7 @@ end;
 function TFLButton.GetDataItem: TFLDataItem;
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Данные ячейки [fRowNumber, fColNumber] (совпадающие с координатами кнопки)
-  Result := Father.GetDataPageByPageNumber(fCurPage).Node.Items[fRowNumber, fColNumber];
+  Result := Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber];
   fCurPage := 255;
 end;
 
@@ -506,7 +499,7 @@ end;
 function TFLButton.GetIsActive: boolean;
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Является ли ячейка активной
-  Result := Father.GetDataPageByPageNumber(fCurPage).Node.IsActive[fRowNumber, fColNumber];
+  Result := Father.GetDataPageByPageNumber(fCurPage).IsActive[fRowNumber, fColNumber];
   fCurPage := 255;
 end;
 
@@ -514,7 +507,7 @@ end;
 function TFLButton.GetHasIcon: boolean;
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Ячейка данных с координатами [fRowNumber, fColNumber] -> Имеет ли иконку
-  Result := Father.GetDataPageByPageNumber(fCurPage).Node.Items[fRowNumber, fColNumber].fHasIcon;
+  Result := Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber].fHasIcon;
   fCurPage := 255;
 end;
 
@@ -522,7 +515,7 @@ end;
 procedure TFLButton.SetHasIcon(NewHasIcon: boolean);
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Ячейка данных с координатами [fRowNumber, fColNumber] -> Имеет ли иконку
-  Father.GetDataPageByPageNumber(fCurPage).Node.Items[fRowNumber, fColNumber].fHasIcon := NewHasIcon;
+  Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber].fHasIcon := NewHasIcon;
   fCurPage := 255;
 end;
 
@@ -609,7 +602,7 @@ begin
         BeginDrag(false);
         Father.fDragNow := true;
         //--Запоминаем номер страницы, на которой начали перетаскивать кнопку
-        Father.fDraggedButtonPageNumber := Father.fPageNumber;
+        Father.fDraggedButtonPageNumber := Father.fCurrentDataIndex;
         //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
         Father.fLastUsedButton := Self;
         //--Перерисовываем (чтобы появилась рамка)
@@ -657,7 +650,10 @@ begin
   if not (Source is TFLButton) then Exit;
   (Source as TFLButton).fCurPage := Father.fDraggedButtonPageNumber;
   //--Если перетягиваемый объект - другая активная кнопка, то дропать можно
-  if ((Source as TFLButton).IsActive) and ((Father.fPageNumber <> Father.fDraggedButtonPageNumber) or (Source <> Self)) then Accept := true;
+  if ((Source as TFLButton).IsActive) and
+    ((Father.fCurrentDataIndex <> Father.fDraggedButtonPageNumber) or (Source <> Self))
+  then
+    Accept := true;
 end;
 
 //--Метод генерируется при отпускании перетягиваемого объекта
@@ -666,9 +662,9 @@ var
   TempDataItem: TFLDataItem;
 begin
   {*--Меняем местами две ячейки памяти--*}
-  {**} TempDataItem := Father.fCurrentData.Node.fItems[fRowNumber, fColNumber];
-  {**} Father.fCurrentData.Node.fItems[fRowNumber, fColNumber] := Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).Node.fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber];
-  {**} Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).Node.fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber] := TempDataItem;
+  {**} TempDataItem := Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber];
+  {**} Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber] := Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber];
+  {**} Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber] := TempDataItem;
   {*--Перерисовываем кнопку-источник и кнопку-приемник--*}
   {**} Repaint;
   {**} (Source as TFLButton).Repaint;
@@ -957,52 +953,23 @@ end;
 
 //--Метод возвращает указатель на страницу данных по номеру страницы
 //--Входной параметр: номер страницы
-function TFLPanel.GetDataPageByPageNumber(PageNumber: byte): PFLDataCollection;
-var
-  DataCurrent, DataNext: PFLDataCollection;
+function TFLPanel.GetDataPageByPageNumber(PageNumber: byte): TFLDataTable;
 begin
-  Result := fCurrentData;
-  if PageNumber = 255 then Exit;
-  Result := nil;
-  {*--Пробегаемся по коллекции данных в поиске страницы с нужным номером--*}
-  {**} DataCurrent := fDataCollection;
-  {**} repeat
-  {**}   if DataCurrent.Node.fPageNumber = PageNumber then
-  {**}     begin
-  {**}       Result := DataCurrent;
-  {**}       Exit;
-  {**}     end;
-  {**}   DataNext := DataCurrent.NextNode;
-  {**}   DataCurrent := DataNext;
-  {**} until
-  {**}   DataCurrent = nil;
-  {*----------------------------------------------------------------------*}
-end;
-
-//--Метод возвращает указатель на последнюю страницу данных ("хвост")
-function TFLPanel.GetLastDataPage: PFLDataCollection;
-var
-  DataCurrent, DataNext: PFLDataCollection;
-begin
-  Result := nil;
-  {*--Пробегаемся по коллекции данных до конца--*}
-  {**} DataCurrent := fDataCollection;
-  {**} while DataCurrent.NextNode <> nil do
-  {**}   begin
-  {**}     DataNext := DataCurrent.NextNode;
-  {**}     DataCurrent := DataNext;
-  {**}   end;
-  {*----------------------------------------------------------------------*}
-  Result := DataCurrent;
+  Result := GetCurrentDataPage;
+  if PageNumber = 255 then
+    Exit;
+  Result := fDataCollection[PageNumber];
 end;
 
 //--Конструктор
-//--Входные параметры: родительский компонент, кол-во страниц, кол-во колонок, кол-во рядов, зазор между кнопками, шиирна кнопок, высота кнопок, цвет панели
-constructor TFLPanel.Create(AOwner: TComponent; PagesCount: byte = 3; ColsCount: byte = 10; RowsCount: byte = 2; Padding: byte = 1; ButtonsWidth: byte = 32; ButtonsHeight: byte = 32; Color: TColor = clBtnFace);
+//--Входные параметры: родительский компонент, кол-во страниц, кол-во колонок,
+//--кол-во рядов, зазор между кнопками, шиирна кнопок, высота кнопок, цвет панели
+constructor TFLPanel.Create(AOwner: TComponent; PagesCount: byte = 3;
+  ColsCount: byte = 10; RowsCount: byte = 2; Padding: byte = 1;
+  ButtonsWidth: byte = 32; ButtonsHeight: byte = 32; Color: TColor = clBtnFace);
 var
   TempColor: TColor;
   i, j: byte;
-  DataCurrent, DataPrev: PFLDataCollection;
 begin
   inherited Create(AOwner);
   Parent := TWinControl(AOwner);
@@ -1023,29 +990,14 @@ begin
   fPadding := Padding;
   fButtonWidth := ButtonsWidth + 4;
   fButtonHeight := ButtonsHeight + 4;
-  fPageNumber := 0;
   fFocusedButton := nil;
   fLastUsedButton := nil;
   fExpandStrings := true;
   {*--Инициализируем коллекцию данных--*}
+  fDataCollection := TFLDataCollection.Create;
   {**} for i := 0 to fPagesCount - 1 do
-  {**}   begin
-  {**}     New(DataCurrent);
-  {**}     if i > 0 then
-  {**}       begin
-  {**}         DataPrev.NextNode := DataCurrent;
-  {**}         DataCurrent.PrevNode := DataPrev;
-  {**}       end
-  {**}     else
-  {**}       begin
-  {**}         DataCurrent.PrevNode := nil;
-  {**}         fDataCollection := DataCurrent;
-  {**}       end;
-  {**}     DataCurrent.NextNode := nil;
-  {**}     DataCurrent.Node := TFLDataTable.Create(i, fColsCount, fRowsCount);
-  {**}     DataPrev := DataCurrent;
-  {**}   end;
-  {**} fCurrentData := fDataCollection;
+  {**}   fDataCollection.Add(TFLDataTable.Create(i, fColsCount, fRowsCount));
+  {**} fCurrentDataIndex := 0;
   {*-----------------------------------*}
   //--Отводим память под кнопки
   SetLength(fButtons, fRowsCount, fColsCount);
@@ -1072,7 +1024,6 @@ end;
 destructor TFLPanel.Destroy;
 var
   i, j: byte;
-  DataCurrent, DataNext: PFLDataCollection;
 begin
   {*--Уничтожаем все кнопки--*}
   {**} for i := 0 to fRowsCount - 1 do
@@ -1080,14 +1031,7 @@ begin
   {**}     fButtons[i, j].Free;
   {**} SetLength(fButtons, 0, 0);
   {*--Освобождаем коллекцию данных--*}
-  {**} DataCurrent := fDataCollection;
-  {**} repeat
-  {**}   DataNext := DataCurrent.NextNode;
-  {**}   DataCurrent.Node.Destroy;
-  {**}   Dispose(DataCurrent);
-  {**}   DataCurrent := DataNext;
-  {**} until
-  {**}   DataCurrent = nil;
+  {**} fDataCollection.Free;
   {*--------------------------------*}
   inherited Destroy;
 end;
@@ -1096,26 +1040,26 @@ end;
 //--Входные параметры: номер страницы, номер строки, номер колонки
 procedure TFLPanel.InitializeDataItem(PageNumber, RowNumber, ColNumber: byte);
 begin
-  if PageNumber = fPageNumber then
-    fCurrentData.Node.fItems[RowNumber, ColNumber] := TFLDataItem.Create(fButtonWidth, fButtonHeight, fPanelColor)
+  if PageNumber = fCurrentDataIndex then
+    GetCurrentDataPage.fItems[RowNumber, ColNumber] := TFLDataItem.Create(fButtonWidth, fButtonHeight, fPanelColor)
   else
-    GetDataPageByPageNumber(PageNumber).Node.fItems[RowNumber, ColNumber] := TFLDataItem.Create(fButtonWidth, fButtonHeight, fPanelColor);
+    GetDataPageByPageNumber(PageNumber).fItems[RowNumber, ColNumber] := TFLDataItem.Create(fButtonWidth, fButtonHeight, fPanelColor);
 end;
 
 //--Меняет местами две страницы данных
 procedure TFLPanel.SwapData(PageNumber1, PageNumber2: byte);
 var
-  Page1, Page2: PFLDataCollection;
-  TempPageNumber: byte;
+  Page1, Page2: TFLDataTable;
+  TempPageNumber: Integer;
 begin
   //--Ищем страницу данных 1
   Page1 := GetDataPageByPageNumber(PageNumber1);
   //--Ищем страницу данных 2
   Page2 := GetDataPageByPageNumber(PageNumber2);
   {*--Делаем обмен индексов--*}
-  {**} TempPageNumber := Page1.Node.fPageNumber;
-  {**} Page1.Node.fPageNumber := Page2.Node.fPageNumber;
-  {**} Page2.Node.fPageNumber := TempPageNumber;
+  {**} TempPageNumber := Page1.fPageNumber;
+  {**} Page1.fPageNumber := Page2.fPageNumber;
+  {**} Page2.fPageNumber := TempPageNumber;
   {*-------------------------*}
   Repaint;
 end;
@@ -1123,45 +1067,19 @@ end;
 //--Очищает страницу данных
 procedure TFLPanel.ClearPage(PageNumber: byte);
 begin
-  GetDataPageByPageNumber(PageNumber).Node.Clear;
+  GetDataPageByPageNumber(PageNumber).Clear;
   Repaint;
 end;
 
 //--Удаляет страницу данных
 //--Возвращает номер страницы, которая должна стать активной после удаления
 function TFLPanel.DeletePage(PageNumber: Byte): Byte;
-var
-  DataCurrent, DataNext: PFLDataCollection;
 begin
   Result := PageNumber;
   if PageNumber = fPagesCount - 1 then
     Result := PageNumber - 1;
-  //--Ищем страницу данных удаляемой страницы
-  DataCurrent := GetDataPageByPageNumber(PageNumber);
-  //--Если существует предыдущая страница
-  if DataCurrent.PrevNode <> nil then
-    //--То связываем предыдущую со следующей
-    DataCurrent.PrevNode.NextNode := DataCurrent.NextNode;
-  //--Если существует следующая страница
-  if DataCurrent.NextNode <> nil then
-    //--То связываем следующую с предыдущей
-    DataCurrent.NextNode.PrevNode := DataCurrent.PrevNode;
-  if DataCurrent.PrevNode = nil then
-    fDataCollection := DataCurrent.NextNode;
   {*--Удаляем из памяти страницу данных--*}
-  {**} DataCurrent.Node.Destroy;
-  {**} FreeMem(DataCurrent, SizeOf(DataCurrent));
-  {*--Пробегаемся по коллекции данных и уменьшаем на 1 все номера страниц, большие чем удаленная--*}
-  {**} DataCurrent := fDataCollection;
-  {**} repeat
-  {**}   if DataCurrent.Node.fPageNumber > PageNumber then
-  {**}     begin
-  {**}       Dec(DataCurrent.Node.fPageNumber);
-  {**}     end;
-  {**}   DataNext := DataCurrent.NextNode;
-  {**}   DataCurrent := DataNext;
-  {**} until
-  {**}   DataCurrent = nil;
+  fDataCollection.Delete(PageNumber);
   {*----------------------------------------------------------------------------------------------*}
   Dec(fPagesCount);
   SetPageNumber(Result);
@@ -1169,21 +1087,10 @@ end;
 
 //--Создает страницу данных
 function TFLPanel.AddPage: Byte;
-var
-  DataNew, DataLast: PFLDataCollection;
 begin
   Result := fPagesCount;
-  //--Находим последнюю страницу данных ("хвост")
-  //--(А может не париться и добавлять в начало списка?)
-  DataLast := GetLastDataPage;
-  //--Отводим память под новую страницу
-  GetMem(DataNew, SizeOf(DataNew));
-  {*--Связываем страницу с коллекцией--*}
-  {**} DataLast.NextNode := DataNew;
-  {**} DataNew.PrevNode := DataLast;
-  {**} DataNew.NextNode := nil;
   {*-----------------------------------*}
-  DataNew.Node := TFLDataTable.Create(Result, fColsCount, fRowsCount);
+  Result := fDataCollection.Add(TFLDataTable.Create(Result, fColsCount, fRowsCount));
   Inc(fPagesCount);
   SetPageNumber(Result);
 end;
@@ -1223,6 +1130,11 @@ begin
   Result := fButtons[RowNumber][ColNumber];
 end;
 
+function TFLPanel.GetCurrentDataPage: TFLDataTable;
+begin
+  Result := fDataCollection[fCurrentDataIndex];
+end;
+
 //--Возвращает кнопку по индексам (произвольная страница)
 //--Входные параметры: номер страницы, ряда и колонки
 function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: byte): TFLButton;
@@ -1246,11 +1158,10 @@ end;
 
 //--Установка номера текущей страницы
 //--Входной параметр: номер страницы
-procedure TFLPanel.SetPageNumber(PageNumber: byte);
+procedure TFLPanel.SetPageNumber(PageNumber: Integer);
 begin
-  fPageNumber := PageNumber;
   //--Устанавливаем указатель на текущую страницу данных <- указатель на страницу с выбранным номером
-  fCurrentData := GetDataPageByPageNumber(fPageNumber);
+  fCurrentDataIndex := PageNumber;
   Repaint;
 end;
 
