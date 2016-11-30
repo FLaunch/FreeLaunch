@@ -53,7 +53,7 @@ type
   TFLButton = class(TCustomControl)
     private
       //--Если 255, то используется текущая страница, иначе этот номер страницы
-      fCurPage: byte;
+      fCurPage: Integer;
       //--Флаг, определяющий нажата ли в данный момент кнопка
       fPushed: boolean;
       //--Флаг, необходимый для предотвращения нажатия на кнопку при перетаскивании
@@ -61,7 +61,7 @@ type
       //--Цвет полупрозрачной рамки
       fFrameColor: TColor;
       //--Номер строки и колонки данной кнопки
-      fRowNumber, fColNumber: byte;
+      fRowNumber, fColNumber: Integer;
       //--Возвращает ссылку на родительскую панель (read для свойства Father)
       function GetFather: TFLPanel;
       //--Метод рисует полупрозрачную рамку
@@ -90,7 +90,7 @@ type
 
     public
       //--Конструктор
-      constructor Create(AOwner: TComponent; RowNumber, ColNumber: byte);
+      constructor Create(AOwner: TComponent; RowNumber, ColNumber: Integer);
       //--Деструктор
       destructor Destroy; override;
       //--Инициализация ячейки данных текущей кнопки текущей страницы
@@ -102,8 +102,8 @@ type
       //--Цвет полупрозрачной рамки
       property FrameColor: TColor read fFrameColor write SetFrameColor;
       //--Номер строки и колонки данной кнопки
-      property RowNumber: byte read fRowNumber;
-      property ColNumber: byte read fColNumber;
+      property RowNumber: integer read fRowNumber;
+      property ColNumber: integer read fColNumber;
       //--Ячейка данных (объект, рабочая папка и т.д.) текущей кнопки текущей страницы
       property Data: TFLDataItem read GetDataItem;
       //--Является ли кнопка активной (занятой чем-либо)
@@ -142,7 +142,7 @@ type
       //--Ссылка на родительскую панель
       fFather: TFLPanel;
       {*--Поля свойств--*}
-      fLType: byte;
+      fLType: integer;
       fExec: string;
       fWorkDir: string;
       fIcon: string;
@@ -154,8 +154,8 @@ type
       fDescr: string;
       fQues: boolean;
       fHide: boolean;
-      fPr: byte;
-      fWSt: byte;
+      fPr: integer;
+      fWSt: integer;
       {*----------------*}
       //--Цвет кнопок
       fPanelColor: TColor;
@@ -178,7 +178,7 @@ type
       //--Изображение нажатой иконки
       PushedIconBmp: TBitMap;
       //--Конструктор
-      constructor Create(ButtonWidth, ButtonHeight: byte; PanelColor: TColor);
+      constructor Create(ButtonWidth, ButtonHeight: integer; PanelColor: TColor);
       //--Деструктор
       destructor Destroy; override;
       //--Ссылка на родительскую панель
@@ -186,7 +186,7 @@ type
       //--Функция генерирует иконки (обычную и "нажатую" для ячейки памяти)
       procedure AssignIcons;
       //--Тип кнопки (0 - исполняемый файл, 1 - файл, папка)
-      property LType: byte read fLType write fLType;
+      property LType: integer read fLType write fLType;
       //--Путь к объекту
       property Exec: string read GetExec write fExec;
       //--Рабочая папка
@@ -209,9 +209,9 @@ type
       //--Скрывать ли окно FL при запуске
       property Hide: boolean read fHide write fHide;
       //--Приоритет запущенного процесса
-      property Pr: byte read fPr write fPr;
+      property Pr: integer read fPr write fPr;
       //--Состояние окна
-      property WSt: byte read fWSt write fWSt;
+      property WSt: integer read fWSt write fWSt;
       function GetIconCacheRaw: string;
   end;
 
@@ -219,26 +219,30 @@ type
   TFLDataTable = class
     private
       //--Размеры таблицы (кол-во колонок и строк)
-      fColsCount, fRowsCount: byte;
+      fColsCount, fRowsCount: integer;
       //--Номер страницы
-      fPageNumber: byte;
+      fPageNumber: integer;
       //--Ячейки данных
       fItems: array of array of TFLDataItem;
       //--Возвращает ячейку по индексам (read для Items)
-      function GetItem(RowNumber, ColNumber: byte): TFLDataItem;
+      function GetItem(RowNumber, ColNumber: integer): TFLDataItem;
       //--Определяет, является ли ячейка активной (read для IsActive)
-      function GetIsActive(RowNumber, ColNumber: byte): boolean;
+      function GetIsActive(RowNumber, ColNumber: integer): boolean;
+      procedure SetColsCount(const Value: Integer);
+      procedure SetRowsCount(const Value: Integer);
     public
       //--Конструктор
-      constructor Create(PageNumber, ColsCount, RowsCount: byte);
+      constructor Create(PageNumber, ColsCount, RowsCount: integer);
       //--Деструктор
       destructor Destroy; override;
       //--Очищение всей страницы данных
       procedure Clear;
       //--Ячейка данных по ее индексам
-      property Items[RowNumber, ColNumber: byte]: TFLDataItem read GetItem;
+      property Items[RowNumber, ColNumber: integer]: TFLDataItem read GetItem;
       //--Является ли ячейка активной
-      property IsActive[RowNumber, ColNumber: byte]: boolean read GetIsActive;
+      property IsActive[RowNumber, ColNumber: integer]: boolean read GetIsActive;
+      property ColsCount: Integer read FColsCount write SetColsCount;
+      property RowsCount: Integer read FRowsCount write SetRowsCount;
   end;
 
   //--Коллекция данных - двусвязный список страниц данных ;)
@@ -260,11 +264,11 @@ type
       //--Светлый и два темных цвета панели (тени)
       fLColor, fDColor1, fDColor2: TColor;
       //--Кол-во страниц, колонок и строк
-      fPagesCount, fColsCount, fRowsCount: byte;
+      fPagesCount, fColsCount, fRowsCount: Integer;
       //--Ширина и высота кнопок
-      fButtonWidth, fButtonHeight: byte;
+      fButtonWidth, fButtonHeight: integer;
       //--Зазор между кнопками
-      fPadding: byte;
+      fPadding: integer;
       //--Массив кнопок
       fButtons: array of array of TFLButton;
       //--Указатель на коллекцию данных
@@ -296,13 +300,13 @@ type
       //--Контекстное меню для кнопок
       fButtonsPopup: TPopupMenu;
       //--Номер страницы, на которой начали перетаскивать кнопку
-      fDraggedButtonPageNumber: byte;
+      fDraggedButtonPageNumber: integer;
       //--Возвращает ссылку на последнюю перетаскиваемую кнопку (read для LastDraggedButton)
       function GetLastDraggedButton: TFLButton;
       //--Возвращает кнопку по индексам (текущая активная страница) (read для CurButtons)
-      function GetCurButton(RowNumber, ColNumber: byte): TFLButton;
+      function GetCurButton(RowNumber, ColNumber: integer): TFLButton;
       //--Возвращает кнопку по индексам (произвольная страница) (read для Buttons)
-      function GetButton(PageNumber, RowNumber, ColNumber: byte): TFLButton;
+      function GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButton;
       //--Установка контекстного меню для кнопок (write для ButtonsPopup)
       procedure SetButtonsPopup(ButtonsPopup: TPopupMenu);
       //--Установка номера текущей страницы (write для PageNumber)
@@ -312,28 +316,31 @@ type
       //--Определение актуального размера компонента (согласно количеству строк и колонок кнопок, а также их размера. write для ActualSize)
       function GetActualSize: TSize;
       //--Метод возвращает указатель на страницу данных по номеру страницы
-      function GetDataPageByPageNumber(PageNumber: byte): TFLDataTable;
+      function GetDataPageByPageNumber(PageNumber: integer): TFLDataTable;
       //--Метод возвращает указатель на текущую страницу данных
       function GetCurrentDataPage: TFLDataTable;
+      procedure SetColsCount(const Value: Integer);
+      procedure SetPagesCount(const Value: Integer);
+      procedure SetRowsCount(const Value: Integer);
     protected
 
     public
       //--Конструктор
-      constructor Create(AOwner: TComponent; PagesCount: byte = 3; ColsCount: byte = 10;
-        RowsCount: byte = 2; Padding: byte = 1; ButtonsWidth: byte = 32; ButtonsHeight: byte = 32;
+      constructor Create(AOwner: TComponent; PagesCount: integer = 3; ColsCount: integer = 10;
+        RowsCount: integer = 2; Padding: integer = 1; ButtonsWidth: integer = 32; ButtonsHeight: integer = 32;
         Color: TColor = clBtnFace);
       //--Деструктор
       destructor Destroy; override;
       //--Инициализация ячейки данных
-      procedure InitializeDataItem(PageNumber, RowNumber, ColNumber: byte);
+      procedure InitializeDataItem(PageNumber, RowNumber, ColNumber: integer);
       //--Меняет местами две страницы данных
-      procedure SwapData(PageNumber1, PageNumber2: byte);
+      procedure SwapData(PageNumber1, PageNumber2: integer);
       //--Очищает страницу данных
-      procedure ClearPage(PageNumber: byte);
+      procedure ClearPage(PageNumber: integer);
       //--Удаляет страницу данных
-      function DeletePage(PageNumber: byte): Byte;
+      function DeletePage(PageNumber: integer): integer;
       //--Создает страницу данных
-      function AddPage: Byte;
+      function AddPage: integer;
       //--Перерисовка всех кнопок
       procedure FullRepaint;
       //--Установка переменной FL_*
@@ -345,11 +352,11 @@ type
       //--Ссылка на последнюю задействованную кнопку
       property LastUsedButton: TFLButton read fLastUsedButton;
       //--Кол-во страниц, колонок и строк
-      property PagesCount: byte read fPagesCount;
-      property ColsCount: byte read fColsCount;
-      property RowsCount: byte read fRowsCount;
+      property PagesCount: Integer read fPagesCount write SetPagesCount;
+      property ColsCount: Integer read fColsCount write SetColsCount;
+      property RowsCount: Integer read fRowsCount write SetRowsCount;
       //--Кнопка по ее индексам (текущая активная страница)
-      property CurButtons[RowNumber, ColNumber: byte]: TFLButton read GetCurButton;
+      property CurButtons[RowNumber, ColNumber: integer]: TFLButton read GetCurButton;
       //--Кнопка по ее индексам (произвольная страница)
       //--После доступа сразу НЕОБХОДИМО выполнить один из следующих свойств/методов:
       //--Data (GetDataItem)
@@ -358,7 +365,7 @@ type
       //--InitializeData
       //--Проще говоря, только доступ/операции с данными
       //--Например: Buttons[0, 0, 0].IsActive
-      property Buttons[PageNumber, RowNumber, ColNumber: byte]: TFLButton read GetButton;
+      property Buttons[PageNumber, RowNumber, ColNumber: integer]: TFLButton read GetButton;
       //--Последняя перетаскиваемая кнопка
       //--После доступа сразу НЕОБХОДИМО выполнить один из следующих свойств/методов:
       //--Data (GetDataItem)
@@ -401,7 +408,7 @@ uses
 
 //--Конструктор класса
 //--Входные параметры: родительский компонент, номер ряда, номер колонки
-constructor TFLButton.Create(AOwner: TComponent; RowNumber, ColNumber: byte);
+constructor TFLButton.Create(AOwner: TComponent; RowNumber, ColNumber: integer);
 begin
   inherited Create(AOwner);
   Parent := TWinControl(AOwner);
@@ -755,7 +762,7 @@ end;
 
 //--Конструктор
 //--Входные параметры: ширина кнопки, высота кнопки
-constructor TFLDataItem.Create(ButtonWidth, ButtonHeight: byte; PanelColor: TColor);
+constructor TFLDataItem.Create(ButtonWidth, ButtonHeight: integer; PanelColor: TColor);
 begin
   fPanelColor := PanelColor;
   fHasIcon := false;
@@ -887,7 +894,7 @@ end;
 
 //--Конструктор
 //--Входные параметры: номер страницы, кол-во колонок и рядов
-constructor TFLDataTable.Create(PageNumber, ColsCount, RowsCount: byte);
+constructor TFLDataTable.Create(PageNumber, ColsCount, RowsCount: integer);
 begin
   fPageNumber := PageNumber;
   fColsCount := ColsCount;
@@ -899,7 +906,7 @@ end;
 //--Деструктор
 destructor TFLDataTable.Destroy;
 var
-  i, j: byte;
+  i, j: integer;
 begin
   //--Уничтожаем созданные ячейки
   for i := 0 to fRowsCount - 1 do
@@ -912,7 +919,7 @@ end;
 //--Очищение всей страницы данных
 procedure TFLDataTable.Clear;
 var
-  i, j: byte;
+  i, j: integer;
 begin
   //--Уничтожаем созданные ячейки
   for i := 0 to fRowsCount - 1 do
@@ -926,14 +933,64 @@ end;
 
 //--Возвращает ячейку по индексам
 //--Входные параметры: номер ряда и колонки
-function TFLDataTable.GetItem(RowNumber, ColNumber: byte): TFLDataItem;
+function TFLDataTable.GetItem(RowNumber, ColNumber: integer): TFLDataItem;
 begin
   Result := fItems[RowNumber][ColNumber];
 end;
 
+procedure TFLDataTable.SetColsCount(const Value: Integer);
+var
+  i, j: Integer;
+begin
+  if fColsCount = Value then
+    Exit;
+
+  if fColsCount > Value then
+    for i := 0 to fRowsCount - 1 do
+    begin
+      for j := Value to fColsCount - 1 do
+        if Assigned(fItems[i][j]) then
+          fItems[i][j].Destroy;
+
+      SetLength(fItems[i], Value);
+    end
+  else
+    for i := 0 to fRowsCount - 1 do
+      SetLength(fItems[i], Value);
+
+  fColsCount := Value;
+end;
+
+procedure TFLDataTable.SetRowsCount(const Value: Integer);
+var
+  i, j: Integer;
+begin
+  if fRowsCount = Value then
+    Exit;
+
+  if fRowsCount > Value then
+  begin
+    for i := Value to fRowsCount - 1 do
+      for j := 0 to fColsCount - 1 do
+        if Assigned(fItems[i][j]) then
+          fItems[i][j].Destroy;
+
+    SetLength(fItems, Value);
+  end
+  else
+  begin
+    SetLength(fItems, Value);
+
+    for i := fRowsCount to Value - 1 do
+      SetLength(fItems[i], fColsCount);
+  end;
+
+  fRowsCount := Value;
+end;
+
 //--Определяет, является ли ячейка активной
 //--Входные параметры: номер ряда и колонки
-function TFLDataTable.GetIsActive(RowNumber, ColNumber: byte): boolean;
+function TFLDataTable.GetIsActive(RowNumber, ColNumber: integer): boolean;
 begin
   //--Ячейка активна, если класс, ее описывающий, создан
   Result := Assigned(fItems[RowNumber][ColNumber]);
@@ -953,7 +1010,7 @@ end;
 
 //--Метод возвращает указатель на страницу данных по номеру страницы
 //--Входной параметр: номер страницы
-function TFLPanel.GetDataPageByPageNumber(PageNumber: byte): TFLDataTable;
+function TFLPanel.GetDataPageByPageNumber(PageNumber: integer): TFLDataTable;
 begin
   Result := GetCurrentDataPage;
   if PageNumber = 255 then
@@ -964,12 +1021,12 @@ end;
 //--Конструктор
 //--Входные параметры: родительский компонент, кол-во страниц, кол-во колонок,
 //--кол-во рядов, зазор между кнопками, шиирна кнопок, высота кнопок, цвет панели
-constructor TFLPanel.Create(AOwner: TComponent; PagesCount: byte = 3;
-  ColsCount: byte = 10; RowsCount: byte = 2; Padding: byte = 1;
-  ButtonsWidth: byte = 32; ButtonsHeight: byte = 32; Color: TColor = clBtnFace);
+constructor TFLPanel.Create(AOwner: TComponent; PagesCount: integer = 3;
+  ColsCount: integer = 10; RowsCount: integer = 2; Padding: integer = 1;
+  ButtonsWidth: integer = 32; ButtonsHeight: integer = 32; Color: TColor = clBtnFace);
 var
   TempColor: TColor;
-  i, j: byte;
+  i, j: integer;
 begin
   inherited Create(AOwner);
   Parent := TWinControl(AOwner);
@@ -1023,7 +1080,7 @@ end;
 //--Деструктор
 destructor TFLPanel.Destroy;
 var
-  i, j: byte;
+  i, j: integer;
 begin
   {*--Уничтожаем все кнопки--*}
   {**} for i := 0 to fRowsCount - 1 do
@@ -1038,7 +1095,7 @@ end;
 
 //--Инициализация ячейки данных
 //--Входные параметры: номер страницы, номер строки, номер колонки
-procedure TFLPanel.InitializeDataItem(PageNumber, RowNumber, ColNumber: byte);
+procedure TFLPanel.InitializeDataItem(PageNumber, RowNumber, ColNumber: integer);
 begin
   if PageNumber = fCurrentDataIndex then
     GetCurrentDataPage.fItems[RowNumber, ColNumber] := TFLDataItem.Create(fButtonWidth, fButtonHeight, fPanelColor)
@@ -1047,7 +1104,7 @@ begin
 end;
 
 //--Меняет местами две страницы данных
-procedure TFLPanel.SwapData(PageNumber1, PageNumber2: byte);
+procedure TFLPanel.SwapData(PageNumber1, PageNumber2: integer);
 var
   Page1, Page2: TFLDataTable;
   TempPageNumber: Integer;
@@ -1065,7 +1122,7 @@ begin
 end;
 
 //--Очищает страницу данных
-procedure TFLPanel.ClearPage(PageNumber: byte);
+procedure TFLPanel.ClearPage(PageNumber: integer);
 begin
   GetDataPageByPageNumber(PageNumber).Clear;
   Repaint;
@@ -1073,7 +1130,7 @@ end;
 
 //--Удаляет страницу данных
 //--Возвращает номер страницы, которая должна стать активной после удаления
-function TFLPanel.DeletePage(PageNumber: Byte): Byte;
+function TFLPanel.DeletePage(PageNumber: integer): integer;
 begin
   Result := PageNumber;
   if PageNumber = fPagesCount - 1 then
@@ -1086,7 +1143,7 @@ begin
 end;
 
 //--Создает страницу данных
-function TFLPanel.AddPage: Byte;
+function TFLPanel.AddPage: integer;
 begin
   Result := fPagesCount;
   {*-----------------------------------*}
@@ -1098,7 +1155,7 @@ end;
 //--Перерисовка всех кнопок
 procedure TFLPanel.FullRepaint;
 var
-  i, j: byte;
+  i, j: integer;
 begin
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
@@ -1125,7 +1182,7 @@ end;
 
 //--Возвращает кнопку по индексам (текущая активная страница)
 //--Входные параметры: номер ряда и колонки
-function TFLPanel.GetCurButton(RowNumber, ColNumber: byte): TFLButton;
+function TFLPanel.GetCurButton(RowNumber, ColNumber: integer): TFLButton;
 begin
   Result := fButtons[RowNumber][ColNumber];
 end;
@@ -1137,7 +1194,7 @@ end;
 
 //--Возвращает кнопку по индексам (произвольная страница)
 //--Входные параметры: номер страницы, ряда и колонки
-function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: byte): TFLButton;
+function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButton;
 begin
   fButtons[RowNumber][ColNumber].fCurPage := PageNumber;
   Result := fButtons[RowNumber][ColNumber];
@@ -1147,13 +1204,50 @@ end;
 //--Входной параметр: ссылка на меню
 procedure TFLPanel.SetButtonsPopup(ButtonsPopup: TPopupMenu);
 var
-  i, j: byte;
+  i, j: integer;
 begin
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
       begin
         fButtons[i, j].PopupMenu := ButtonsPopup;
       end;
+end;
+
+procedure TFLPanel.SetColsCount(const Value: Integer);
+var
+  i, j: integer;
+  DataTable: TFLDataTable;
+begin
+  if fColsCount = Value then
+    Exit;
+
+  for DataTable in fDataCollection do
+    DataTable.ColsCount := Value;
+
+  if fColsCount > Value then
+    for i := 0 to fRowsCount - 1 do
+    begin
+      for j := Value to fColsCount - 1 do
+        if Assigned(fButtons[i][j]) then
+          fButtons[i][j].Free;
+
+      SetLength(fButtons[i], Value);
+    end
+  else
+    for i := 0 to fRowsCount - 1 do
+    begin
+      SetLength(fButtons[i], Value);
+
+      for j := fColsCount to Value - 1 do
+      begin
+        fButtons[i, j] := TFLButton.Create(Self, i, j);
+
+        fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
+        fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
+      end;
+    end;
+
+  fColsCount := Value;
 end;
 
 //--Установка номера текущей страницы
@@ -1163,6 +1257,59 @@ begin
   //--Устанавливаем указатель на текущую страницу данных <- указатель на страницу с выбранным номером
   fCurrentDataIndex := PageNumber;
   Repaint;
+end;
+
+procedure TFLPanel.SetPagesCount(const Value: Integer);
+var
+  i: Integer;
+begin
+  fDataCollection.Count := Value;
+
+  for i := fPagesCount to Value - 1 do
+    fDataCollection.Items[i] := TFLDataTable.Create(i, fColsCount, fRowsCount);
+
+  fPagesCount := Value;
+end;
+
+procedure TFLPanel.SetRowsCount(const Value: Integer);
+var
+  i, j: integer;
+  DataTable: TFLDataTable;
+begin
+  if fRowsCount = Value then
+    Exit;
+
+  for DataTable in fDataCollection do
+    DataTable.RowsCount := Value;
+
+  if fRowsCount > Value then
+  begin
+    for i := Value to fRowsCount - 1 do
+      for j := 0 to fColsCount - 1 do
+        if Assigned(fButtons[i][j]) then
+          fButtons[i][j].Free;
+
+    SetLength(fButtons, Value);
+  end
+  else
+  begin
+    SetLength(fButtons, Value);
+
+    for i := fRowsCount to Value - 1 do
+    begin
+      SetLength(fButtons[i], fColsCount);
+
+      for j := 0 to fColsCount - 1 do
+      begin
+        fButtons[i, j] := TFLButton.Create(Self, i, j);
+
+        fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
+        fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
+      end;
+    end;
+  end;
+
+  fRowsCount := Value;
 end;
 
 //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
