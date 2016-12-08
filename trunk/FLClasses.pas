@@ -161,6 +161,8 @@ type
       fPanelColor: TColor;
       //--‘лаг, определ€юший, установлена ли иконка
       fHasIcon: boolean;
+      FHeight: Integer;
+      FWidth: Integer;
       //--read дл€ свойства Exec
       function GetExec: string;
       //--read дл€ свойства WorkDir
@@ -172,6 +174,8 @@ type
       function GetParams: string;
       //--read дл€ свойства DropParams
       function GetDropParams: string;
+      procedure SetHeight(const Value: Integer);
+      procedure SetWidth(const Value: Integer);
     public
       //--»зображение иконки
       IconBmp: TBitMap;
@@ -212,6 +216,8 @@ type
       property Pr: integer read fPr write fPr;
       //--—осто€ние окна
       property WSt: integer read fWSt write fWSt;
+      property Height: Integer read FHeight write SetHeight;
+      property Width: Integer read FWidth write SetWidth;
       function GetIconCacheRaw: string;
   end;
 
@@ -322,6 +328,8 @@ type
       procedure SetColsCount(const Value: Integer);
       procedure SetPagesCount(const Value: Integer);
       procedure SetRowsCount(const Value: Integer);
+      procedure SetButtonWidth(const Value: integer);
+      procedure SetButtonHeight(const Value: Integer);
     protected
 
     public
@@ -355,6 +363,8 @@ type
       property PagesCount: Integer read fPagesCount write SetPagesCount;
       property ColsCount: Integer read fColsCount write SetColsCount;
       property RowsCount: Integer read fRowsCount write SetRowsCount;
+      property ButtonWidth: Integer read FButtonWidth write SetButtonWidth;
+      property ButtonHeight: Integer read FButtonHeight write SetButtonHeight;
       //-- нопка по ее индексам (текуща€ активна€ страница)
       property CurButtons[RowNumber, ColNumber: integer]: TFLButton read GetCurButton;
       //-- нопка по ее индексам (произвольна€ страница)
@@ -766,6 +776,8 @@ constructor TFLDataItem.Create(ButtonWidth, ButtonHeight: integer; PanelColor: T
 begin
   fPanelColor := PanelColor;
   fHasIcon := false;
+  FHeight := ButtonHeight;
+  FWidth := ButtonWidth;
   IconBmp := TBitMap.Create;
   IconBmp.Width := ButtonWidth - 4;
   IconBmp.Height := ButtonHeight - 4;
@@ -799,6 +811,22 @@ begin
   if not Father.ExpandStrings then Exit;
   Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
   Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+end;
+
+procedure TFLDataItem.SetHeight(const Value: Integer);
+begin
+  FHeight := Value;
+
+  IconBmp.Height := FHeight - 4;
+  PushedIconBmp.Height := FHeight - 7;
+end;
+
+procedure TFLDataItem.SetWidth(const Value: Integer);
+begin
+  FWidth := Value;
+
+  IconBmp.Width := FWidth - 4;
+  PushedIconBmp.Width := FWidth - 7;
 end;
 
 //--read дл€ свойства Icon
@@ -1200,6 +1228,26 @@ begin
   Result := fButtons[RowNumber][ColNumber];
 end;
 
+procedure TFLPanel.SetButtonHeight(const Value: Integer);
+var
+  i, j: integer;
+begin
+  if FButtonHeight = Value + 4 then
+    Exit;
+
+  FButtonHeight := Value + 4;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+    begin
+      fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
+      fButtons[i, j].Height := FButtonHeight;
+
+      if fButtons[i, j].IsActive then
+        fButtons[i, j].Data.Height := FButtonHeight;
+    end;
+end;
+
 //--”становка контекстного меню дл€ кнопок
 //--¬ходной параметр: ссылка на меню
 procedure TFLPanel.SetButtonsPopup(ButtonsPopup: TPopupMenu);
@@ -1211,6 +1259,26 @@ begin
       begin
         fButtons[i, j].PopupMenu := ButtonsPopup;
       end;
+end;
+
+procedure TFLPanel.SetButtonWidth(const Value: integer);
+var
+  i, j: integer;
+begin
+  if FButtonWidth = Value + 4 then
+    Exit;
+
+  FButtonWidth := Value + 4;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+    begin
+      fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
+      fButtons[i, j].Width := FButtonWidth;
+
+      if fButtons[i, j].IsActive then
+        fButtons[i, j].Data.Width := FButtonWidth;
+    end;
 end;
 
 procedure TFLPanel.SetColsCount(const Value: Integer);
