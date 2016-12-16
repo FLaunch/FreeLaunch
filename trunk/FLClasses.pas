@@ -176,6 +176,7 @@ type
       function GetDropParams: string;
       procedure SetHeight(const Value: Integer);
       procedure SetWidth(const Value: Integer);
+      procedure SetColor(const Value: TColor);
     public
       //--Изображение иконки
       IconBmp: TBitMap;
@@ -218,6 +219,7 @@ type
       property WSt: integer read fWSt write fWSt;
       property Height: Integer read FHeight write SetHeight;
       property Width: Integer read FWidth write SetWidth;
+      property Color: TColor read fPanelColor write SetColor;
       function GetIconCacheRaw: string;
   end;
 
@@ -236,6 +238,8 @@ type
       function GetIsActive(RowNumber, ColNumber: integer): boolean;
       procedure SetColsCount(const Value: Integer);
       procedure SetRowsCount(const Value: Integer);
+      function GetColor: TColor;
+      procedure SetColor(const Value: TColor);
     public
       //--Конструктор
       constructor Create(PageNumber, ColsCount, RowsCount: integer);
@@ -249,6 +253,7 @@ type
       property IsActive[RowNumber, ColNumber: integer]: boolean read GetIsActive;
       property ColsCount: Integer read FColsCount write SetColsCount;
       property RowsCount: Integer read FRowsCount write SetRowsCount;
+      property Color: TColor read GetColor write SetColor;
   end;
 
   //--Коллекция данных - двусвязный список страниц данных ;)
@@ -330,6 +335,7 @@ type
       procedure SetRowsCount(const Value: Integer);
       procedure SetButtonWidth(const Value: integer);
       procedure SetButtonHeight(const Value: Integer);
+      procedure SetButtonColor(const Value: TColor);
     protected
 
     public
@@ -365,6 +371,7 @@ type
       property RowsCount: Integer read fRowsCount write SetRowsCount;
       property ButtonWidth: Integer read FButtonWidth write SetButtonWidth;
       property ButtonHeight: Integer read FButtonHeight write SetButtonHeight;
+      property ButtonColor: TColor read fPanelColor write SetButtonColor;
       //--Кнопка по ее индексам (текущая активная страница)
       property CurButtons[RowNumber, ColNumber: integer]: TFLButton read GetCurButton;
       //--Кнопка по ее индексам (произвольная страница)
@@ -813,6 +820,12 @@ begin
   Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
 end;
 
+procedure TFLDataItem.SetColor(const Value: TColor);
+begin
+  fPanelColor := Value;
+  AssignIcons;
+end;
+
 procedure TFLDataItem.SetHeight(const Value: Integer);
 begin
   FHeight := Value;
@@ -966,6 +979,16 @@ begin
   Result := fItems[RowNumber][ColNumber];
 end;
 
+procedure TFLDataTable.SetColor(const Value: TColor);
+var
+  i, j: Integer;
+begin
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      if Assigned(fItems[i][j]) then
+        fItems[i][j].Color := Value;
+end;
+
 procedure TFLDataTable.SetColsCount(const Value: Integer);
 var
   i, j: Integer;
@@ -1014,6 +1037,21 @@ begin
   end;
 
   fRowsCount := Value;
+end;
+
+function TFLDataTable.GetColor: TColor;
+var
+  i, j: Integer;
+begin
+  Result := clBtnFace;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      if Assigned(fItems[i][j]) then
+      begin
+        Result := fItems[i][j].Color;
+        Exit;
+      end;
 end;
 
 //--Определяет, является ли ячейка активной
@@ -1226,6 +1264,31 @@ function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButto
 begin
   fButtons[RowNumber][ColNumber].fCurPage := PageNumber;
   Result := fButtons[RowNumber][ColNumber];
+end;
+
+procedure TFLPanel.SetButtonColor(const Value: TColor);
+var
+  TempColor: TColor;
+  DataTable: TFLDataTable;
+  i, j: integer;
+begin
+  fPanelColor := Value;
+  if fPanelColor = clBtnFace then
+    TempColor := GetSysColor(COLOR_BTNFACE)
+  else
+    TempColor := fPanelColor;
+  fLColor := GetColorBetween(TempColor, clwhite, 85, 0, 100);
+  fDColor1 := GetColorBetween(TempColor, clblack, 35, 0, 100);
+  fDColor2 := GetColorBetween(TempColor, clblack, 55, 0, 100);
+
+  for DataTable in fDataCollection do
+    DataTable.Color := Value;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      fButtons[i, j].Repaint;
+
+  Repaint;
 end;
 
 procedure TFLPanel.SetButtonHeight(const Value: Integer);
