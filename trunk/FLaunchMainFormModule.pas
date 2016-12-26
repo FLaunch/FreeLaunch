@@ -34,7 +34,7 @@ uses
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, PanelClass,
   ComObj, ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
   ProgrammPropertiesFormModule, FilePropertiesFormModule, RenameTabFormModule,
-  SettingsFormModule, AboutFormModule, FLFunctions, FLLanguage;
+  SettingsFormModule, AboutFormModule, FLFunctions, FLLanguage, FLClasses;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -67,6 +67,8 @@ const
   cr_authormail = 'joker-jar@yandex.ru';
   cr_progname = 'FreeLaunch';
 
+  BUTTON_INI_SECTION = 'button';
+
   DesignDPI = 96;
 
 type
@@ -78,81 +80,65 @@ type
 
   TFlaunchMainForm = class(TForm)
     StatusBar: TStatusBar;
-    PopupMenu: TPopupMenu;
-    NI_prop: TMenuItem;
-    NI_Clear: TMenuItem;
-    MainTabs: TPageControl;
-    TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
-    TabSheet3: TTabSheet;
-    TabSheet4: TTabSheet;
-    TabSheet5: TTabSheet;
-    TabSheet6: TTabSheet;
-    TabSheet7: TTabSheet;
-    TabSheet8: TTabSheet;
-    GroupPanel1: TPanel;
-    GroupPanel2: TPanel;
-    GroupPanel3: TPanel;
-    GroupPanel4: TPanel;
-    GroupPanel5: TPanel;
-    GroupPanel6: TPanel;
-    GroupPanel7: TPanel;
-    GroupPanel8: TPanel;
-    NI_Run: TMenuItem;
-    NI_L1: TMenuItem;
-    NI_L2: TMenuItem;
     TrayMenu: TPopupMenu;
     NI_Close: TMenuItem;
-    PagesMenu: TPopupMenu;
-    NI_Rename: TMenuItem;
-    NI_DeleteTab: TMenuItem;
     NI_Settings: TMenuItem;
     NI_Show: TMenuItem;
-    NI_ClearTab: TMenuItem;
-    NI_L3: TMenuItem;
-    NI_L4: TMenuItem;
-    NI_Group: TMenuItem;
     Timer1: TTimer;
     NI_L5: TMenuItem;
     NI_About: TMenuItem;
-    NI_L7: TMenuItem;
-    NI_Export: TMenuItem;
-    NI_Import: TMenuItem;
     SaveButtonDialog: TSaveDialog;
     OpenButtonDialog: TOpenDialog;
-    NI_TypeProgramm: TMenuItem;
-    N1: TMenuItem;
-    NI_TypeFile: TMenuItem;
     TrayIcon: TTrayIcon;
+    MainTabsNew: TTabControl;
+    ButtonPopupMenu: TPopupMenu;
+    ButtonPopupItem_Run: TMenuItem;
+    ButtonPopupItem_Line: TMenuItem;
+    ButtonPopupItem_TypeProgramm: TMenuItem;
+    ButtonPopupItem_TypeFile: TMenuItem;
+    ButtonPopupItem_Line2: TMenuItem;
+    ButtonPopupItem_Export: TMenuItem;
+    ButtonPopupItem_Import: TMenuItem;
+    ButtonPopupItem_Line3: TMenuItem;
+    ButtonPopupItem_Clear: TMenuItem;
+    ButtonPopupItem_Props: TMenuItem;
+    TabPopupMenu: TPopupMenu;
+    TabPopupItem_Rename: TMenuItem;
+    TabPopupItem_Clear: TMenuItem;
+    TabPopupItem_Delete: TMenuItem;
     procedure FormCreate(Sender: TObject);
-    procedure MainTabsDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
-    procedure NI_propClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure NI_ClearClick(Sender: TObject);
     procedure NI_CloseClick(Sender: TObject);
-    procedure NI_RunClick(Sender: TObject);
-    procedure MainTabsMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure MainTabsDragDrop(Sender, Source: TObject; X, Y: Integer);
-    procedure NI_RenameClick(Sender: TObject);
-    procedure NI_DeleteTabClick(Sender: TObject);
     procedure NI_ShowClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure NI_ClearTabClick(Sender: TObject);
-    procedure NI_GroupClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure NI_AboutClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure NI_SaveClick(Sender: TObject);
-    procedure NI_ExportClick(Sender: TObject);
-    procedure NI_ImportClick(Sender: TObject);
-    procedure PopupMenuPopup(Sender: TObject);
-    procedure NI_TypeProgrammClick(Sender: TObject);
-    procedure NI_TypeFileClick(Sender: TObject);
     procedure NI_SettingsClick(Sender: TObject);
     procedure TrayMenuPopup(Sender: TObject);
     procedure TrayIconClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure ButtonPopupMenuPopup(Sender: TObject);
+    procedure ButtonPopupItem_RunClick(Sender: TObject);
+    procedure ButtonPopupItem_ExportClick(Sender: TObject);
+    procedure ButtonPopupItem_ImportClick(Sender: TObject);
+    procedure ButtonPopupItem_ClearClick(Sender: TObject);
+    procedure ButtonPopupItem_PropsClick(Sender: TObject);
+    //--Событие при переключении вкладки
+    procedure MainTabsNewChange(Sender: TObject);
+    procedure MainTabsNewDragDrop(Sender, Source: TObject; X, Y: Integer);
+    procedure MainTabsNewDragOver(Sender, Source: TObject; X, Y: Integer;
+      State: TDragState; var Accept: Boolean);
+    procedure MainTabsNewMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure TabPopupItem_RenameClick(Sender: TObject);
+    procedure TabPopupItem_DeleteClick(Sender: TObject);
+    procedure TabPopupItem_ClearClick(Sender: TObject);
+    procedure MainTabsNewMouseLeave(Sender: TObject);
   private
+    //--Список имен вкладок
+    TabNames: TStringList;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging); message WM_WINDOWPOSCHANGING;
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
@@ -164,7 +150,9 @@ type
     procedure LoadLinksFromCash;
     procedure LoadPanelLinks(Index: integer);
     procedure ClearLinks(Index: integer);
-    procedure ImportButton(filename: string; t,r,c: integer);
+    procedure ImportButton(filename: string; t,r,c: integer); overload;
+    procedure ImportButton(Button: TFLButton; FileName: string); overload;
+    procedure ExportButton(Button: TFLButton; FileName: string);
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
@@ -173,7 +161,42 @@ type
     procedure DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
     procedure DropFileFolder(FileName: string; t,r,c: integer; fromlnk: boolean);
     function ConfirmDialog(Msg, Title: string): Boolean;
+    function ButtonToLnk(AButton: TFLButton): lnk;
+    procedure LnkToButton(ALink: Lnk; var AButton: TFLButton);
+    //--Событие генерируется при клике по кнопке на панели
+    procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
+    //--Событие генерируется при нажатии кнопки мыши на кнопке панели
+    procedure FLPanelButtonMouseDown(Sender: TObject; MouseButton: TMouseButton; Button: TFLButton);
+    //--Событие генерируется при движении мыши по панели
+    procedure FLPanelButtonMouseMove(Sender: TObject; Button: TFLButton);
+    //--Событие генерируется при покидании курсора мыши кнопки
+    procedure FLPanelButtonMouseLeave(Sender: TObject; Button: TFLButton);
+    //--Событие при перетаскивании файла на кнопку панели
+    procedure FLPanelDropFile(Sender: TObject; Button: TFLButton; FileName: string);
+    //--Установка имени определенной вкладки
+    procedure SetTabName(i: byte);
+    //--Вызов диалога переименовывания вкладки
+    procedure RenameTab(i: byte);
+    //--Удаление вкладки
+    procedure DeleteTab(i: byte);
+    //--Считывание настроек кнопок из xml-файла
+    procedure LoadLinksSettings;
+    //--Функция определяет, находятся ли координаты t,r,c в пределах текущего размера панели
+    function IsTRCInRange(t, r, c: byte): boolean;
+    //--Сохранение настроек кнопок в xml-файл
+    procedure SaveLinksSettings;
+    //--Считывание иконок кнопок из кэша
+    procedure LoadLinksIconsFromCache;
+    //--Сохранение иконок кнопок в кэш
+    procedure SaveLinksIconsToCache;
   public
+    FLPanel: TFLPanel;
+    //--Количество вкладок
+    TabsCountNew: byte;
+    //--Ширина и высота кнопок
+    ButtonWidth, ButtonHeight: byte;
+    //--Цвет кнопок
+    ButtonsColor: TColor;
     procedure EndWork;
     procedure ChangeWndSize;
     procedure GenerateWnd;
@@ -182,12 +205,8 @@ type
     procedure PanelDragFile(Sender: TObject; FileName: string);
     procedure PanelMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure PanelClick(Sender: TObject);
-    procedure PanelSetFocus(Sender: TObject);
-    procedure PanelKillFocus(Sender: TObject);
     procedure PanelDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
     procedure PanelDragDrop(Sender, Source: TObject; X, Y: Integer);
-    procedure PanelMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure PanelMouseLeave(Sender: TObject);
     procedure LoadLanguage;
     function DefNameOfTab(tn: string): boolean;
     procedure SetAutorun(b: boolean);
@@ -204,6 +223,10 @@ type
     procedure SaveLinksCfgFile;
     procedure SaveLinksToCash;
     procedure ChWinView(b: boolean);
+    procedure ReloadIcons;
+    procedure GrowTabNames(ACount: Integer);
+    //--Установка имен всех вкладок
+    procedure SetTabNames;
   end;
 
 var
@@ -236,6 +259,9 @@ implementation
 {$R png.res}
 {$R *.dfm}
 
+uses
+  XMLDoc, XMLIntf, PngImage, IOUtils;
+
 function TFlaunchMainForm.GetFLVersion: string;
 begin
   {$IFDEF NIGHTBUILD}
@@ -256,6 +282,28 @@ begin
     result := round(p / (WorkArea.Bottom - Height) * 100);
 end;
 
+//--Вызов диалога переименовывания вкладки
+procedure TFlaunchMainForm.ReloadIcons;
+var
+  t, r, c: Integer;
+begin
+  for t := 0 to TabsCount - 1 do
+    for r := 0 to RowsCount - 1 do
+      for c := 0 to ColsCount - 1 do
+        if FLPanel.Buttons[t,r,c].IsActive then
+        begin
+          FLPanel.Buttons[t,r,c].Data.AssignIcons;
+          FLPanel.Buttons[t,r,c].Repaint;
+        end;
+end;
+
+procedure TFlaunchMainForm.RenameTab(i: byte);
+begin
+  MainTabsNew.Tabs.Strings[i] :=
+    TRenameTabForm.Execute(MainTabsNew.Tabs.Strings[i]);
+  TabNames[i] := MainTabsNew.Tabs.Strings[i];
+end;
+
 function TFlaunchMainForm.PercentToPosition(p: integer; iswidth: boolean): integer;
 var
   WorkArea: TRect;
@@ -274,28 +322,26 @@ var
   i: integer;
 begin
   Caption := cr_progname;
-  for i := 1 to maxt do
-    if MainTabs.Pages[i-1].Caption = '' then
-      MainTabs.Pages[i-1].Caption :=
-        Format(Language.Main.TabName,[i]);
 
   NI_Show.Caption := Language.Menu.Show;
   NI_Settings.Caption := Language.Menu.Settings;
   NI_About.Caption := Language.Menu.About;
   NI_Close.Caption := Language.Menu.Close;
-  NI_Run.Caption := Language.Menu.Run;
-  NI_TypeProgramm.Caption := Language.Menu.TypeProgramm;
-  NI_TypeFile.Caption := Language.Menu.TypeFile;
-  NI_Export.Caption := Language.Menu.Export;
-  NI_Import.Caption := Language.Menu.Import;
-  NI_Clear.Caption := Language.Menu.Clear;
-  NI_Prop.Caption := Language.Menu.Prop;
-  NI_Rename.Caption := Language.Menu.Rename;
-  NI_ClearTab.Caption := Language.Menu.ClearTab;
-  NI_DeleteTab.Caption := Language.Menu.DeleteTab;
-  NI_Group.Caption := Language.Menu.Group;
+
+  ButtonPopupItem_Run.Caption := Language.Menu.Run;
+  ButtonPopupItem_TypeProgramm.Caption := Language.Menu.TypeProgramm;
+  ButtonPopupItem_TypeFile.Caption := Language.Menu.TypeFile;
+  ButtonPopupItem_Export.Caption := Language.Menu.Export;
+  ButtonPopupItem_Import.Caption := Language.Menu.Import;
+  ButtonPopupItem_Clear.Caption := Language.Menu.Clear;
+  ButtonPopupItem_Props.Caption := Language.Menu.Prop;
+
   SaveButtonDialog.Filter := Language.FlbFilter + '|*.flb';
   OpenButtonDialog.Filter := Language.FlbFilter + '|*.flb';
+
+  TabPopupItem_Rename.Caption := Language.Menu.Rename;
+  TabPopupItem_Clear.Caption := Language.Menu.ClearTab;
+  TabPopupItem_Delete.Caption := Language.Menu.DeleteTab;
 end;
 
 procedure TFlaunchMainForm.SetAutorun(b: boolean);
@@ -322,6 +368,41 @@ begin
   end;
 end;
 
+//--Установка имени определенной вкладки
+procedure TFlaunchMainForm.SetTabName(i: byte);
+var
+  TabName: string;
+begin
+  //--Определение имени вкладки
+  if TabNames.Strings[i] = '' then
+    //--Имя по-умолчанию
+    TabName := Format(Language.Main.TabName, [i + 1])
+  else
+    //--Имя, заданное пользователем
+    TabName := TabNames.Strings[i];
+  //--Если вкладка существует
+  if MainTabsNew.Tabs[i] <> '' then
+  begin
+    //--Задаем ей актуальное имя
+    MainTabsNew.Tabs.Strings[i] := TabName;
+    TabNames.Strings[i] := TabName;
+  end
+  else
+    //--Иначе создаем и задаем актуальное имя
+    MainTabsNew.Tabs[i] := TabName;
+end;
+
+//--Установка имен всех вкладок
+procedure TFlaunchMainForm.SetTabNames;
+var
+  i: Integer;
+begin
+  if TabsCountNew > 1 then
+    {*--Задаем имена вкладок--*}
+    for i := 0 to TabsCountNew - 1 do
+      SetTabName(i);
+end;
+
 function TFlaunchMainForm.DefNameOfTab(tn: string): boolean;
 var
   i: integer;
@@ -331,6 +412,33 @@ begin
   for i := 1 to maxt do
     if tn = Format(Language.Main.TabName, [i]) then exit;
   result := false;
+end;
+
+//--Удаление вкладки
+procedure TFlaunchMainForm.DeleteTab(i: byte);
+begin
+  if TabsCountNew = 1 then
+    Exit;
+  if not ConfirmDialog(format(Language.Messages.DeleteTab, [MainTabsNew.Tabs[i]]),
+    Language.Messages.Confirmation)
+  then
+    exit;
+  //--Удаляем имя этой вкладки
+  TabNames.Delete(i);
+  //--Удаляем вкладку
+  MainTabsNew.Tabs.Delete(i);
+  //--Уменьшаем счетчик вкладок на 1
+  Dec(TabsCountNew);
+  //--Если осталась единственная вкладка, скрываем ее
+  if TabsCountNew = 1 then
+    MainTabsNew.Tabs.Clear;
+  SetTabNames;
+  //--Удаляем страницу данных и делаем активной нужную вкладку
+  MainTabsNew.TabIndex := FLPanel.DeletePage(i);
+  //--Подгоняем размер окна под актуальный размер панели
+  ChangeWndSize;
+
+  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.SaveIni;
@@ -344,10 +452,10 @@ begin
   ini.WriteInteger(inisection, 'padding', lpadding);
   ini.WriteInteger(inisection, 'iconwidth', iconwidth - panelzoom);
   ini.WriteInteger(inisection, 'iconheight', iconheight - panelzoom);
-  ini.WriteInteger(inisection, 'activetab', MainTabs.TabIndex);
-  for i := 1 to maxt do
-    if not DefNameOfTab(MainTabs.Pages[i-1].Caption) then
-      ini.WriteString(inisection, Format('tab%dname',[i]), MainTabs.Pages[i-1].Caption)
+  ini.WriteInteger(inisection, 'activetab', MainTabsNew.TabIndex);
+  for i := 1 to TabsCountNew do
+    if not DefNameOfTab(TabNames[i-1]) then
+      ini.WriteString(inisection, Format('tab%dname',[i]), TabNames[i-1])
     else
       ini.WriteString(inisection, Format('tab%dname',[i]), '');
 
@@ -360,8 +468,8 @@ begin
   ini.WriteBool(inisection, 'autorun', autorun);
   ini.WriteBool(inisection, 'starthide', starthide);
   ini.WriteString(inisection, 'language', lngfilename);
-  ini.WriteString(inisection, 'tabsfontname', MainTabs.Font.Name);
-  ini.WriteInteger(inisection, 'tabsfontsize', MainTabs.Font.Size);
+  ini.WriteString(inisection, 'tabsfontname', MainTabsNew.Font.Name);
+  ini.WriteInteger(inisection, 'tabsfontsize', MainTabsNew.Font.Size);
   ini.Free;
 end;
 
@@ -419,8 +527,9 @@ begin
   Timer1.Enabled := statusbarvis;
   autorun := ini.ReadBool(inisection, 'autorun', false);
   starthide := ini.ReadBool(inisection, 'starthide', false);
+  GrowTabNames(maxt);
   for i := 1 to maxt do
-    MainTabs.Pages[i-1].Caption := ini.ReadString(inisection, Format('tab%dname',[i]), '');
+    TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
 
   LeftPer := ini.ReadInteger(inisection, 'formleftpos', 100);
   if LeftPer < 0 then LeftPer := 0;
@@ -440,8 +549,8 @@ begin
   else
     FormColor := clBtnFace;
   try
-    MainTabs.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
-    MainTabs.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
+    MainTabsNew.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
+    MainTabsNew.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
   except
   end;
   ini.Free;
@@ -470,6 +579,29 @@ begin
   Application.Terminate;
 end;
 
+{*--Обработка пунктов контекстного меню вкладок--*}
+procedure TFlaunchMainForm.TabPopupItem_ClearClick(Sender: TObject);
+begin
+  if not ConfirmDialog(format(Language.Messages.ClearTab, [MainTabsNew.Tabs[MainTabsNew.TabIndex]]),
+    Language.Messages.Confirmation)
+  then
+    exit;
+  FLPanel.ClearPage(MainTabsNew.TabIndex);
+  SaveLinksCfgFile;
+end;
+
+procedure TFlaunchMainForm.TabPopupItem_DeleteClick(Sender: TObject);
+begin
+  DeleteTab(MainTabsNew.TabIndex);
+  SaveLinksCfgFile;
+end;
+
+procedure TFlaunchMainForm.TabPopupItem_RenameClick(Sender: TObject);
+begin
+  RenameTab(MainTabsNew.TabIndex);
+  SaveLinksCfgFile;
+end;
+
 procedure TFlaunchMainForm.Timer1Timer(Sender: TObject);
 begin
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
@@ -495,6 +627,32 @@ end;
 procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
 begin
   ChWinView((not nowactive) or not (Showing));
+end;
+
+procedure TFlaunchMainForm.LnkToButton(ALink: Lnk; var AButton: TFLButton);
+begin
+  if ALink.active then
+  begin
+    AButton.InitializeData;
+    AButton.Data.LType := ALink.ltype;
+    AButton.Data.Exec := ALink.exec;
+    AButton.Data.WorkDir := ALink.workdir;
+    AButton.Data.Icon := ALink.icon;
+    AButton.Data.IconIndex := ALink.iconindex;
+    AButton.Data.Params := ALink.params;
+    AButton.Data.DropFiles := ALink.dropfiles;
+    AButton.Data.DropParams := ALink.dropparams;
+    AButton.Data.Descr := ALink.descr;
+    AButton.Data.Ques := ALink.ques;
+    AButton.Data.Hide := ALink.hide;
+    AButton.Data.Pr := ALink.pr;
+    AButton.Data.WSt := ALink.wst;
+
+    AButton.Data.AssignIcons;
+    AButton.Repaint;
+  end
+  else
+    AButton.FreeData;
 end;
 
 function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -698,6 +856,132 @@ begin
   FileClose(LinksCfgFile);
 end;
 
+/// <summary>Сохранение иконок кнопок в кэш</summary>
+procedure TFlaunchMainForm.SaveLinksIconsToCache;
+var
+  ICFile: integer;
+  Buffer: array[0..255] of char;
+  BuffLen: integer;
+  Stream: TMemoryStream;
+  t,r,c: byte;
+  PngImg: TPngImage;
+  FilePath: string;
+begin
+  PngImg := TPngImage.Create;
+  try
+    FilePath := WorkDir + IconCacheDir + TPath.DirectorySeparatorChar;
+    if not TDirectory.Exists(FilePath) then
+      TDirectory.CreateDirectory(FilePath);
+
+    for t := 0 to TabsCount - 1 do
+      for r := 0 to RowsCount - 1 do
+        for c := 0 to ColsCount - 1 do
+          //--Если кнопка активна и у нее есть иконка
+          if (FLPanel.Buttons[t,r,c].IsActive) and (FLPanel.Buttons[t,r,c].HasIcon) then
+          begin
+            {*--Сохраняем обычную и нажатую иконку в файл--*}
+            PngImg.Assign(FLPanel.Buttons[t,r,c].Data.IconBmp);
+            PngImg.SaveToFile(FLPanel.Buttons[t,r,c].Data.IconCache);
+            FLPanel.Buttons[t,r,c].Data.IconCache := '';
+          end;
+  finally
+    PngImg.Free;
+  end;
+end;
+
+/// <summary>Сохранение настроек в xml-файл</summary>
+procedure TFlaunchMainForm.SaveLinksSettings;
+var
+  RootNode, LinkNode, PanelNode, TabNode, IconNode, DropNode, WindowNode,
+    PositionNode, TabRootNode, PanelRootNode, WindowRootNode: IXMLNode;
+  t,r,c: byte;
+  TempData: TFLDataItem;
+  XMLDocument: IXMLDocument;
+begin
+  FLPanel.ExpandStrings := false;
+  XMLDocument := TXMLDocument.Create(Self);
+  XMLDocument.Options := [doNodeAutoIndent];
+  XMLDocument.Active := true;
+  RootNode := XMLDocument.AddChild('FLaunch');
+  RootNode.AddChild('Version').NodeValue := GetFLVersion;
+  RootNode.AddChild('Padding').NodeValue := lpadding;
+
+  IconNode := RootNode.AddChild('Icons');
+  IconNode.AddChild('Width').NodeValue := ButtonWidth;
+  IconNode.AddChild('Height').NodeValue := ButtonHeight;
+
+  RootNode.AddChild('TabsView').NodeValue := tabsview;
+  RootNode.AddChild('AutoRun').NodeValue := autorun;
+  RootNode.AddChild('Language').NodeValue := lngfilename;
+
+  TabNode := RootNode.AddChild('TabsFont');
+  TabNode.AddChild('Name').NodeValue := MainTabsNew.Font.Name;
+  TabNode.AddChild('Size').NodeValue := MainTabsNew.Font.Size;
+
+  WindowRootNode := RootNode.AddChild('Windows');
+  WindowNode := WindowRootNode.AddChild('Window');
+
+  PositionNode := WindowNode.AddChild('Position');
+  PositionNode.AddChild('Left').NodeValue := PositionToPercent(Left, true);
+  PositionNode.AddChild('Top').NodeValue := PositionToPercent(Top, false);
+
+  WindowNode.AddChild('TitleBar').NodeValue := titlebar;
+  WindowNode.AddChild('AlwaysOnTop').NodeValue := alwaysontop;
+  WindowNode.AddChild('StatusBar').NodeValue := statusbarvis;
+  WindowNode.AddChild('StartHidden').NodeValue := starthide;
+  WindowNode.AddChild('ActiveTab').NodeValue := MainTabsNew.TabIndex + 1;
+
+  TabRootNode := WindowNode.AddChild('Tabs');
+  PanelRootNode := RootNode.AddChild('Panels');
+  for t := 0 to TabsCountNew - 1 do
+  begin
+    TabNode := TabRootNode.AddChild('Tab');
+    TabNode.Attributes['Number'] := t + 1;
+    TabNode.AddChild('Name').NodeValue := TabNames[t];
+
+    PanelNode := PanelRootNode.AddChild('Panel');
+    PanelNode.AddChild('TabNumber').NodeValue := t + 1;
+    PanelNode.AddChild('Rows').NodeValue := rowscount;
+    PanelNode.AddChild('Columns').NodeValue := colscount;
+    PanelNode.AddChild('Padding').NodeValue := LPadding;
+    PanelNode.AddChild('Color').NodeValue := ColorToString(ButtonsColor);
+
+    for r := 0 to RowsCount - 1 do
+      for c := 0 to ColsCount - 1 do
+      begin
+        if not FLPanel.Buttons[t,r,c].IsActive then
+          Continue;
+        TempData := FLPanel.Buttons[t,r,c].Data;
+        LinkNode := PanelNode.AddChild('Link');
+        LinkNode.AddChild('Row').NodeValue := r + 1;
+        LinkNode.AddChild('Column').NodeValue := c + 1;
+        LinkNode.AddChild('Type').NodeValue := TempData.LType;
+        LinkNode.AddChild('Execute').NodeValue := TempData.Exec;
+        LinkNode.AddChild('WorkingDir').NodeValue := TempData.WorkDir;
+
+        IconNode := LinkNode.AddChild('Icon');
+        IconNode.AddChild('File').NodeValue := TempData.Icon;
+        IconNode.AddChild('Index').NodeValue := TempData.IconIndex;
+        IconNode.AddChild('Cache').NodeValue := TempData.GetIconCacheRaw;
+
+        LinkNode.AddChild('Parameters').NodeValue := TempData.Params;
+
+        DropNode := LinkNode.AddChild('Drop');
+        DropNode.AddChild('Allow').NodeValue := TempData.DropFiles;
+        DropNode.AddChild('Parameters').NodeValue := TempData.DropParams;
+
+        LinkNode.AddChild('Description').NodeValue := TempData.Descr;
+        LinkNode.AddChild('NeedQuestion').NodeValue := TempData.Ques;
+        LinkNode.AddChild('HideContainer').NodeValue := TempData.Hide;
+        LinkNode.AddChild('Priority').NodeValue := TempData.Pr;
+        LinkNode.AddChild('WindowState').NodeValue := TempData.WSt;
+      end;
+  end;
+  XMLDocument.SaveToFile(WorkDir + 'FLaunch.xml');
+  XMLDocument.Active := false;
+  FLPanel.ExpandStrings := true;
+end;
+
 procedure TFlaunchMainForm.LoadLinksFromCash;
 var
   t,r,c,tt,rr,cc: integer;
@@ -771,6 +1055,242 @@ begin
         end;
   Stream.Free;
   FileClose(LinksCashFile);
+end;
+
+/// <summary>Считывание иконок кнопок из кэша</summary>
+procedure TFlaunchMainForm.LoadLinksIconsFromCache;
+var
+  t, r, c: Integer;
+  PngImg: TPngImage;
+begin
+  PngImg := TPngImage.Create;
+  try
+    //--Пробегаем по всем кнопкам
+    for t := 0 to TabsCount - 1 do
+      for r := 0 to RowsCount - 1 do
+        for c := 0 to ColsCount - 1 do
+          if FLPanel.Buttons[t,r,c].IsActive then
+          begin
+            if (FLPanel.Buttons[t,r,c].Data.IconCache <> '') and
+              TFile.Exists(FLPanel.Buttons[t,r,c].Data.IconCache) then
+            begin
+              PngImg.LoadFromFile(FLPanel.Buttons[t,r,c].Data.IconCache);
+
+              if (PngImg.Width = ButtonWidth) and (PngImg.Height = ButtonHeight) then
+              begin
+                FLPanel.Buttons[t,r,c].Data.IconBmp.Assign(PngImg);
+                FLPanel.Buttons[t,r,c].HasIcon := true;
+                FLPanel.Buttons[t,r,c].Data.PushedIconBmp.Assign(PngImg);
+              end
+              else
+                FLPanel.Buttons[t,r,c].Data.AssignIcons;
+            end
+            else
+              FLPanel.Buttons[t,r,c].Data.AssignIcons;
+          end;
+  finally
+    PngImg.Free;
+  end;
+end;
+
+procedure TFlaunchMainForm.GrowTabNames(ACount: Integer);
+begin
+  while TabNames.Count < ACount do
+    TabNames.Add('');
+  while TabNames.Count > ACount do
+    TabNames.Delete(TabNames.Count - 1);
+  while MainTabsNew.Tabs.Count < ACount do
+    MainTabsNew.Tabs.Add('');
+  while MainTabsNew.Tabs.Count > ACount do
+    MainTabsNew.Tabs.Delete(MainTabsNew.Tabs.Count - 1);
+  FLPanel.PagesCount := ACount;
+end;
+
+/// <summary>Считывание настроек кнопок из xml-файла</summary>
+procedure TFlaunchMainForm.LoadLinksSettings;
+var
+  RootNode, LinkNode, IconNode, TabNode, WindowNode, PositionNode,
+    TabRootNode, PanelRootNode, PanelNode, DropNode: IXMLNode;
+  TabNumber, Row, Column: Integer;
+  TempData: TFLDataItem;
+  XMLDocument: IXMLDocument;
+  Version: string;
+
+  function GetStr(AParent: IXMLNode; AChildName: string): string;
+  var
+    Child: IXMLNode;
+  begin
+    Result := '';
+    Child := AParent.ChildNodes.FindNode(AChildName);
+    if Assigned(Child) and Child.IsTextElement then
+      Result := Child.Text;
+  end;
+
+  function GetInt(AParent: IXMLNode; AChildName: string): integer;
+  var
+    Child: IXMLNode;
+  begin
+    Result := 0;
+    Child := AParent.ChildNodes.FindNode(AChildName);
+    if Assigned(Child) and (Child.NodeValue <> NULL) then
+      Result := Child.NodeValue;
+  end;
+
+  function GetBool(AParent: IXMLNode; AChildName: string): Boolean;
+  var
+    Child: IXMLNode;
+  begin
+    Result := False;
+    Child := AParent.ChildNodes.FindNode(AChildName);
+    if Assigned(Child) and (Child.NodeValue <> NULL) then
+      Result := Child.NodeValue;
+  end;
+
+  function GetColor(AParent: IXMLNode; AChildName: string): TColor;
+  var
+    Color: string;
+  begin
+    Result := clBtnFace;
+    Color := GetStr(AParent, AChildName);
+    if Color <> '' then
+      Result := StringToColor(Color);
+  end;
+
+begin
+  if not FileExists(WorkDir + 'FLaunch.xml') then
+    Exit;
+  XMLDocument := TXMLDocument.Create(Self);
+  XMLDocument.Options := [doNodeAutoIndent];
+  XMLDocument.Active := true;
+  XMLDocument.LoadFromFile(WorkDir + 'FLaunch.xml');
+  RootNode := XMLDocument.ChildNodes.FindNode('FLaunch');
+  if (not Assigned(RootNode)) or (not RootNode.HasChildNodes) then
+    Exit;
+
+  Version := GetStr(RootNode, 'Version');
+  lpadding := GetInt(RootNode, 'Padding');
+
+  IconNode := RootNode.ChildNodes.FindNode('Icons');
+  if Assigned(IconNode) and IconNode.HasChildNodes then
+  begin
+    ButtonWidth := GetInt(IconNode, 'Width');
+    ButtonHeight := GetInt(IconNode, 'Height');
+    FLPanel.ButtonWidth := ButtonWidth;
+    FLPanel.ButtonHeight := ButtonHeight;
+  end;
+
+  tabsview := GetInt(RootNode, 'TabsView');
+  autorun := GetBool(RootNode, 'AutoRun');
+  lngfilename := GetStr(RootNode, 'Language');
+
+  TabNode := RootNode.ChildNodes.FindNode('TabsFont');
+  if Assigned(TabNode) and TabNode.HasChildNodes then
+  begin
+    MainTabsNew.Font.Name := GetStr(TabNode, 'Name');
+    MainTabsNew.Font.Size := GetInt(TabNode, 'Size');
+  end;
+
+  WindowNode := RootNode.ChildNodes.FindNode('Windows');
+  if (not Assigned(WindowNode)) or (not WindowNode.HasChildNodes) then
+    Exit;
+
+  WindowNode := WindowNode.ChildNodes.FindNode('Window');
+  if (not Assigned(WindowNode)) or (not WindowNode.HasChildNodes) then
+    Exit;
+
+  PositionNode := WindowNode.ChildNodes.FindNode('Position');
+  if Assigned(PositionNode) and PositionNode.HasChildNodes then
+  begin
+    LeftPer := GetInt(PositionNode, 'Left');
+    if LeftPer < 0 then LeftPer := 0;
+    if LeftPer > 100 then LeftPer := 100;
+    TopPer := GetInt(PositionNode, 'Top');
+    if TopPer < 0 then TopPer := 0;
+    if TopPer > 100 then TopPer := 100;
+  end;
+
+  titlebar := GetInt(WindowNode, 'TitleBar');
+  alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
+  statusbarvis := GetBool(WindowNode, 'StatusBar');
+  starthide := GetBool(WindowNode, 'StartHidden');
+  MainTabsNew.TabIndex := GetInt(WindowNode, 'ActiveTab') - 1;
+
+  TabsCountNew := 0;
+  TabNames.Clear;
+  TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
+  if (not Assigned(TabRootNode)) or (not TabRootNode.HasChildNodes) then
+    Exit;
+
+  TabNode := TabRootNode.ChildNodes.First;
+  while Assigned(TabNode) do
+  begin
+    Inc(TabsCountNew);
+    TabNumber := TabNode.Attributes['Number'];
+    GrowTabNames(TabNumber);
+    TabNames.Strings[TabNumber - 1] := GetStr(TabNode, 'Name');
+
+    TabNode := TabNode.NextSibling;
+  end;
+
+  PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
+  if (not Assigned(PanelRootNode)) or (not PanelRootNode.HasChildNodes) then
+    Exit;
+
+  PanelNode := PanelRootNode.ChildNodes.First;
+  for TabNumber := 0 to TabsCountNew - 1 do
+  begin
+    if (not Assigned(PanelNode)) or (not PanelNode.HasChildNodes) then
+      Exit;
+
+    RowsCount := GetInt(PanelNode, 'Rows');
+    ColsCount := GetInt(PanelNode, 'Columns');
+    FLPanel.RowsCount := RowsCount;
+    FLPanel.ColsCount := ColsCount;
+    LPadding := GetInt(PanelNode, 'Padding');
+    FLPanel.Padding := LPadding;
+    ButtonsColor := GetColor(PanelNode, 'Color');
+    FLPanel.ButtonColor := ButtonsColor;
+
+    LinkNode := PanelNode.ChildNodes.FindNode('Link');
+    if Assigned(LinkNode) and LinkNode.HasChildNodes then
+    begin
+      Row := GetInt(LinkNode, 'Row') - 1;
+      Column := GetInt(LinkNode, 'Column') - 1;
+      if not IsTRCInRange(TabNumber, Row, Column) then
+        Continue;
+
+      TempData := FLPanel.Buttons[TabNumber, Row, Column].InitializeData;
+      TempData.LType := GetInt(LinkNode, 'Type');
+      TempData.Exec := GetStr(LinkNode, 'Execute');
+      TempData.WorkDir := GetStr(LinkNode, 'WorkingDir');
+
+      IconNode := LinkNode.ChildNodes.FindNode('Icon');
+      if Assigned(IconNode) and IconNode.HasChildNodes then
+      begin
+        TempData.Icon := GetStr(IconNode, 'File');
+        TempData.IconIndex := GetInt(IconNode, 'Index');
+        TempData.IconCache := GetStr(IconNode, 'Cache');
+      end;
+
+      TempData.Params := GetStr(LinkNode, 'Parameters');
+
+      DropNode := LinkNode.ChildNodes.FindNode('Drop');
+      if Assigned(DropNode) and DropNode.HasChildNodes then
+      begin
+        TempData.DropFiles := GetBool(DropNode, 'Allow');
+        TempData.DropParams := GetStr(DropNode, 'Parameters');
+      end;
+
+      TempData.Descr := GetStr(LinkNode, 'Description');
+      TempData.Ques := GetBool(LinkNode, 'NeedQuestion');
+      TempData.Hide := GetBool(LinkNode, 'HideContainer');
+      TempData.Pr := GetInt(LinkNode, 'Priority');
+      TempData.WSt := GetInt(LinkNode, 'WindowState');
+    end;
+
+    PanelNode := PanelNode.NextSibling;
+  end;
+  XMLDocument.Active := false;
 end;
 
 procedure TFlaunchMainForm.SaveLinksToCash;
@@ -871,6 +1391,14 @@ begin
   SaveIni;
   SaveLinksCfgFile;
   SaveLinksToCash;
+
+  //--Сохраняем настройки кнопок
+  SaveLinksSettings;
+  //--Сохраняем иконки кнопок в кэш
+  SaveLinksIconsToCache;
+
+  //--Удаляем список имен вкладок
+  TabNames.Free;
 end;
 
 procedure TFlaunchMainForm.GetCoordinates(Sender: TObject; var t: integer; var r: integer; var c: integer);
@@ -896,53 +1424,9 @@ begin
 end;
 
 procedure TFlaunchMainForm.LoadIc(t, r, c: integer);
-var
-  icx,icy: integer;
-  icon: TIcon;
-  TempBmp: TBitMap;
-  FileName: string;
-  Index: integer;
 begin
-  if not links[t][r][c].active then
-    begin
-      panels[t][r][c].HasIcon := false;
-      panels[t,r,c].Repaint;
-      exit;
-    end;
-
-  FileName := GetAbsolutePath(links[t][r][c].icon);
-  Index := links[t][r][c].iconindex;
-  icon := TIcon.Create;
-  if (not fileexists(FileName)) and (not directoryexists(FileName)) then
-    icon.Handle := LoadIcon(hinstance, 'RBLANKICON')
-  else
-    icon.Handle := GetFileIcon(FileName, true, Index);
-  if icon.Handle = 0 then
-    icon.Handle := LoadIcon(hinstance, 'RBLANKICON');
-  icx := GetSystemMetrics(SM_CXICON);
-  icy := GetSystemMetrics(SM_CYICON);
-
-  TempBmp := TBitMap.Create;
-  TempBmp.Width := icx;
-  TempBmp.Height := icy;
-  TempBmp.Canvas.Brush.Color := PanelColor;
-  TempBmp.Canvas.FillRect(TempBmp.Canvas.ClipRect);
-  DrawIcon(TempBmp.Canvas.Handle,0,0,icon.Handle);
-
-  if (icx = iconwidth - panelzoom) and (icy = iconheight - panelzoom) then
-    panels[t,r,c].Icon.Assign(TempBmp)
-  else
-    SmoothResize(TempBmp, panels[t,r,c].Icon);
-
-  if (icx = iconwidth - 7) and (icy = iconheight - 7) then
-    panels[t,r,c].PushedIcon.Assign(TempBmp)
-  else
-    SmoothResize(TempBmp, panels[t,r,c].PushedIcon);
-
-  panels[t,r,c].HasIcon := true;
-  panels[t,r,c].Repaint;
-  icon.Free;
-  TempBmp.Free;
+  if FLPanel.Buttons[t, r, c].IsActive then
+    FLPanel.Buttons[t, r, c].Data.AssignIcons;
 end;
 
 procedure TFlaunchMainForm.LoadPanelLinks(Index: integer);
@@ -984,8 +1468,7 @@ var
 begin
   if Key = vk_F2 then
     begin
-      GlobTabNum := MainTabs.ActivePageIndex;
-      NI_RenameClick(NI_Rename);
+      ButtonPopupItem_RunClick(Nil);
     end;
   if ((Key = ord('S')) and (ssCtrl in Shift)) then
     NI_SettingsClick(NI_Settings);
@@ -1031,11 +1514,7 @@ begin
             ColNum := cc;
             PopupMenu := FlaunchMainForm.PopupMenu;
             OnMouseMove := PanelMouseMove;
-            OnMouseLeave := PanelMouseLeave;
-            OnMouseDown := PanelMouseDown;
             OnClick := PanelClick;
-            OnSetFocus := PanelSetFocus;
-            OnKillFocus := PanelKillFocus;
             OnDragFile := PanelDragFile;
             OnDragOver := PanelDragOver;
             OnDragDrop := PanelDragDrop;
@@ -1060,11 +1539,102 @@ begin
   LoadPanelLinks(Index);
 end;
 
+procedure TFlaunchMainForm.ButtonPopupItem_ClearClick(Sender: TObject);
+var
+  TempButton: TFLButton;
+begin
+  TempButton := FLPanel.LastUsedButton;
+  TempButton.FrameColor := clBlue;
+  if ConfirmDialog(Format(Language.Messages.DeleteButton, [ExtractFileName(TempButton.Data.Exec)]),
+    Language.Messages.Confirmation)
+  then
+    TempButton.FreeData;
+  TempButton.RemoveFrame;
+  SaveLinksCfgFile;
+end;
+
+procedure TFlaunchMainForm.ButtonPopupItem_ExportClick(Sender: TObject);
+var
+  TempButton: TFLButton;
+begin
+  TempButton := FLPanel.LastUsedButton;
+  TempButton.FrameColor := clBlue;
+  SaveButtonDialog.FileName := ExtractFileNameNoExt(TempButton.Data.Exec);
+  if SaveButtonDialog.Execute(Handle) then
+    ExportButton(TempButton, SaveButtonDialog.FileName);
+  TempButton.RemoveFrame;
+end;
+
+procedure TFlaunchMainForm.ButtonPopupItem_ImportClick(Sender: TObject);
+var
+  TempButton: TFLButton;
+begin
+  TempButton := FLPanel.LastUsedButton;
+  TempButton.FrameColor := clBlue;
+  if OpenButtonDialog.Execute(Handle) then
+    ImportButton(TempButton, OpenButtonDialog.FileName);
+  TempButton.RemoveFrame;
+  SaveLinksCfgFile;
+end;
+
+procedure TFlaunchMainForm.ButtonPopupItem_PropsClick(Sender: TObject);
+var
+  flfrm: TFilePropertiesForm;
+  TempButton: TFLButton;
+begin
+  TempButton := FLPanel.LastUsedButton;
+  TempButton.FrameColor := clBlue;
+
+  PropertiesMode := 0;
+  if Assigned(TempButton.Data) then
+    PropertiesMode := TempButton.Data.LType
+  else
+    if ButtonPopupItem_TypeFile.Checked then
+      PropertiesMode := 1;
+
+  if PropertiesMode = 0 then
+    LnkToButton(TProgrammPropertiesForm.Execute(ButtonToLnk(TempButton)), TempButton);
+  if PropertiesMode = 1 then
+    LnkToButton(TFilePropertiesForm.Execute(ButtonToLnk(TempButton)), TempButton);
+  TempButton.RemoveFrame;
+end;
+
+procedure TFlaunchMainForm.ButtonPopupItem_RunClick(Sender: TObject);
+begin
+  FLPanel.LastUsedButton.Click;
+end;
+
+procedure TFlaunchMainForm.ButtonPopupMenuPopup(Sender: TObject);
+begin
+  FLPanel.LastUsedButton.MouseUp(mbLeft, [], 0, 0);
+end;
+
+function TFlaunchMainForm.ButtonToLnk(AButton: TFLButton): lnk;
+begin
+  Result.active := AButton.IsActive;
+  if Assigned(AButton.Data) then
+  begin
+    Result.ltype := AButton.Data.LType;
+    Result.exec := AButton.Data.Exec;
+    Result.workdir := AButton.Data.WorkDir;
+    Result.icon := AButton.Data.Icon;
+    Result.iconindex := AButton.Data.IconIndex;
+    Result.params := AButton.Data.Params;
+    Result.dropfiles := AButton.Data.DropFiles;
+    Result.dropparams := AButton.Data.DropParams;
+    Result.descr := AButton.Data.Descr;
+    Result.ques := AButton.Data.Ques;
+    Result.hide := AButton.Data.Hide;
+    Result.pr := AButton.Data.Pr;
+    Result.wst := AButton.Data.WSt;
+  end;
+end;
+
 procedure TFlaunchMainForm.ChangeWndSize;
 begin
   StatusBar.Height := MulDiv(19, Screen.PixelsPerInch, DesignDPI);
-  Width := Width + (lpadding*(colscount + 1)) + (iconwidth*colscount) - GroupPanel1.Width;
-  Height := Height + (lpadding*(rowscount + 1)) + (iconheight*rowscount) - GroupPanel1.Height;
+  Width := Width + FLPanel.ActualSize.Width - FLPanel.Width;
+  Height := Height + FLPanel.ActualSize.Height - FLPanel.Height;
   StatusBar.Panels[0].Width := Width - MulDiv(122, Screen.PixelsPerInch, DesignDPI);
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
@@ -1081,86 +1651,14 @@ begin
     2: BorderStyle := bsNone;
   end;
   case tabsview of
-    0: MainTabs.Style := tsTabs;
-    1: MainTabs.Style := tsButtons;
-    2: MainTabs.Style := tsFlatButtons;
+    0: MainTabsNew.Style := tsTabs;
+    1: MainTabsNew.Style := tsButtons;
+    2: MainTabsNew.Style := tsFlatButtons;
   end;
   if AlwaysOnTop then
     FormStyle := fsStayOnTop;
-  if tabscount = 1 then
-    MainTabs.Pages[0].TabVisible := false
-  else
-    for tt := 0 to tabscount - 1 do
-      MainTabs.Pages[tt].TabVisible := true;
-
-  for tt := 0 to tabscount - 1 do
-    CreatePanel(tt);
 
   ChangeWndSize;
-end;
-
-procedure TFlaunchMainForm.PanelMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var
-  t,r,c: integer;
-begin
-  GetCoordinates(Sender, t, r, c);
-  GlobTab := t;
-  GlobRow := r;
-  GlobCol := c;
-  if button = mbright then
-    begin
-      case links[t][r][c].ltype of
-        0:
-          begin
-            NI_TypeProgramm.Checked := true;
-            NI_TypeFile.Checked := false;
-          end;
-        1:
-          begin
-            NI_TypeProgramm.Checked := false;
-            NI_TypeFile.Checked := true;
-          end;
-      end;
-      NI_Run.Enabled := links[t][r][c].active;
-      NI_Import.Enabled := not links[t][r][c].active;
-      NI_Export.Enabled := links[t][r][c].active;
-      NI_Clear.Enabled := links[t][r][c].active;
-      NI_TypeProgramm.Enabled := not links[t][r][c].active;
-      NI_TypeFile.Enabled := not links[t][r][c].active;
-    end; 
-end;
-
-procedure TFlaunchMainForm.PanelMouseLeave(Sender: TObject);
-begin
-  StatusBar.Panels[0].Text := '';
-end;
-
-procedure TFlaunchMainForm.PanelSetFocus(Sender: TObject);
-var
-  t,r,c: integer;
-begin
-  GetCoordinates(Sender, t, r, c);
-  GlobTab := t;
-  GlobRow := r;
-  GlobCol := c;
-  FocusTab := t;
-  FocusRow := r;
-  FocusCol := c;
-  NI_Run.Enabled := links[t][r][c].active;
-  NI_Clear.Enabled := links[t][r][c].active;
-end;
-
-procedure TFlaunchMainForm.PopupMenuPopup(Sender: TObject);
-begin
-  Panels[GlobTab][GlobRow][GlobCol].MouseUp(mbleft, [], 0, 0);
-end;
-
-procedure TFlaunchMainForm.PanelKillFocus(Sender: TObject);
-begin
-  Panels[GlobTab][GlobRow][GlobCol].MouseUp(mbleft, [], 0, 0);
-  FocusTab := -1;
-  FocusRow := -1;
-  FocusCol := -1;
 end;
 
 procedure TFlaunchMainForm.PanelDragDrop(Sender, Source: TObject; X, Y: Integer);
@@ -1191,6 +1689,164 @@ begin
     Accept := false;
 end;
 
+procedure TFlaunchMainForm.FLPanelButtonClick(Sender: TObject;
+  Button: TFLButton);
+begin
+  if not Button.IsActive then Exit;
+  NewProcess(ButtonToLnk(Button), Handle);
+end;
+
+procedure TFlaunchMainForm.FLPanelButtonMouseDown(Sender: TObject;
+  MouseButton: TMouseButton; Button: TFLButton);
+begin
+  //--Если была нажата правая кнопка мыши
+  if MouseButton = mbRight then
+  begin
+    {*--Активируем/деактивируем необходимые пункты контекстного меню кнопки--*}
+    if Assigned(Button.Data) then
+    begin
+      ButtonPopupItem_TypeFile.Checked := Button.Data.LType = 1;
+      ButtonPopupItem_TypeProgramm.Checked := not ButtonPopupItem_TypeFile.Checked;
+    end
+    else
+      if (not ButtonPopupItem_TypeProgramm.Checked) and
+        (not ButtonPopupItem_TypeFile.Checked)
+      then
+        ButtonPopupItem_TypeProgramm.Checked := True;
+
+    ButtonPopupItem_Run.Enabled := Button.IsActive;
+    ButtonPopupItem_Import.Enabled := not Button.IsActive;
+    ButtonPopupItem_Export.Enabled := Button.IsActive;
+    ButtonPopupItem_Clear.Enabled := Button.IsActive;
+    ButtonPopupItem_TypeFile.Enabled := not Button.IsActive;
+    ButtonPopupItem_TypeProgramm.Enabled := not Button.IsActive;
+  end;
+end;
+
+procedure TFlaunchMainForm.FLPanelButtonMouseLeave(Sender: TObject;
+  Button: TFLButton);
+begin
+  StatusBar.Panels[0].Text := '';
+end;
+
+procedure TFlaunchMainForm.FLPanelButtonMouseMove(Sender: TObject;
+  Button: TFLButton);
+begin
+  if statusbarvis then
+    if Button.IsActive then
+    begin
+      StatusBar.Panels[0].Text := Button.Data.Descr;
+      Button.Hint := Format(Language.Main.Location + #13#10 +
+        Language.Main.Parameters + #13#10 + Language.Main.Description,
+        [Button.Data.Exec, Button.Data.Params, MyCutting(Button.Data.Descr, 60)]);
+    end
+    else
+    begin
+      StatusBar.Panels[0].Text := '';
+      Button.Hint := '';
+    end;
+end;
+
+procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
+  FileName: string);
+var
+  LnkInfo: TShellLinkInfoStruct;
+  ext: string;
+  Link: lnk;
+
+  //--Определение реального пути (раскрытие %SYSTEMROOT% и т.п.)
+  function GetRealPath(Path: PChar): string;
+  var
+    TempPChar: array[0..MAX_PATH] of char;
+  begin
+    ExpandEnvironmentStrings(Path, TempPChar, SizeOf(TempPChar));
+    Result := string(TempPChar);
+  end;
+begin
+  Link := ButtonToLnk(Button);
+  //--Если кнопка активна и "умеет" принимать перетягиваемые файлы
+  if (Link.active) and (Link.dropfiles) then
+  begin
+    NewProcess(Link, Handle, FileName);
+    exit;
+  end;
+  {*--Если кнопка активна, просим подтверждение замены--*}
+  if Link.active then
+  begin
+    Button.FrameColor := clBlue;
+    if not ConfirmDialog(Language.Messages.BusyReplace,
+      Language.Messages.Confirmation)
+    then
+    begin
+      Button.RemoveFrame;
+      Exit;
+    end;
+    Button.RemoveFrame;
+  end;
+  Ext := ExtractFileExt(FileName).ToLower;
+  //--Если был перетянут файл кнопки
+  if Ext = '.flb' then
+  begin
+    Button.FrameColor := clBlue;
+    if ConfirmDialog(format(Language.Messages.ImportButton,[FileName]), Language.Messages.Confirmation) then
+      ImportButton(Button, FileName);
+    Button.RemoveFrame;
+    exit;
+  end;
+  //--Инициализируем ячейку данных
+  if not Button.IsActive then
+    Button.InitializeData;
+  //--Если был перетянут ярлык
+  if Ext = '.lnk' then
+  begin
+    StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, MAX_PATH - 1);
+    //--Извлекаем информацию о ярлыке
+    GetLinkInfo(@lnkinfo);
+    {*--Заполняем информацию в поля кнопки--*}
+    Button.Data.Exec := GetRealPath(LnkInfo.FullPathAndNameOfFileToExecute);
+    Button.Data.IconIndex := LnkInfo.IconIndex;
+    Button.Data.Icon := GetRealPath(LnkInfo.FullPathAndNameOfFileContiningIcon);
+    if Button.Data.Icon = '' then
+      Button.Data.Icon := Button.Data.Exec;
+    Button.Data.WorkDir := GetRealPath(LnkInfo.FullPathAndNameOfWorkingDirectroy);
+    Button.Data.Params := LnkInfo.ParamStringsOfFileToExecute;
+    Button.Data.Descr := LnkInfo.Description;
+    {*--------------------------------------*}
+    FileName := Button.Data.Exec;
+    Ext := ExtractFileExt(FileName).ToLower;
+  end
+  else
+  begin
+    Button.Data.Exec := FileName;
+    Button.Data.IconIndex := 0;
+    Button.Data.Icon := FileName;
+    Button.Data.WorkDir := ExtractFilePath(FileName);
+    Button.Data.Params := '';
+    Button.Data.Descr := '';
+  end;
+  //--Если исполняемый файл
+  if (Ext = '.exe') or (Ext = '.bat') then
+  begin
+    Button.Data.LType := 0;
+    if Button.Data.Descr = '' then
+      Button.Data.Descr := GetFileDescription(FileName);
+    if Button.Data.Descr = '' then
+      Button.Data.Descr := ExtractFileNameNoExt(FileName);
+  end
+  else
+  begin
+    Button.Data.LType := 1;
+    if Button.Data.Descr = '' then
+      Button.Data.Descr := ExtractFileName(FileName);
+  end;
+  //--Рисуем иконки на кнопке
+  Button.Data.AssignIcons;
+  //--Перерисовываем кнопку
+  Button.Repaint;
+
+  SaveLinksCfgFile;
+end;
+
 procedure TFlaunchMainForm.FormActivate(Sender: TObject);
 begin
   nowactive := Active;
@@ -1206,8 +1862,15 @@ end;
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
 var
   sini: TIniFile;
+  i: Integer;
 begin
+  //--Создаем список имен вкладок
+  TabNames := TStringList.Create;
+  //--Создаем экземпляр панели с кнопками
+  FLPanel := TFLPanel.Create(MainTabsNew, 1);
   ChPos := true;
+  PanelColor := clBtnFace;
+  FormColor := clBtnFace;
   randomize;
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
   fl_dir := ExtractFilePath(Application.ExeName);
@@ -1233,11 +1896,35 @@ begin
   end;
 
   LoadIni;
+  ButtonsColor := PanelColor;
+  TabsCountNew := tabscount;
+  ButtonWidth := iconwidth - panelzoom;
+  ButtonHeight := iconheight - panelzoom;
+
+  //--Читаем настройки кнопок
+  LoadLinksSettings;
   Language.AddNotifier(LoadLanguage);
   Language.Load(lngfilename);
+  //--Разрешаем/запрешаем автозагрузку
   SetAutorun(Autorun);
+  {*--Заполняем переменные FL_*--*}
+  FLPanel.SetFLVariable('FL_DIR', FL_DIR);
+  FLPanel.SetFLVariable('FL_ROOT', FL_ROOT);
+  {*--Связываем события панели--*}
+  FLPanel.OnButtonMouseDown := FLPanelButtonMouseDown;
+  FLPanel.OnButtonClick := FLPanelButtonClick;
+  FLPanel.OnButtonMouseMove := FLPanelButtonMouseMove;
+  FLPanel.OnButtonMouseLeave := FLPanelButtonMouseLeave;
+  FLPanel.OnDropFile := FLPanelDropFile;
+  FLPanel.ButtonsPopup := ButtonPopupMenu;
+  for I := 1 to TabsCountNew do
+    TabNames.Add('');
+  SetTabNames;
+  //--Читаем иконки кнопок из кэша
+  LoadLinksIconsFromCache;
+
   GenerateWnd;
-  MainTabs.TabIndex := tabind;
+  MainTabsNew.TabIndex := tabind;
   LoadLinksCfgFile;
   if fileexists(workdir + '.session') then
     LoadLinks
@@ -1257,139 +1944,118 @@ begin
   ChPos := false;
 end;
 
-procedure TFlaunchMainForm.MainTabsDragDrop(Sender, Source: TObject; X,
-  Y: Integer);
-var
-  i: Integer;
-  rct: TRect;
-  s: string;
+//--Событие при переключении вкладки
+procedure TFlaunchMainForm.MainTabsNewChange(Sender: TObject);
 begin
-  if Source is TPageControl then
-    begin
-      with MainTabs do
-        begin
-          for i := 0 to PageCount - 1 do
-            begin
-              Perform(TCM_GETITEMRECT, i, lParam(@rct));
-              if PtInRect(rct, Point(X, Y)) then
-                begin
-                  if i = ActivePage.PageIndex then exit;
-                  s := Pages[i].Caption;
-                  Pages[i].Caption := ActivePage.Caption;
-                  ActivePage.Caption := s;
-                  templinks := links[i];
-                  links[i] := links[ActivePage.PageIndex];
-                  links[ActivePage.PageIndex] := templinks;
-                  LoadPanelLinks(ActivePage.PageIndex);
-                  LoadPanelLinks(i);
-                  MainTabs.TabIndex := i;
-                  SaveIni;
-                  SaveLinksCfgFile;
-                  exit;
-                end;
-            end;
-        end;
-    end;
+  //--Устанавливаем текущую страницу <- индекс вкладки
+  FLPanel.PageNumber := MainTabsNew.TabIndex;
+  MainTabsNew.SetFocus;
 end;
 
-procedure TFlaunchMainForm.MainTabsDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
-const
-  TCM_GETITEMRECT = $130A;
+//--Событие при отпускании перетягиваемого над вкладкой объекта
+//--Изменение порядка вкладок с помощью Drag'N'Drop
+procedure TFlaunchMainForm.MainTabsNewDragDrop(Sender, Source: TObject; X,
+  Y: Integer);
 var
-  i: Integer;
-  rct: TRect;
-  t,r,c: integer;
+  i: byte;
+  Rect: TRect;
+  TempStr: string;
 begin
-  if (Source is TMyPanel) then
+  //--Если перетягиваемый объект - вкладка
+  if (Source is TTabControl) then
+  begin
+    //--Перебираем все вкладки
+    for i := 0 to TabsCountNew - 1 do
     begin
-      GetCoordinates(Source, t, r, c);
-      Accept := links[t][r][c].active;
-      if not Accept then
-        exit;
-      with MainTabs do
-        begin
-          for i := 0 to PageCount - 1 do
-            begin
-              Perform(TCM_GETITEMRECT, i, lParam(@rct));
-              if PtInRect(rct, Point(X, Y)) then
-                begin
-                  MainTabs.TabIndex := i;
-                  exit;
-                end;
-            end;
-        end;
+      //--Определяем регион вкладки
+      MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
+      //--Если найдена вкладка, над которой находится курсор
+      if (PtInRect(Rect, Point(X, Y))) and (MainTabsNew.TabIndex <> i) then
+      begin
+        TempStr := TabNames.Strings[MainTabsNew.TabIndex];
+        TabNames.Strings[MainTabsNew.TabIndex] := TabNames.Strings[i];
+        TabNames.Strings[i] := TempStr;
+        FLPanel.SwapData(MainTabsNew.TabIndex, i);
+        SetTabNames;
+        MainTabsNew.TabIndex := i;
+        MainTabsNewChange(MainTabsNew);
+      end;
     end;
-  if (Source is TPageControl) then
+  end;
+end;
+
+//--Событие при перетягивании над вкладкой объекта
+procedure TFlaunchMainForm.MainTabsNewDragOver(Sender, Source: TObject; X,
+  Y: Integer; State: TDragState; var Accept: Boolean);
+var
+  i: byte;
+  Rect: TRect;
+begin
+  //--Если перетягиваемый объект - кнопка
+  if (Source is TFLButton) then
+  begin
+    //--Если перетягиваемая кнопка активна, разрешаем Drop
+    Accept := FLPanel.LastDraggedButton.IsActive;
+    if not Accept then
+      Exit;
+    //--Перебираем все вкладки
+    for i := 0 to TabsCountNew - 1 do
+    begin
+      //--Определяем регион вкладки
+      MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
+      //--Если найдена вкладка, над которой находится курсор
+      if (PtInRect(Rect, Point(X, Y))) and (MainTabsNew.TabIndex <> i) then
+      begin
+        MainTabsNew.TabIndex := i;
+        MainTabsNewChange(MainTabsNew);
+      end;
+    end;
+  end;
+  if (Source is TTabControl) then
     Accept := true;
 end;
 
-procedure TFlaunchMainForm.MainTabsMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+//--Событие при нажатии кнопкой мыши по вкладке
+procedure TFlaunchMainForm.MainTabsNewMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  rct: TRect;
-  i: integer;
-  p: tpoint;
+  i: byte;
+  Rect: TRect;
+  MousePos: TPoint;
 begin
-  if button = mbleft then
+  if Button = mbLeft then
     if ssCtrl in Shift then
-      MainTabs.BeginDrag(false);
-  if button = mbright then
+      MainTabsNew.BeginDrag(false);
+  if Button = mbRight then
+  begin
+    //--Перебираем все вкладки
+    for i := 0 to TabsCountNew - 1 do
     begin
-      with MainTabs do
-        begin
-          GetCursorPos(p);
-          for i := 0 to PageCount - 1 do
-            begin
-              Perform(TCM_GETITEMRECT, i, lParam(@rct));
-              if PtInRect(rct, Point(X, Y)) then
-                begin
-                  TabIndex := i;
-                  GlobTabNum := i;
-                  NI_DeleteTab.Enabled := tabscount > mint;
-                  PagesMenu.Popup(p.X, p.Y);
-                end;
-            end;
-        end;
+      //--Определяем регион вкладки
+      MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
+      //--Если найдена вкладка, над которой находится курсор
+      if PtInRect(Rect, Point(X, Y)) then
+      begin
+        if MainTabsNew.TabIndex <> i then
+          begin
+            MainTabsNew.TabIndex := i;
+            MainTabsNewChange(MainTabsNew);
+          end;
+        GetCursorPos(MousePos);
+        TabPopupMenu.Popup(MousePos.X, MousePos.Y);
+      end;
     end;
+  end;
+end;
+
+procedure TFlaunchMainForm.MainTabsNewMouseLeave(Sender: TObject);
+begin
+  StatusBar.Panels[0].Text := '';
 end;
 
 procedure TFlaunchMainForm.NI_CloseClick(Sender: TObject);
 begin
   Application.Terminate;
-end;
-
-procedure TFlaunchMainForm.NI_RenameClick(Sender: TObject);
-begin
-  MainTabs.Pages[GlobTabNum].Caption :=
-    TRenameTabForm.Execute(MainTabs.Pages[GlobTabNum].Caption);
-  SaveIni;
-end;
-
-procedure TFlaunchMainForm.NI_DeleteTabClick(Sender: TObject);
-var
-  i: integer;
-begin
-  if not ConfirmDialog(format(Language.Messages.DeleteTab, [MainTabs.Pages[GlobTabNum].Caption]),
-    Language.Messages.Confirmation) then exit;
-  ClearLinks(GlobTabNum);
-  for i := GlobTabNum to tabscount - 2 do
-    begin
-      links[i] := links[i+1];
-      MainTabs.Pages[i].Caption := MainTabs.Pages[i+1].Caption;
-    end;
-  DestroyPanel(tabscount - 1);
-  dec(tabscount);
-  MainTabs.Pages[tabscount].Caption := '';
-  MainTabs.Pages[tabscount].TabVisible := false;
-  if tabscount = 1 then
-    begin
-      DestroyPanel(0);
-      MainTabs.Pages[0].TabVisible := false;
-      MainTabs.TabIndex := 0;
-      CreatePanel(0);
-    end;
-  ChangeWndSize;
-  LoadLinks;
-  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.ImportButton(filename: string; t,r,c: integer);
@@ -1422,81 +2088,62 @@ begin
   SaveLinksCfgFile;
 end;
 
-procedure TFlaunchMainForm.NI_ExportClick(Sender: TObject);
-const
-  sect = 'button';
+//--Экспортирование настроек кнопки в файл
+procedure TFlaunchMainForm.ExportButton(Button: TFLButton; FileName: string);
 var
-  fbut: TIniFile;
-  t,r,c: integer;
+  SIni: TIniFile;
 begin
-  t := GlobTab;
-  r := GlobRow;
-  c := GlobCol;
-  SaveButtonDialog.FileName := ExtractFileNameNoExt(links[t][r][c].exec);
-  if SaveButtonDialog.Execute(Handle) then
-    begin
-      fbut := TIniFile.Create(SaveButtonDialog.FileName);
-      fbut.WriteString(sect,'object',links[t][r][c].exec);
-      fbut.WriteString(sect,'workdir',links[t][r][c].workdir);
-      fbut.WriteString(sect,'icon',links[t][r][c].icon);
-      fbut.WriteInteger(sect,'iconindex',links[t][r][c].iconindex);
-      fbut.WriteString(sect,'parameters',links[t][r][c].params);
-      fbut.WriteBool(sect,'dropfiles',links[t][r][c].dropfiles);
-      fbut.WriteString(sect,'dropparameters',links[t][r][c].dropparams);
-      fbut.WriteString(sect,'describe',links[t][r][c].descr);
-      fbut.WriteBool(sect,'question',links[t][r][c].ques);
-      fbut.WriteBool(sect,'hide',links[t][r][c].hide);
-      fbut.WriteInteger(sect,'priority',links[t][r][c].pr);
-      fbut.WriteInteger(sect,'windowstate',links[t][r][c].wst);
-      fbut.Free;
-    end;
+  FLPanel.ExpandStrings := false;
+  SIni := TIniFile.Create(FileName);
+  SIni.WriteString(BUTTON_INI_SECTION, 'version', GetFLVersion);
+  SIni.WriteString(BUTTON_INI_SECTION, 'object', Button.Data.Exec);
+  SIni.WriteString(BUTTON_INI_SECTION, 'workdir', Button.Data.WorkDir);
+  SIni.WriteString(BUTTON_INI_SECTION, 'icon', Button.Data.Icon);
+  SIni.WriteInteger(BUTTON_INI_SECTION, 'iconindex', Button.Data.IconIndex);
+  SIni.WriteString(BUTTON_INI_SECTION, 'parameters', Button.Data.Params);
+  SIni.WriteBool(BUTTON_INI_SECTION, 'dropfiles', Button.Data.DropFiles);
+  SIni.WriteString(BUTTON_INI_SECTION, 'dropparameters', Button.Data.DropParams);
+  SIni.WriteString(BUTTON_INI_SECTION, 'describe', Button.Data.Descr);
+  SIni.WriteBool(BUTTON_INI_SECTION, 'question', Button.Data.Ques);
+  SIni.WriteBool(BUTTON_INI_SECTION, 'hide', Button.Data.Hide);
+  SIni.WriteInteger(BUTTON_INI_SECTION, 'priority', Button.Data.Pr);
+  SIni.WriteInteger(BUTTON_INI_SECTION, 'windowstate', Button.Data.WSt);
+  SIni.Free;
+  FLPanel.ExpandStrings := true;
 end;
 
-procedure TFlaunchMainForm.NI_ImportClick(Sender: TObject);
+//--Импортирование настроек кнопки из файла
+procedure TFlaunchMainForm.ImportButton(Button: TFLButton; FileName: string);
 var
-  t,r,c: integer;
+  SIni: TIniFile;
 begin
-  t := GlobTab;
-  r := GlobRow;
-  c := GlobCol;
-  if OpenButtonDialog.Execute(Handle) then
-    ImportButton(OpenButtonDialog.FileName, t, r, c);
+  SIni := TIniFile.Create(FileName);
+  //--Инициализируем ячейку данных
+  if not Button.IsActive then Button.InitializeData;
+  Button.Data.Exec := SIni.ReadString(BUTTON_INI_SECTION, 'object', '');
+  Button.Data.WorkDir := SIni.ReadString(BUTTON_INI_SECTION, 'workdir', '');
+  Button.Data.Icon := SIni.ReadString(BUTTON_INI_SECTION, 'icon', '');
+  Button.Data.IconIndex := SIni.ReadInteger(BUTTON_INI_SECTION, 'iconindex', 0);
+  Button.Data.Params := SIni.ReadString(BUTTON_INI_SECTION, 'parameters', '');
+  Button.Data.DropFiles := SIni.ReadBool(BUTTON_INI_SECTION, 'dropfiles', false);
+  Button.Data.DropParams := SIni.ReadString(BUTTON_INI_SECTION, 'dropparameters', '');
+  Button.Data.Descr := SIni.ReadString(BUTTON_INI_SECTION, 'describe', '');
+  Button.Data.Ques := SIni.ReadBool(BUTTON_INI_SECTION, 'question', false);
+  Button.Data.Hide := SIni.ReadBool(BUTTON_INI_SECTION, 'hide', false);
+  Button.Data.Pr := SIni.ReadInteger(BUTTON_INI_SECTION, 'priority', 0);
+  Button.Data.WSt := SIni.ReadInteger(BUTTON_INI_SECTION, 'windowstate', 0);
+  SIni.Free;
+  //--Рисуем иконки на кнопке
+  Button.Data.AssignIcons;
+  //--Перерисовываем кнопку
+  Button.Repaint;
 end;
 
-procedure TFlaunchMainForm.NI_GroupClick(Sender: TObject);
-var
-  r1,r2,c1,c2: integer;
-  flag: boolean;
+/// <summary>Функция определяет, находятся ли координаты t,r,c в пределах
+/// текущего размера панели</summary>
+function TFlaunchMainForm.IsTRCInRange(t, r, c: byte): boolean;
 begin
-  flag := false;
-  for r1 := 0 to rowscount - 1 do
-    for c1 := 0 to colscount - 1 do
-      begin
-        if not links[GlobTabNum][r1][c1].active then continue;
-        flag := false;
-        for r2 := 0 to rowscount - 1 do
-          begin
-            if flag then
-              break;
-            for c2 := 0 to colscount - 1 do
-              begin
-                if (r1 = r2) and (c1 - c2 < 1) then
-                  begin
-                    flag := true;
-                    break;
-                  end;
-                if not links[GlobTabNum][r2][c2].active then
-                  begin
-                    links[GlobTabNum][r2][c2] := links[GlobTabNum][r1][c1];
-                    fillchar(links[GlobTabNum][r1][c1], sizeof(lnk), 0);
-                    flag := true;
-                    break;
-                  end;
-              end;
-          end;
-      end;
-  LoadPanelLinks(GlobTabNum);
-  SaveLinksCfgFile;
+  Result := (t >= 0) and (t < TabsCount) and (r >= 0) and (r < RowsCount) and (c >= 0) and (c < ColsCount);
 end;
 
 procedure TFlaunchMainForm.NI_AboutClick(Sender: TObject);
@@ -1505,54 +2152,6 @@ var
 begin
   Application.CreateForm(TAboutForm, frm);
   frm.ShowModal;
-end;
-
-procedure TFlaunchMainForm.NI_ClearClick(Sender: TObject);
-var
-  t,r,c: integer;
-begin
-  t := GlobTab;
-  r := GlobRow;
-  c := GlobCol;
-  panels[t][r][c].SetBlueFrame;
-  if ConfirmDialog(format(Language.Messages.DeleteButton,[ExtractFileName(GetAbsolutePath(links[t][r][c].exec))]),
-    Language.Messages.Confirmation) then
-    begin
-      fillchar(links[t][r][c],sizeof(lnk),0);
-      panels[t][r][c].HasIcon := false;
-      panels[t][r][c].Repaint;
-    end;
-  panels[t][r][c].RemoveFrame;
-  SaveLinksCfgFile;
-end;
-
-procedure TFlaunchMainForm.NI_ClearTabClick(Sender: TObject);
-begin
-  if not ConfirmDialog(format(Language.Messages.ClearTab, [MainTabs.Pages[GlobTabNum].Caption]),
-    Language.Messages.Confirmation) then exit;
-  ClearLinks(GlobTabNum);
-  LoadPanelLinks(GlobTabNum);
-  SaveLinksCfgFile;
-end;
-
-procedure TFlaunchMainForm.NI_propClick(Sender: TObject);
-begin
-  panels[GlobTab][GlobRow][GlobCol].SetBlueFrame;
-  PropertiesMode := links[GlobTab][GlobRow][GlobCol].ltype;
-  if links[GlobTab][GlobRow][GlobCol].ltype = 0 then
-    links[GlobTab][GlobRow][GlobCol] :=
-      TProgrammPropertiesForm.Execute(links[GlobTab][GlobRow][GlobCol]);
-  if links[GlobTab][GlobRow][GlobCol].ltype = 1 then
-    links[GlobTab][GlobRow][GlobCol] :=
-      TFilePropertiesForm.Execute(links[GlobTab][GlobRow][GlobCol]);
-  panels[GlobTab][GlobRow][GlobCol].RemoveFrame;
-  LoadIc(GlobTab, GlobRow, GlobCol);
-  SaveLinksCfgFile;
-end;
-
-procedure TFlaunchMainForm.NI_RunClick(Sender: TObject);
-begin
-  NewProcess(links[GlobTab][GlobRow][GlobCol], Handle);
 end;
 
 procedure TFlaunchMainForm.NI_SaveClick(Sender: TObject);
@@ -1573,20 +2172,6 @@ end;
 procedure TFlaunchMainForm.NI_ShowClick(Sender: TObject);
 begin
   ChWinView(true);
-end;
-
-procedure TFlaunchMainForm.NI_TypeFileClick(Sender: TObject);
-begin
-  NI_TypeProgramm.Checked := false;
-  NI_TypeFile.Checked := true;
-  links[GlobTab][GlobRow][GlobCol].ltype := 1;
-end;
-
-procedure TFlaunchMainForm.NI_TypeProgrammClick(Sender: TObject);
-begin
-  NI_TypeProgramm.Checked := true;
-  NI_TypeFile.Checked := false;
-  links[GlobTab][GlobRow][GlobCol].ltype := 0;
 end;
 
 procedure TFlaunchMainForm.PanelClick(Sender: TObject);

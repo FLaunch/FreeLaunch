@@ -3,7 +3,7 @@ object FlaunchMainForm: TFlaunchMainForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  ClientHeight = 118
+  ClientHeight = 165
   ClientWidth = 325
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -24,7 +24,7 @@ object FlaunchMainForm: TFlaunchMainForm
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 99
+    Top = 146
     Width = 325
     Height = 19
     Panels = <
@@ -35,195 +35,22 @@ object FlaunchMainForm: TFlaunchMainForm
         Alignment = taCenter
         Width = 50
       end>
+    ExplicitTop = 209
   end
-  object MainTabs: TPageControl
+  object MainTabsNew: TTabControl
     Left = 0
     Top = 0
     Width = 325
-    Height = 99
-    ActivePage = TabSheet1
+    Height = 146
     Align = alClient
     TabOrder = 1
-    OnDragDrop = MainTabsDragDrop
-    OnDragOver = MainTabsDragOver
-    OnMouseDown = MainTabsMouseDown
-    object TabSheet1: TTabSheet
-      object GroupPanel1: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-    object TabSheet2: TTabSheet
-      ImageIndex = 1
-      TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupPanel2: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-    object TabSheet3: TTabSheet
-      ImageIndex = 2
-      TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupPanel3: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-    object TabSheet4: TTabSheet
-      ImageIndex = 3
-      TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupPanel4: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-    object TabSheet5: TTabSheet
-      ImageIndex = 4
-      TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupPanel5: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-    object TabSheet6: TTabSheet
-      ImageIndex = 5
-      TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupPanel6: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-    object TabSheet7: TTabSheet
-      ImageIndex = 6
-      TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupPanel7: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-    object TabSheet8: TTabSheet
-      ImageIndex = 7
-      TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupPanel8: TPanel
-        Left = 0
-        Top = 0
-        Width = 317
-        Height = 71
-        Align = alClient
-        BevelOuter = bvLowered
-        ParentBackground = False
-        TabOrder = 0
-      end
-    end
-  end
-  object PopupMenu: TPopupMenu
-    OnPopup = PopupMenuPopup
-    Left = 48
-    Top = 32
-    object NI_Run: TMenuItem
-      Default = True
-      OnClick = NI_RunClick
-    end
-    object N1: TMenuItem
-      Caption = '-'
-    end
-    object NI_TypeProgramm: TMenuItem
-      OnClick = NI_TypeProgrammClick
-    end
-    object NI_TypeFile: TMenuItem
-      OnClick = NI_TypeFileClick
-    end
-    object NI_L1: TMenuItem
-      Caption = '-'
-    end
-    object NI_Export: TMenuItem
-      OnClick = NI_ExportClick
-    end
-    object NI_Import: TMenuItem
-      OnClick = NI_ImportClick
-    end
-    object NI_L2: TMenuItem
-      Caption = '-'
-    end
-    object NI_Clear: TMenuItem
-      OnClick = NI_ClearClick
-    end
-    object NI_L7: TMenuItem
-      Caption = '-'
-    end
-    object NI_prop: TMenuItem
-      OnClick = NI_propClick
-    end
+    OnChange = MainTabsNewChange
+    OnDragDrop = MainTabsNewDragDrop
+    OnDragOver = MainTabsNewDragOver
+    OnMouseDown = MainTabsNewMouseDown
+    OnMouseLeave = MainTabsNewMouseLeave
+    ExplicitTop = 99
+    ExplicitHeight = 110
   end
   object TrayMenu: TPopupMenu
     OnPopup = TrayMenuPopup
@@ -244,28 +71,6 @@ object FlaunchMainForm: TFlaunchMainForm
     end
     object NI_Close: TMenuItem
       OnClick = NI_CloseClick
-    end
-  end
-  object PagesMenu: TPopupMenu
-    Left = 80
-    Top = 32
-    object NI_Rename: TMenuItem
-      OnClick = NI_RenameClick
-    end
-    object NI_L3: TMenuItem
-      Caption = '-'
-    end
-    object NI_ClearTab: TMenuItem
-      OnClick = NI_ClearTabClick
-    end
-    object NI_DeleteTab: TMenuItem
-      OnClick = NI_DeleteTabClick
-    end
-    object NI_L4: TMenuItem
-      Caption = '-'
-    end
-    object NI_Group: TMenuItem
-      OnClick = NI_GroupClick
     end
   end
   object Timer1: TTimer
@@ -373,5 +178,56 @@ object FlaunchMainForm: TFlaunchMainForm
     OnDblClick = TrayIconClick
     Left = 244
     Top = 32
+  end
+  object ButtonPopupMenu: TPopupMenu
+    OnPopup = ButtonPopupMenuPopup
+    Left = 48
+    Top = 80
+    object ButtonPopupItem_Run: TMenuItem
+      Default = True
+      OnClick = ButtonPopupItem_RunClick
+    end
+    object ButtonPopupItem_Line: TMenuItem
+      Caption = '-'
+    end
+    object ButtonPopupItem_TypeProgramm: TMenuItem
+      AutoCheck = True
+      RadioItem = True
+    end
+    object ButtonPopupItem_TypeFile: TMenuItem
+      AutoCheck = True
+      RadioItem = True
+    end
+    object ButtonPopupItem_Line2: TMenuItem
+      Caption = '-'
+    end
+    object ButtonPopupItem_Export: TMenuItem
+      OnClick = ButtonPopupItem_ExportClick
+    end
+    object ButtonPopupItem_Import: TMenuItem
+      OnClick = ButtonPopupItem_ImportClick
+    end
+    object ButtonPopupItem_Line3: TMenuItem
+      Caption = '-'
+    end
+    object ButtonPopupItem_Clear: TMenuItem
+      OnClick = ButtonPopupItem_ClearClick
+    end
+    object ButtonPopupItem_Props: TMenuItem
+      OnClick = ButtonPopupItem_PropsClick
+    end
+  end
+  object TabPopupMenu: TPopupMenu
+    Left = 136
+    Top = 80
+    object TabPopupItem_Rename: TMenuItem
+      OnClick = TabPopupItem_RenameClick
+    end
+    object TabPopupItem_Clear: TMenuItem
+      OnClick = TabPopupItem_ClearClick
+    end
+    object TabPopupItem_Delete: TMenuItem
+      OnClick = TabPopupItem_DeleteClick
+    end
   end
 end
