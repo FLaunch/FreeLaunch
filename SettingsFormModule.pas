@@ -280,7 +280,7 @@ end;
 
 procedure TSettingsForm.OKButtonClick(Sender: TObject);
 var
-  i,tabnum: integer;
+  i, tabnum: integer;
 begin
   ChPos := true;
   FlaunchMainForm.ChWinView(False);
@@ -293,30 +293,33 @@ begin
   tabsview := TabsBox.ItemIndex;
   titlebar := TBarBox.ItemIndex;
   //FlaunchMainForm.MainTabs.SetFocus;
-  tabnum := FlaunchMainForm.MainTabs.ActivePageIndex;
-  for i := 0 to tabscount - 1 do
-    begin
-      if i > 0 then
-        FlaunchMainForm.MainTabs.Pages[i].TabVisible := false;
-      FlaunchMainForm.DestroyPanel(i);
-    end;
-  for i := 0 to maxt - 1 do
-     if FlaunchMainForm.DefNameOfTab(FlaunchMainForm.MainTabs.Pages[i].Caption) then
-       FlaunchMainForm.MainTabs.Pages[i].Caption := '';
+  tabnum := FlaunchMainForm.MainTabsNew.TabIndex;
   tabscount := strtoint(TabsEdit.Text);
   rowscount := strtoint(RowsEdit.Text);
   colscount := strtoint(ColsEdit.Text);
   lpadding := strtoint(PaddingEdit.Text);
   iconwidth := strtoint(IWEdit.Text) + 4;
   iconheight := strtoint(IHEdit.Text) + 4;
-  FlaunchMainForm.GenerateWnd;
-  FlaunchMainForm.LoadLinks;
+
+  FlaunchMainForm.FLPanel.PagesCount := tabscount;
+  FlaunchMainForm.TabsCountNew := tabscount;
+  FlaunchMainForm.GrowTabNames(tabscount);
+  FlaunchMainForm.SetTabNames;
+  FlaunchMainForm.FLPanel.ColsCount := colscount;
+  FlaunchMainForm.FLPanel.RowsCount := rowscount;
+  FlaunchMainForm.FLPanel.ButtonWidth := StrToInt(IWEdit.Text);
+  FlaunchMainForm.FLPanel.ButtonHeight := StrToInt(IHEdit.Text);
+  FlaunchMainForm.ButtonWidth := FlaunchMainForm.FLPanel.ButtonWidth;
+  FlaunchMainForm.ButtonHeight := FlaunchMainForm.FLPanel.ButtonHeight;
+  FlaunchMainForm.FLPanel.Padding := lpadding;
+  FlaunchMainForm.ReloadIcons;
   if tabnum < tabscount then
-    FlaunchMainForm.MainTabs.TabIndex := tabnum
+    FlaunchMainForm.MainTabsNew.TabIndex := tabnum
   else
-    FlaunchMainForm.MainTabs.TabIndex := 0;
-  FlaunchMainForm.SaveIni;
+    FlaunchMainForm.MainTabsNew.TabIndex := 0;
   Language.Load(lngfilename);
+  FlaunchMainForm.SaveIni;
+  FlaunchMainForm.GenerateWnd;
   FlaunchMainForm.ChWinView(true);
   ChPos := false;
   Close;
