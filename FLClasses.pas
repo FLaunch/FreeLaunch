@@ -336,6 +336,7 @@ type
       procedure SetButtonWidth(const Value: integer);
       procedure SetButtonHeight(const Value: Integer);
       procedure SetButtonColor(const Value: TColor);
+      procedure SetPadding(const Value: Integer);
     protected
 
     public
@@ -372,6 +373,7 @@ type
       property ButtonWidth: Integer read FButtonWidth write SetButtonWidth;
       property ButtonHeight: Integer read FButtonHeight write SetButtonHeight;
       property ButtonColor: TColor read fPanelColor write SetButtonColor;
+      property Padding: Integer read FPadding write SetPadding;
       //-- нопка по ее индексам (текуща€ активна€ страница)
       property CurButtons[RowNumber, ColNumber: integer]: TFLButton read GetCurButton;
       //-- нопка по ее индексам (произвольна€ страница)
@@ -1379,6 +1381,20 @@ begin
     end;
 
   fColsCount := Value;
+end;
+
+procedure TFLPanel.SetPadding(const Value: Integer);
+var
+  i, j: integer;
+begin
+  FPadding := Value;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+    begin
+      fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
+      fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
+    end;
 end;
 
 //--”становка номера текущей страницы
