@@ -35,7 +35,6 @@ object FlaunchMainForm: TFlaunchMainForm
         Alignment = taCenter
         Width = 50
       end>
-    ExplicitTop = 209
   end
   object MainTabsNew: TTabControl
     Left = 0
@@ -49,8 +48,6 @@ object FlaunchMainForm: TFlaunchMainForm
     OnDragOver = MainTabsNewDragOver
     OnMouseDown = MainTabsNewMouseDown
     OnMouseLeave = MainTabsNewMouseLeave
-    ExplicitTop = 99
-    ExplicitHeight = 110
   end
   object TrayMenu: TPopupMenu
     OnPopup = TrayMenuPopup

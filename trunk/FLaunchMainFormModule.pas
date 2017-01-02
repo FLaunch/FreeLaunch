@@ -114,7 +114,6 @@ type
     procedure Timer1Timer(Sender: TObject);
     procedure NI_AboutClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure NI_SaveClick(Sender: TObject);
     procedure NI_SettingsClick(Sender: TObject);
     procedure TrayMenuPopup(Sender: TObject);
     procedure TrayIconClick(Sender: TObject);
@@ -148,18 +147,12 @@ type
     procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
 
     procedure LoadLinksFromCash;
-    procedure LoadPanelLinks(Index: integer);
-    procedure ClearLinks(Index: integer);
-    procedure ImportButton(filename: string; t,r,c: integer); overload;
-    procedure ImportButton(Button: TFLButton; FileName: string); overload;
+    procedure ImportButton(Button: TFLButton; FileName: string);
     procedure ExportButton(Button: TFLButton; FileName: string);
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
-    procedure GetCoordinates(Sender: TObject; var t: integer; var r: integer; var c: integer);
-    procedure DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
-    procedure DropFileFolder(FileName: string; t,r,c: integer; fromlnk: boolean);
     function ConfirmDialog(Msg, Title: string): Boolean;
     function ButtonToLnk(AButton: TFLButton): lnk;
     procedure LnkToButton(ALink: Lnk; var AButton: TFLButton);
@@ -174,15 +167,15 @@ type
     //--Событие при перетаскивании файла на кнопку панели
     procedure FLPanelDropFile(Sender: TObject; Button: TFLButton; FileName: string);
     //--Установка имени определенной вкладки
-    procedure SetTabName(i: byte);
+    procedure SetTabName(i: integer);
     //--Вызов диалога переименовывания вкладки
-    procedure RenameTab(i: byte);
+    procedure RenameTab(i: integer);
     //--Удаление вкладки
-    procedure DeleteTab(i: byte);
+    procedure DeleteTab(i: integer);
     //--Считывание настроек кнопок из xml-файла
     procedure LoadLinksSettings;
     //--Функция определяет, находятся ли координаты t,r,c в пределах текущего размера панели
-    function IsTRCInRange(t, r, c: byte): boolean;
+    function IsTRCInRange(t, r, c: integer): boolean;
     //--Сохранение настроек кнопок в xml-файл
     procedure SaveLinksSettings;
     //--Считывание иконок кнопок из кэша
@@ -192,36 +185,24 @@ type
   public
     FLPanel: TFLPanel;
     //--Количество вкладок
-    TabsCountNew: byte;
+    TabsCountNew: integer;
     //--Ширина и высота кнопок
-    ButtonWidth, ButtonHeight: byte;
+    ButtonWidth, ButtonHeight: integer;
     //--Цвет кнопок
     ButtonsColor: TColor;
     procedure EndWork;
     procedure ChangeWndSize;
     procedure GenerateWnd;
-    procedure CreatePanel(PanelIndex: integer);
-    procedure DestroyPanel(PanelIndex: integer);
-    procedure PanelDragFile(Sender: TObject; FileName: string);
-    procedure PanelMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-    procedure PanelClick(Sender: TObject);
-    procedure PanelDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
-    procedure PanelDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure LoadLanguage;
     function DefNameOfTab(tn: string): boolean;
     procedure SetAutorun(b: boolean);
     procedure LoadIni;
-    procedure SaveIni;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
     function GetFLVersion: string;
     procedure LoadIc(t, r, c: integer);
     procedure LoadLinks;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
-    procedure SaveCfgFileString(AFileHandle: THandle; AString: string;
-      AWriteLength: Boolean = True);
-    procedure SaveLinksCfgFile;
-    procedure SaveLinksToCash;
     procedure ChWinView(b: boolean);
     procedure ReloadIcons;
     procedure GrowTabNames(ACount: Integer);
@@ -231,7 +212,7 @@ type
 
 var
   FlaunchMainForm: TFlaunchMainForm;
-  SettingsMode: byte; //Режим работы (0 - инсталляция, настройки хранятся в APPDATA; 1 - инсталляция, настройки хранятся в папке программы; 2 - портабельный режим, инсталляция, настройки хранятся в папке программы)
+  SettingsMode: integer; //Режим работы (0 - инсталляция, настройки хранятся в APPDATA; 1 - инсталляция, настройки хранятся в папке программы; 2 - портабельный режим, инсталляция, настройки хранятся в папке программы)
   PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
   iconwidth, iconheight, tabscount, rowscount, colscount, lpadding, tabind, LeftPer, TopPer, CurScrW, CurScrH: integer;
   templinks: link;
@@ -297,7 +278,7 @@ begin
         end;
 end;
 
-procedure TFlaunchMainForm.RenameTab(i: byte);
+procedure TFlaunchMainForm.RenameTab(i: integer);
 begin
   MainTabsNew.Tabs.Strings[i] :=
     TRenameTabForm.Execute(MainTabsNew.Tabs.Strings[i]);
@@ -318,8 +299,6 @@ begin
 end;
 
 procedure TFlaunchMainForm.LoadLanguage;
-var
-  i: integer;
 begin
   Caption := cr_progname;
 
@@ -369,7 +348,7 @@ begin
 end;
 
 //--Установка имени определенной вкладки
-procedure TFlaunchMainForm.SetTabName(i: byte);
+procedure TFlaunchMainForm.SetTabName(i: integer);
 var
   TabName: string;
 begin
@@ -415,7 +394,7 @@ begin
 end;
 
 //--Удаление вкладки
-procedure TFlaunchMainForm.DeleteTab(i: byte);
+procedure TFlaunchMainForm.DeleteTab(i: integer);
 begin
   if TabsCountNew = 1 then
     Exit;
@@ -437,40 +416,6 @@ begin
   MainTabsNew.TabIndex := FLPanel.DeletePage(i);
   //--Подгоняем размер окна под актуальный размер панели
   ChangeWndSize;
-
-  SaveLinksCfgFile;
-end;
-
-procedure TFlaunchMainForm.SaveIni;
-var
-  i: integer;
-begin
-  Ini := TIniFile.Create(workdir+'FLaunch.ini');
-  ini.WriteInteger(inisection, 'tabs', tabscount);
-  ini.WriteInteger(inisection, 'rows', rowscount);
-  ini.WriteInteger(inisection, 'cols', colscount);
-  ini.WriteInteger(inisection, 'padding', lpadding);
-  ini.WriteInteger(inisection, 'iconwidth', iconwidth - panelzoom);
-  ini.WriteInteger(inisection, 'iconheight', iconheight - panelzoom);
-  ini.WriteInteger(inisection, 'activetab', MainTabsNew.TabIndex);
-  for i := 1 to TabsCountNew do
-    if not DefNameOfTab(TabNames[i-1]) then
-      ini.WriteString(inisection, Format('tab%dname',[i]), TabNames[i-1])
-    else
-      ini.WriteString(inisection, Format('tab%dname',[i]), '');
-
-  ini.WriteInteger(inisection, 'formleftpos', PositionToPercent(Left, true));
-  ini.WriteInteger(inisection, 'formtoppos', PositionToPercent(Top, false));
-  ini.WriteInteger(inisection, 'titlebar', titlebar);
-  ini.WriteInteger(inisection, 'tabsview', tabsview);
-  ini.WriteBool(inisection, 'alwaysontop', alwaysontop);
-  ini.WriteBool(inisection, 'statusbar', statusbarvis);
-  ini.WriteBool(inisection, 'autorun', autorun);
-  ini.WriteBool(inisection, 'starthide', starthide);
-  ini.WriteString(inisection, 'language', lngfilename);
-  ini.WriteString(inisection, 'tabsfontname', MainTabsNew.Font.Name);
-  ini.WriteInteger(inisection, 'tabsfontsize', MainTabsNew.Font.Size);
-  ini.Free;
 end;
 
 function TFlaunchMainForm.ConfirmDialog(Msg, Title: string): Boolean;
@@ -587,19 +532,16 @@ begin
   then
     exit;
   FLPanel.ClearPage(MainTabsNew.TabIndex);
-  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.TabPopupItem_DeleteClick(Sender: TObject);
 begin
   DeleteTab(MainTabsNew.TabIndex);
-  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.TabPopupItem_RenameClick(Sender: TObject);
 begin
   RenameTab(MainTabsNew.TabIndex);
-  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.Timer1Timer(Sender: TObject);
@@ -807,63 +749,10 @@ begin
   FileClose(LinksCfgFile);
 end;
 
-procedure TFlaunchMainForm.SaveCfgFileString(AFileHandle: THandle; AString: string;
-  AWriteLength: Boolean = True);
-var
-  buff: AnsiString;
-  bufflen: integer;
-begin
-  bufflen := AString.Length;
-
-  if AWriteLength then
-    if FileWrite(AFileHandle, bufflen, sizeof(bufflen)) < sizeof(bufflen) then
-      Exit;
-  buff := Copy(AString, 1, 255);
-
-  if bufflen > 0 then
-    FileWrite(AFileHandle, buff[1], bufflen);
-end;
-
-procedure TFlaunchMainForm.SaveLinksCfgFile;
-var
-  t,r,c: integer;
-  FileName: string;
-  LinksCfgFile: THandle;
-begin
-  FileName := workdir + 'FLaunch.dat';
-  LinksCfgFile := FileCreate(FileName);
-  SaveCfgFileString(LinksCfgFile, 'LCFG', False);
-  SaveCfgFileString(LinksCfgFile, version);
-  for t := 0 to maxt - 1 do
-    for r := 0 to maxr - 1 do
-      for c := 0 to maxc - 1 do
-        begin
-          FileWrite(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
-          FileWrite(LinksCfgFile, links[t,r,c].ltype, sizeof(byte));
-          SaveCfgFileString(LinksCfgFile, links[t,r,c].exec);
-          SaveCfgFileString(LinksCfgFile, links[t,r,c].workdir);
-          SaveCfgFileString(LinksCfgFile, links[t,r,c].icon);
-          FileWrite(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          SaveCfgFileString(LinksCfgFile, links[t,r,c].params);
-          FileWrite(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-          SaveCfgFileString(LinksCfgFile, links[t,r,c].dropparams);
-          SaveCfgFileString(LinksCfgFile, links[t,r,c].descr);
-          FileWrite(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
-          FileWrite(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
-          FileWrite(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
-          FileWrite(LinksCfgFile, links[t,r,c].wst, sizeof(byte));
-        end;
-  FileClose(LinksCfgFile);
-end;
-
 /// <summary>Сохранение иконок кнопок в кэш</summary>
 procedure TFlaunchMainForm.SaveLinksIconsToCache;
 var
-  ICFile: integer;
-  Buffer: array[0..255] of char;
-  BuffLen: integer;
-  Stream: TMemoryStream;
-  t,r,c: byte;
+  t,r,c: integer;
   PngImg: TPngImage;
   FilePath: string;
 begin
@@ -894,7 +783,7 @@ procedure TFlaunchMainForm.SaveLinksSettings;
 var
   RootNode, LinkNode, PanelNode, TabNode, IconNode, DropNode, WindowNode,
     PositionNode, TabRootNode, PanelRootNode, WindowRootNode: IXMLNode;
-  t,r,c: byte;
+  t,r,c: integer;
   TempData: TFLDataItem;
   XMLDocument: IXMLDocument;
 begin
@@ -1293,51 +1182,6 @@ begin
   XMLDocument.Active := false;
 end;
 
-procedure TFlaunchMainForm.SaveLinksToCash;
-var
-  FileName: string;
-  LinksCashFile: THandle;
-  tt,rr,cc: integer;
-  bufflen: integer;
-  Stream: TMemoryStream;
-begin
-  FileName := workdir + 'IconCache.dat';
-  LinksCashFile := FileCreate(FileName);
-  SaveCfgFileString(LinksCashFile, 'LCASH', False);
-  SaveCfgFileString(LinksCashFile, version);
-  FileWrite(LinksCashFile, iconwidth, sizeof(integer));
-  FileWrite(LinksCashFile, iconheight, sizeof(integer));
-  Stream := TMemoryStream.Create;
-  for tt := 0 to tabscount - 1 do
-    for rr := 0 to rowscount - 1 do
-      for cc := 0 to colscount - 1 do
-        begin
-          FileWrite(LinksCashFile, tt, sizeof(integer));
-          FileWrite(LinksCashFile, rr, sizeof(integer));
-          FileWrite(LinksCashFile, cc, sizeof(integer));
-          if (links[tt][rr][cc].active) and (panels[tt][rr][cc].HasIcon) then
-            begin
-              Stream.Clear;
-              panels[tt][rr][cc].Icon.SaveToStream(Stream);
-              bufflen := Stream.Size;
-              FileWrite(LinksCashFile, bufflen,  sizeof(bufflen));
-              FileWrite(LinksCashFile, (Stream.Memory)^, bufflen);
-              Stream.Clear;
-              panels[tt][rr][cc].PushedIcon.SaveToStream(Stream);
-              bufflen := Stream.Size;
-              FileWrite(LinksCashFile, bufflen,  sizeof(bufflen));
-              FileWrite(LinksCashFile, (Stream.Memory)^, bufflen);
-            end
-          else
-            begin
-              bufflen := 0;
-              FileWrite(LinksCashFile, bufflen, sizeof(bufflen));
-            end;
-        end;
-  Stream.Free;
-  FileClose(LinksCashFile);
-end;
-
 procedure TFlaunchMainForm.WMHotKey(var Msg: TWMHotKey);
 begin
   if Msg.Msg = WM_HOTKEY then
@@ -1388,9 +1232,6 @@ procedure TFlaunchMainForm.EndWork;
 begin
   unregisterhotkey(Handle, HotKeyID);
   DeleteFile(workdir + '.session');
-  SaveIni;
-  SaveLinksCfgFile;
-  SaveLinksToCash;
 
   //--Сохраняем настройки кнопок
   SaveLinksSettings;
@@ -1399,13 +1240,6 @@ begin
 
   //--Удаляем список имен вкладок
   TabNames.Free;
-end;
-
-procedure TFlaunchMainForm.GetCoordinates(Sender: TObject; var t: integer; var r: integer; var c: integer);
-begin
-  t := (Sender as TMyPanel).TabNum;
-  r := (Sender as TMyPanel).RowNum;
-  c := (Sender as TMyPanel).ColNum;
 end;
 
 procedure TFlaunchMainForm.LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
@@ -1427,15 +1261,6 @@ procedure TFlaunchMainForm.LoadIc(t, r, c: integer);
 begin
   if FLPanel.Buttons[t, r, c].IsActive then
     FLPanel.Buttons[t, r, c].Data.AssignIcons;
-end;
-
-procedure TFlaunchMainForm.LoadPanelLinks(Index: integer);
-var
-  rr,cc: integer;
-begin
-  for rr := 0 to rowscount - 1 do
-    for cc := 0 to colscount - 1 do
-      LoadIc(Index,rr,cc);
 end;
 
 procedure TFlaunchMainForm.LoadLinks;
@@ -1495,50 +1320,6 @@ begin
     end;
 end;
 
-procedure TFlaunchMainForm.CreatePanel(PanelIndex: integer);
-var
-  rr,cc,tt: integer;
-begin
-  tt := PanelIndex;
-  for rr := 0 to rowscount - 1 do
-    for cc := 0 to colscount - 1 do
-      begin
-        (FindComponent(Format('GroupPanel%d',[tt+1])) as TPanel).Color := PanelColor;
-        panels[tt][rr][cc] := TMyPanel.Create(self, (FindComponent(Format('GroupPanel%d',[tt+1])) as TPanel), iconwidth, iconheight, PanelColor);
-        with panels[tt][rr][cc] do
-          begin
-            Left := (lpadding*(cc + 1)) + (iconwidth*cc);
-            Top := (lpadding*(rr + 1)) + (iconheight*rr);
-            TabNum := tt;
-            RowNum := rr;
-            ColNum := cc;
-            PopupMenu := FlaunchMainForm.PopupMenu;
-            OnMouseMove := PanelMouseMove;
-            OnClick := PanelClick;
-            OnDragFile := PanelDragFile;
-            OnDragOver := PanelDragOver;
-            OnDragDrop := PanelDragDrop;
-            Show;
-          end;
-        end;
-end;
-
-procedure TFlaunchMainForm.DestroyPanel(PanelIndex: integer);
-var
-  rr,cc,tt: integer;
-begin
-  tt := PanelIndex;
-  for rr := 0 to rowscount - 1 do
-    for cc := 0 to colscount - 1 do
-      panels[tt][rr][cc].Destroy;
-end;
-
-procedure TFlaunchMainForm.ClearLinks(Index: integer);
-begin
-  fillchar(links[Index], sizeof(link), 0);
-  LoadPanelLinks(Index);
-end;
-
 procedure TFlaunchMainForm.ButtonPopupItem_ClearClick(Sender: TObject);
 var
   TempButton: TFLButton;
@@ -1550,7 +1331,6 @@ begin
   then
     TempButton.FreeData;
   TempButton.RemoveFrame;
-  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ExportClick(Sender: TObject);
@@ -1574,12 +1354,10 @@ begin
   if OpenButtonDialog.Execute(Handle) then
     ImportButton(TempButton, OpenButtonDialog.FileName);
   TempButton.RemoveFrame;
-  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_PropsClick(Sender: TObject);
 var
-  flfrm: TFilePropertiesForm;
   TempButton: TFLButton;
 begin
   TempButton := FLPanel.LastUsedButton;
@@ -1641,8 +1419,6 @@ begin
 end;
 
 procedure TFlaunchMainForm.GenerateWnd;
-var
-  tt: integer;
 begin
   StatusBar.Visible := statusbarvis;
   case titlebar of
@@ -1659,34 +1435,6 @@ begin
     FormStyle := fsStayOnTop;
 
   ChangeWndSize;
-end;
-
-procedure TFlaunchMainForm.PanelDragDrop(Sender, Source: TObject; X, Y: Integer);
-var
-  t,t2,r,r2,c,c2: integer;
-  templ: lnk;
-begin
-  GetCoordinates(Sender, t, r, c);
-  GetCoordinates(Source, t2, r2, c2);
-  templ := links[t2][r2][c2];
-  links[t2][r2][c2] := links[t][r][c];
-  links[t][r][c] := templ;
-  LoadIc(t,r,c);
-  LoadIc(t2,r2,c2);
-  SaveLinksCfgFile;
-end;
-
-procedure TFlaunchMainForm.PanelDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
-var
-  t,r,c: integer;
-begin
-  if (Source is TMyPanel) then
-    begin
-      GetCoordinates(Source, t, r, c);
-      Accept := (links[t][r][c].active) and (Sender <> Source);
-    end
-  else
-    Accept := false;
 end;
 
 procedure TFlaunchMainForm.FLPanelButtonClick(Sender: TObject;
@@ -1843,8 +1591,6 @@ begin
   Button.Data.AssignIcons;
   //--Перерисовываем кнопку
   Button.Repaint;
-
-  SaveLinksCfgFile;
 end;
 
 procedure TFlaunchMainForm.FormActivate(Sender: TObject);
@@ -1957,7 +1703,7 @@ end;
 procedure TFlaunchMainForm.MainTabsNewDragDrop(Sender, Source: TObject; X,
   Y: Integer);
 var
-  i: byte;
+  i: integer;
   Rect: TRect;
   TempStr: string;
 begin
@@ -1988,7 +1734,7 @@ end;
 procedure TFlaunchMainForm.MainTabsNewDragOver(Sender, Source: TObject; X,
   Y: Integer; State: TDragState; var Accept: Boolean);
 var
-  i: byte;
+  i: integer;
   Rect: TRect;
 begin
   //--Если перетягиваемый объект - кнопка
@@ -2019,7 +1765,7 @@ end;
 procedure TFlaunchMainForm.MainTabsNewMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  i: byte;
+  i: integer;
   Rect: TRect;
   MousePos: TPoint;
 begin
@@ -2056,36 +1802,6 @@ end;
 procedure TFlaunchMainForm.NI_CloseClick(Sender: TObject);
 begin
   Application.Terminate;
-end;
-
-procedure TFlaunchMainForm.ImportButton(filename: string; t,r,c: integer);
-const
-  sect = 'button';
-var
-  fbut: TIniFile;
-begin
-  fbut := TIniFile.Create(filename);
-  if (not fileexists(fbut.ReadString(sect,'object',''))) and (not directoryexists(fbut.ReadString(sect,'object',''))) then
-    begin
-      fbut.Free;
-      exit;
-    end;
-  links[t][r][c].active := true;
-  links[t][r][c].exec := fbut.ReadString(sect,'object','');
-  links[t][r][c].workdir := fbut.ReadString(sect,'workdir','');
-  links[t][r][c].icon := fbut.ReadString(sect,'icon','');
-  links[t][r][c].iconindex := fbut.ReadInteger(sect,'iconindex',0);
-  links[t][r][c].params := fbut.ReadString(sect,'parameters','');
-  links[t][r][c].dropfiles := fbut.ReadBool(sect,'dropfiles',false);
-  links[t][r][c].dropparams := fbut.ReadString(sect,'dropparameters','');
-  links[t][r][c].descr := fbut.ReadString(sect,'describe','');
-  links[t][r][c].ques := fbut.ReadBool(sect,'question',false);
-  links[t][r][c].hide := fbut.ReadBool(sect,'hide',false);
-  links[t][r][c].pr := fbut.ReadInteger(sect,'priority',0);
-  links[t][r][c].wst := fbut.ReadInteger(sect,'windowstate',0);
-  fbut.Free;
-  LoadIc(t,r,c);
-  SaveLinksCfgFile;
 end;
 
 //--Экспортирование настроек кнопки в файл
@@ -2141,7 +1857,7 @@ end;
 
 /// <summary>Функция определяет, находятся ли координаты t,r,c в пределах
 /// текущего размера панели</summary>
-function TFlaunchMainForm.IsTRCInRange(t, r, c: byte): boolean;
+function TFlaunchMainForm.IsTRCInRange(t, r, c: integer): boolean;
 begin
   Result := (t >= 0) and (t < TabsCount) and (r >= 0) and (r < RowsCount) and (c >= 0) and (c < ColsCount);
 end;
@@ -2152,13 +1868,6 @@ var
 begin
   Application.CreateForm(TAboutForm, frm);
   frm.ShowModal;
-end;
-
-procedure TFlaunchMainForm.NI_SaveClick(Sender: TObject);
-begin
-  SaveIni;
-  SaveLinksCfgFile;
-  SaveLinksToCash;
 end;
 
 procedure TFlaunchMainForm.NI_SettingsClick(Sender: TObject);
@@ -2172,125 +1881,6 @@ end;
 procedure TFlaunchMainForm.NI_ShowClick(Sender: TObject);
 begin
   ChWinView(true);
-end;
-
-procedure TFlaunchMainForm.PanelClick(Sender: TObject);
-var
-  t,r,c: integer;
-begin
-  GetCoordinates(Sender, t, r, c);
-  GlobTab := t;
-  GlobRow := r;
-  GlobCol := c;
-  NewProcess(links[GlobTab][GlobRow][GlobCol], Handle);
-end;
-
-procedure TFlaunchMainForm.DropExecProgram(FileName: string; t,r,c: integer; fromlnk: boolean);
-begin
-  links[t,r,c].ltype := 0;
-  if links[t,r,c].exec = '' then
-    links[t,r,c].exec := FileName;
-  if not fromlnk then
-    begin
-      links[t,r,c].workdir := ExtractFilePath(FileName);
-      links[t,r,c].icon := FileName;
-    end;
-  if links[t,r,c].descr = '' then
-    links[t,r,c].descr := GetFileDescription(links[t,r,c].exec);
-  if links[t,r,c].descr = '' then
-    links[t,r,c].descr := ExtractFileNameNoExt(links[t,r,c].exec);
-end;
-
-procedure TFlaunchMainForm.DropFileFolder(FileName: string; t,r,c: integer; fromlnk: boolean);
-begin
-  links[t,r,c].ltype := 1;
-  if links[t,r,c].exec = '' then
-    links[t,r,c].exec := FileName;
-  if not fromlnk then
-    begin
-      links[t,r,c].workdir := ExtractFilePath(FileName);
-      links[t,r,c].icon := FileName;
-    end;
-  if links[t,r,c].descr = '' then
-    links[t,r,c].descr := ExtractFileName(links[t,r,c].exec);
-end;
-
-procedure TFlaunchMainForm.PanelDragFile(Sender: TObject; FileName: string);
-var
-  lnkinfo: TShellLinkInfoStruct;
-  pch: array[0..MAX_PATH] of char;
-  t,r,c: integer;
-  h, id: cardinal;
-  ext: string;
-  fromlnk: boolean;
-begin
-  GetCoordinates(Sender, t, r, c);
-  if (links[t][r][c].active) and (links[t][r][c].dropfiles) then
-    begin
-      GlobTab := t;
-      GlobRow := r;
-      GlobCol := c;
-      NewProcess(links[GlobTab][GlobRow][GlobCol], Handle, FileName);
-      exit;
-    end;
-  if (links[t][r][c].active) and (not ConfirmDialog(Language.Messages.BusyReplace,
-    Language.Messages.Confirmation)) then
-    exit;
-  fillchar(links[t,r,c],sizeof(lnk),0);
-  if extractfileext(FileName).ToLower = '.flb' then
-    if ConfirmDialog(format(Language.Messages.ImportButton,[FileName]), Language.Messages.Confirmation) then
-      begin
-        ImportButton(FileName, t, r, c);
-        exit;
-      end;
-  if extractfileext(FileName).ToLower = '.lnk' then
-    begin
-      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, MAX_PATH - 1);
-      GetLinkInfo(@lnkinfo);
-      ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
-      links[t,r,c].exec := pch;
-      FileName := links[t,r,c].exec;
-      ext := extractfileext(links[t,r,c].exec).ToLower;
-      fromlnk := true;
-      ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileContiningIcon,pch,sizeof(pch));
-      links[t,r,c].icon := pch;
-      if links[t,r,c].icon = '' then
-        links[t,r,c].icon := links[t,r,c].exec;
-      links[t,r,c].iconindex := lnkinfo.IconIndex;
-      ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfWorkingDirectroy,pch,sizeof(pch));
-      links[t,r,c].workdir := pch;
-      links[t,r,c].params := lnkinfo.ParamStringsOfFileToExecute;
-      links[t,r,c].descr := lnkinfo.Description;
-    end
-  else
-    begin
-      ext := extractfileext(FileName).ToLower;
-      fromlnk := false;
-    end;
-  if (ext = '.exe') or (ext = '.bat') then
-    DropExecProgram(FileName, t, r, c, fromlnk)
-  else
-    DropFileFolder(FileName, t, r, c, fromlnk);
-
-  links[t,r,c].active := true;
-  LoadIc(t,r,c);
-  SaveLinksCfgFile;
-end;
-
-procedure TFlaunchMainForm.PanelMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-var
-  t,r,c: integer;
-begin
-  GetCoordinates(Sender, t, r, c);
-  if links[t][r][c].active then
-    begin
-      panels[t][r][c].Hint := Format(Language.Main.Location + #13#10 +
-        Language.Main.Parameters + #13#10 + Language.Main.Description,
-        [links[t][r][c].exec, links[t][r][c].params, MyCutting(links[t][r][c].descr, 60)]);
-      StatusBar.Panels[0].Text := MyCutting(links[t][r][c].descr, 60);
-    end
-  else
-    StatusBar.Panels[0].Text := ''; 
 end;
 
 end.

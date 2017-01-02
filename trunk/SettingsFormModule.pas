@@ -137,7 +137,6 @@ procedure TSettingsForm.ReloadIconsButtonClick(Sender: TObject);
 begin
   Close;
   FlaunchMainForm.LoadLinks;
-  FlaunchMainForm.SaveLinksToCash;
 end;
 
 procedure TSettingsForm.CancelButtonClick(Sender: TObject);
@@ -280,7 +279,7 @@ end;
 
 procedure TSettingsForm.OKButtonClick(Sender: TObject);
 var
-  i, tabnum: integer;
+  tabnum: integer;
 begin
   ChPos := true;
   FlaunchMainForm.ChWinView(False);
@@ -318,7 +317,6 @@ begin
   else
     FlaunchMainForm.MainTabsNew.TabIndex := 0;
   Language.Load(lngfilename);
-  FlaunchMainForm.SaveIni;
   FlaunchMainForm.GenerateWnd;
   FlaunchMainForm.ChWinView(true);
   ChPos := false;
