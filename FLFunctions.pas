@@ -332,12 +332,9 @@ begin
     FValid := False;
     FSize := GetFileVersionInfoSize(PChar(FileName), FHandle);
     if FSize > 0 then
-      try
+      begin
         GetMem(FBuffer, FSize);
         FValid := GetFileVersionInfo(PChar(FileName), FHandle, FSize, FBuffer);
-      except
-        FValid := False;
-        raise;
       end;
     Result := '';
     if FValid then

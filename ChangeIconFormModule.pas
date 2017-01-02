@@ -55,8 +55,6 @@ type
   private
     icindex, iconcount: integer;
     BrowseIcon, RefProps: TPNGButton;
-    _ic: string;
-    _icindex: integer;
   public
     procedure RefreshProps;
   end;
