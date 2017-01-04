@@ -42,6 +42,7 @@ object FlaunchMainForm: TFlaunchMainForm
     Width = 325
     Height = 146
     Align = alClient
+    PopupMenu = TabPopupMenu
     TabOrder = 1
     OnChange = MainTabsNewChange
     OnDragDrop = MainTabsNewDragDrop
