@@ -247,12 +247,6 @@ begin
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
 
   ScanLanguagesDir;
-  TabsEdit.Text := inttostr(tabscount);
-  RowsEdit.Text := inttostr(rowscount);
-  ColsEdit.Text := inttostr(colscount);
-  PaddingEdit.Text := inttostr(lpadding);
-  IWEdit.Text := inttostr(iconwidth - 4);
-  IHEdit.Text := inttostr(iconheight - 4);
   AutorunCheckBox.Checked := (SettingsMode <> 2) and (Autorun);
   TopCheckBox.Checked := AlwaysOnTop;
   StartHideBox.Checked := StartHide;
@@ -260,7 +254,7 @@ begin
   TBarBox.ItemIndex := titlebar;
   TabsBox.ItemIndex := tabsview;
   TabsEdit.MaxValue := maxt;
-  TabsEdit.Value := tabscount;
+  TabsEdit.Value := FlaunchMainForm.tabscount;
   TabsEdit.MinValue := mint;
   RowsEdit.MaxValue := maxr;
   RowsEdit.Value := rowscount;
@@ -271,8 +265,8 @@ begin
   PaddingEdit.MaxValue := maxp;
   PaddingEdit.Value := lpadding;
   PaddingEdit.MinValue := minp;
-  IWEdit.Value := iconwidth - 4;
-  IHEdit.Value := iconheight - 4;
+  IWEdit.Value := FlaunchMainForm.ButtonWidth;
+  IHEdit.Value := FlaunchMainForm.ButtonHeight;
   AutoRunCheckBox.Enabled := SettingsMode <> 2;
   TabsEdit.SetFocus;
 end;
@@ -293,16 +287,14 @@ begin
   titlebar := TBarBox.ItemIndex;
   //FlaunchMainForm.MainTabs.SetFocus;
   tabnum := FlaunchMainForm.MainTabsNew.TabIndex;
-  tabscount := strtoint(TabsEdit.Text);
+  FlaunchMainForm.tabscount := strtoint(TabsEdit.Text);
   rowscount := strtoint(RowsEdit.Text);
   colscount := strtoint(ColsEdit.Text);
   lpadding := strtoint(PaddingEdit.Text);
   iconwidth := strtoint(IWEdit.Text) + 4;
   iconheight := strtoint(IHEdit.Text) + 4;
 
-  FlaunchMainForm.FLPanel.PagesCount := tabscount;
-  FlaunchMainForm.TabsCountNew := tabscount;
-  FlaunchMainForm.GrowTabNames(tabscount);
+  FlaunchMainForm.GrowTabNames(FlaunchMainForm.tabscount);
   FlaunchMainForm.SetTabNames;
   FlaunchMainForm.FLPanel.ColsCount := colscount;
   FlaunchMainForm.FLPanel.RowsCount := rowscount;
@@ -312,7 +304,7 @@ begin
   FlaunchMainForm.ButtonHeight := FlaunchMainForm.FLPanel.ButtonHeight;
   FlaunchMainForm.FLPanel.Padding := lpadding;
   FlaunchMainForm.ReloadIcons;
-  if tabnum < tabscount then
+  if tabnum < FlaunchMainForm.tabscount then
     FlaunchMainForm.MainTabsNew.TabIndex := tabnum
   else
     FlaunchMainForm.MainTabsNew.TabIndex := 0;
