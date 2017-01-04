@@ -337,6 +337,8 @@ type
       procedure SetButtonHeight(const Value: Integer);
       procedure SetButtonColor(const Value: TColor);
       procedure SetPadding(const Value: Integer);
+      function GetButtonHeight: Integer;
+      function GetButtonWidth: Integer;
     protected
 
     public
@@ -370,8 +372,8 @@ type
       property PagesCount: Integer read fPagesCount write SetPagesCount;
       property ColsCount: Integer read fColsCount write SetColsCount;
       property RowsCount: Integer read fRowsCount write SetRowsCount;
-      property ButtonWidth: Integer read FButtonWidth write SetButtonWidth;
-      property ButtonHeight: Integer read FButtonHeight write SetButtonHeight;
+      property ButtonWidth: Integer read GetButtonWidth write SetButtonWidth;
+      property ButtonHeight: Integer read GetButtonHeight write SetButtonHeight;
       property ButtonColor: TColor read fPanelColor write SetButtonColor;
       property Padding: Integer read FPadding write SetPadding;
       //-- нопка по ее индексам (текуща€ активна€ страница)
@@ -1266,6 +1268,16 @@ function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButto
 begin
   fButtons[RowNumber][ColNumber].fCurPage := PageNumber;
   Result := fButtons[RowNumber][ColNumber];
+end;
+
+function TFLPanel.GetButtonHeight: Integer;
+begin
+  Result := fButtonHeight - 4;
+end;
+
+function TFLPanel.GetButtonWidth: Integer;
+begin
+  Result := fButtonWidth - 4;
 end;
 
 procedure TFLPanel.SetButtonColor(const Value: TColor);
