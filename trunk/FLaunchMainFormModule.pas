@@ -784,7 +784,7 @@ end;
 procedure TFlaunchMainForm.SaveLinksSettings;
 var
   RootNode, LinkNode, PanelNode, TabNode, IconNode, DropNode, WindowNode,
-    PositionNode, TabRootNode, PanelRootNode, WindowRootNode: IXMLNode;
+    PositionNode, TabRootNode, PanelRootNode, WindowRootNode, FontNode: IXMLNode;
   t,r,c: integer;
   TempData: TFLDataItem;
   XMLDocument: IXMLDocument;
@@ -798,11 +798,6 @@ begin
 
   RootNode.AddChild('AutoRun').NodeValue := autorun;
   RootNode.AddChild('Language').NodeValue := lngfilename;
-  RootNode.AddChild('TabsView').NodeValue := tabsview;
-
-  TabNode := RootNode.AddChild('TabsFont');
-  TabNode.AddChild('Name').NodeValue := MainTabsNew.Font.Name;
-  TabNode.AddChild('Size').NodeValue := MainTabsNew.Font.Size;
 
   WindowRootNode := RootNode.AddChild('Windows');
   WindowNode := WindowRootNode.AddChild('Window');
@@ -815,9 +810,17 @@ begin
   WindowNode.AddChild('AlwaysOnTop').NodeValue := alwaysontop;
   WindowNode.AddChild('StatusBar').NodeValue := statusbarvis;
   WindowNode.AddChild('StartHidden').NodeValue := starthide;
-  WindowNode.AddChild('ActiveTab').NodeValue := MainTabsNew.TabIndex + 1;
 
   TabRootNode := WindowNode.AddChild('Tabs');
+
+  TabRootNode.AddChild('View').NodeValue := tabsview;
+
+  FontNode := TabRootNode.AddChild('Font');
+  FontNode.AddChild('Name').NodeValue := MainTabsNew.Font.Name;
+  FontNode.AddChild('Size').NodeValue := MainTabsNew.Font.Size;
+
+  TabRootNode.AddChild('ActiveTab').NodeValue := MainTabsNew.TabIndex + 1;
+
   PanelRootNode := RootNode.AddChild('Panels');
   for t := 0 to TabsCount - 1 do
   begin
@@ -926,7 +929,7 @@ end;
 procedure TFlaunchMainForm.LoadLinksSettings;
 var
   RootNode, LinkNode, IconNode, TabNode, WindowNode, PositionNode,
-    TabRootNode, PanelRootNode, PanelNode, DropNode: IXMLNode;
+    TabRootNode, PanelRootNode, PanelNode, DropNode, FontNode: IXMLNode;
   TabNumber, Row, Column: Integer;
   TempData: TFLDataItem;
   XMLDocument: IXMLDocument;
@@ -987,14 +990,6 @@ begin
 
   autorun := GetBool(RootNode, 'AutoRun');
   lngfilename := GetStr(RootNode, 'Language');
-  tabsview := GetInt(RootNode, 'TabsView');
-
-  TabNode := RootNode.ChildNodes.FindNode('TabsFont');
-  if Assigned(TabNode) and TabNode.HasChildNodes then
-  begin
-    MainTabsNew.Font.Name := GetStr(TabNode, 'Name');
-    MainTabsNew.Font.Size := GetInt(TabNode, 'Size');
-  end;
 
   WindowNode := RootNode.ChildNodes.FindNode('Windows');
   if (not Assigned(WindowNode)) or (not WindowNode.HasChildNodes) then
@@ -1019,7 +1014,6 @@ begin
   alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
   statusbarvis := GetBool(WindowNode, 'StatusBar');
   starthide := GetBool(WindowNode, 'StartHidden');
-  MainTabsNew.TabIndex := GetInt(WindowNode, 'ActiveTab') - 1;
 
   TabsCount := 0;
   TabNames.Clear;
@@ -1027,8 +1021,19 @@ begin
   if (not Assigned(TabRootNode)) or (not TabRootNode.HasChildNodes) then
     Exit;
 
-  TabNode := TabRootNode.ChildNodes.First;
-  while Assigned(TabNode) do
+  tabsview := GetInt(TabRootNode, 'View');
+
+  FontNode := TabRootNode.ChildNodes.FindNode('Font');
+  if Assigned(FontNode) and FontNode.HasChildNodes then
+  begin
+    MainTabsNew.Font.Name := GetStr(FontNode, 'Name');
+    MainTabsNew.Font.Size := GetInt(FontNode, 'Size');
+  end;
+
+  MainTabsNew.TabIndex := GetInt(TabRootNode, 'ActiveTab') - 1;
+
+  TabNode := TabRootNode.ChildNodes.FindNode('Tab');
+  while Assigned(TabNode) and TabNode.HasChildNodes do
   begin
     Inc(TabsCount);
     TabNumber := TabNode.Attributes['Number'];
@@ -1068,7 +1073,7 @@ begin
     FLPanel.ButtonColor := ButtonsColor;
 
     LinkNode := PanelNode.ChildNodes.FindNode('Link');
-    if Assigned(LinkNode) and LinkNode.HasChildNodes then
+    while Assigned(LinkNode) and LinkNode.HasChildNodes do
     begin
       Row := GetInt(LinkNode, 'Row') - 1;
       Column := GetInt(LinkNode, 'Column') - 1;
@@ -1102,6 +1107,8 @@ begin
       TempData.Hide := GetBool(LinkNode, 'HideContainer');
       TempData.Pr := GetInt(LinkNode, 'Priority');
       TempData.WSt := GetInt(LinkNode, 'WindowState');
+
+      LinkNode := LinkNode.NextSibling;
     end;
 
     PanelNode := PanelNode.NextSibling;
