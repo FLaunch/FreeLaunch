@@ -146,7 +146,6 @@ type
     procedure UMShowMainForm(var Msg: TMessage); message UM_ShowMainForm;
     procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
 
-    procedure LoadLinksFromCash;
     procedure ImportButton(Button: TFLButton; FileName: string);
     procedure ExportButton(Button: TFLButton; FileName: string);
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -185,7 +184,7 @@ type
   public
     FLPanel: TFLPanel;
     //--Количество вкладок
-    TabsCountNew: integer;
+    TabsCount: integer;
     //--Ширина и высота кнопок
     ButtonWidth, ButtonHeight: integer;
     //--Цвет кнопок
@@ -214,7 +213,8 @@ var
   FlaunchMainForm: TFlaunchMainForm;
   SettingsMode: integer; //Режим работы (0 - инсталляция, настройки хранятся в APPDATA; 1 - инсталляция, настройки хранятся в папке программы; 2 - портабельный режим, инсталляция, настройки хранятся в папке программы)
   PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
-  iconwidth, iconheight, tabscount, rowscount, colscount, lpadding, tabind, LeftPer, TopPer, CurScrW, CurScrH: integer;
+  iconwidth, iconheight, rowscount, colscount, lpadding, tabind,
+    LeftPer, TopPer, CurScrW, CurScrH: integer;
   templinks: link;
   links: array[0..maxt - 1] of link;
   panels: array[0..maxt - 1] of panel;
@@ -227,7 +227,8 @@ var
   GlobTabNum: integer = -1;
   Nim: TNotifyIconData;
   Ini: TIniFile;
-  Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing, statusbarvis, altlinkscolor, altformscolor: boolean;
+  Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
+    statusbarvis, altlinkscolor, altformscolor: boolean;
   titlebar, tabsview: integer;
   PanelColor, FormColor: TColor;
   lngfilename: string;
@@ -376,10 +377,14 @@ procedure TFlaunchMainForm.SetTabNames;
 var
   i: Integer;
 begin
-  if TabsCountNew > 1 then
+  if TabsCount > 1 then
+  begin
     {*--Задаем имена вкладок--*}
-    for i := 0 to TabsCountNew - 1 do
+    for i := 0 to TabsCount - 1 do
       SetTabName(i);
+  end
+  else
+    MainTabsNew.Tabs.Clear;
 end;
 
 function TFlaunchMainForm.DefNameOfTab(tn: string): boolean;
@@ -396,7 +401,7 @@ end;
 //--Удаление вкладки
 procedure TFlaunchMainForm.DeleteTab(i: integer);
 begin
-  if TabsCountNew = 1 then
+  if TabsCount = 1 then
     Exit;
   if not ConfirmDialog(format(Language.Messages.DeleteTab, [MainTabsNew.Tabs[i]]),
     Language.Messages.Confirmation)
@@ -407,9 +412,9 @@ begin
   //--Удаляем вкладку
   MainTabsNew.Tabs.Delete(i);
   //--Уменьшаем счетчик вкладок на 1
-  Dec(TabsCountNew);
+  Dec(TabsCount);
   //--Если осталась единственная вкладка, скрываем ее
-  if TabsCountNew = 1 then
+  if TabsCount = 1 then
     MainTabsNew.Tabs.Clear;
   SetTabNames;
   //--Удаляем страницу данных и делаем активной нужную вкладку
@@ -427,9 +432,7 @@ end;
 procedure TFlaunchMainForm.LoadIni;
 var
   i: integer;
-  WorkArea: TRect;
 begin
-  SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
   Ini := TIniFile.Create(workdir+'FLaunch.ini');
   lngfilename := ini.ReadString(inisection, 'language', 'English.lng');
   tabscount := ini.ReadInteger(inisection, 'tabs', 3);
@@ -493,11 +496,10 @@ begin
     FormColor := ColorStrToColor(ini.ReadString(inisection, 'formscolor', 'default'))
   else
     FormColor := clBtnFace;
-  try
-    MainTabsNew.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
-    MainTabsNew.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
-  except
-  end;
+
+  MainTabsNew.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
+  MainTabsNew.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
+
   ini.Free;
 end;
 
@@ -793,15 +795,10 @@ begin
   XMLDocument.Active := true;
   RootNode := XMLDocument.AddChild('FLaunch');
   RootNode.AddChild('Version').NodeValue := GetFLVersion;
-  RootNode.AddChild('Padding').NodeValue := lpadding;
 
-  IconNode := RootNode.AddChild('Icons');
-  IconNode.AddChild('Width').NodeValue := ButtonWidth;
-  IconNode.AddChild('Height').NodeValue := ButtonHeight;
-
-  RootNode.AddChild('TabsView').NodeValue := tabsview;
   RootNode.AddChild('AutoRun').NodeValue := autorun;
   RootNode.AddChild('Language').NodeValue := lngfilename;
+  RootNode.AddChild('TabsView').NodeValue := tabsview;
 
   TabNode := RootNode.AddChild('TabsFont');
   TabNode.AddChild('Name').NodeValue := MainTabsNew.Font.Name;
@@ -822,7 +819,7 @@ begin
 
   TabRootNode := WindowNode.AddChild('Tabs');
   PanelRootNode := RootNode.AddChild('Panels');
-  for t := 0 to TabsCountNew - 1 do
+  for t := 0 to TabsCount - 1 do
   begin
     TabNode := TabRootNode.AddChild('Tab');
     TabNode.Attributes['Number'] := t + 1;
@@ -832,6 +829,11 @@ begin
     PanelNode.AddChild('TabNumber').NodeValue := t + 1;
     PanelNode.AddChild('Rows').NodeValue := rowscount;
     PanelNode.AddChild('Columns').NodeValue := colscount;
+
+    IconNode := PanelNode.AddChild('Icons');
+    IconNode.AddChild('Width').NodeValue := ButtonWidth;
+    IconNode.AddChild('Height').NodeValue := ButtonHeight;
+
     PanelNode.AddChild('Padding').NodeValue := LPadding;
     PanelNode.AddChild('Color').NodeValue := ColorToString(ButtonsColor);
 
@@ -869,81 +871,6 @@ begin
   XMLDocument.SaveToFile(WorkDir + 'FLaunch.xml');
   XMLDocument.Active := false;
   FLPanel.ExpandStrings := true;
-end;
-
-procedure TFlaunchMainForm.LoadLinksFromCash;
-var
-  t,r,c,tt,rr,cc: integer;
-  FileName: string;
-  LinksCashFile: THandle;
-  bufflen: integer;
-  Stream: TMemoryStream;
-  iw,ih: integer;
-begin
-  FileName := workdir + 'IconCache.dat';
-  if not (fileexists(FileName)) then
-    begin
-      LoadLinks;
-      exit;
-    end;
-  LinksCashFile := FileOpen(FileName, fmOpenRead);
-  if LoadCfgFileString(LinksCashFile, 5) <> 'LCASH' then
-    begin
-      FileClose(LinksCashFile);
-      LoadLinks;
-      exit;
-    end;
-  if LoadCfgFileString(LinksCashFile) <> version then
-    begin
-      FileClose(LinksCashFile);
-      LoadLinks;
-      exit;
-    end;
-  FileRead(LinksCashFile, iw, sizeof(integer));
-  FileRead(LinksCashFile, ih, sizeof(integer));
-  if (iw <> iconwidth) or (ih <> iconheight) then
-    begin
-      FileClose(LinksCashFile);
-      LoadLinks;
-      exit;
-    end;
-  Stream := TMemoryStream.Create;
-  for tt := 0 to tabscount - 1 do
-    for rr := 0 to rowscount - 1 do
-      for cc := 0 to colscount - 1 do
-        begin
-          FileRead(LinksCashFile, t, sizeof(integer));
-          FileRead(LinksCashFile, r, sizeof(integer));
-          FileRead(LinksCashFile, c, sizeof(integer));
-          FileRead(LinksCashFile, bufflen, sizeof(bufflen));
-          if bufflen > 0 then
-            begin
-              Stream.Clear;
-              Stream.SetSize(bufflen);
-              FileRead(LinksCashFile, (Stream.Memory)^, bufflen);
-              if links[t][r][c].active then
-                begin
-                  panels[tt][rr][cc].Icon.LoadFromStream(Stream);
-                  panels[tt,rr,cc].HasIcon := true;
-                  panels[t,r,c].Repaint;
-                end;
-              Stream.Clear;
-              FileRead(LinksCashFile, bufflen, sizeof(bufflen));
-              Stream.SetSize(bufflen);
-              if bufflen > 0 then
-                begin
-                  FileRead(LinksCashFile, (Stream.Memory)^, bufflen);
-                  if links[t][r][c].active then
-                    panels[tt][rr][cc].PushedIcon.LoadFromStream(Stream);
-                end;
-            end
-          else
-            begin
-              LoadIc(tt,rr,cc);
-            end;
-        end;
-  Stream.Free;
-  FileClose(LinksCashFile);
 end;
 
 /// <summary>Считывание иконок кнопок из кэша</summary>
@@ -1057,20 +984,10 @@ begin
     Exit;
 
   Version := GetStr(RootNode, 'Version');
-  lpadding := GetInt(RootNode, 'Padding');
 
-  IconNode := RootNode.ChildNodes.FindNode('Icons');
-  if Assigned(IconNode) and IconNode.HasChildNodes then
-  begin
-    ButtonWidth := GetInt(IconNode, 'Width');
-    ButtonHeight := GetInt(IconNode, 'Height');
-    FLPanel.ButtonWidth := ButtonWidth;
-    FLPanel.ButtonHeight := ButtonHeight;
-  end;
-
-  tabsview := GetInt(RootNode, 'TabsView');
   autorun := GetBool(RootNode, 'AutoRun');
   lngfilename := GetStr(RootNode, 'Language');
+  tabsview := GetInt(RootNode, 'TabsView');
 
   TabNode := RootNode.ChildNodes.FindNode('TabsFont');
   if Assigned(TabNode) and TabNode.HasChildNodes then
@@ -1104,7 +1021,7 @@ begin
   starthide := GetBool(WindowNode, 'StartHidden');
   MainTabsNew.TabIndex := GetInt(WindowNode, 'ActiveTab') - 1;
 
-  TabsCountNew := 0;
+  TabsCount := 0;
   TabNames.Clear;
   TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
   if (not Assigned(TabRootNode)) or (not TabRootNode.HasChildNodes) then
@@ -1113,7 +1030,7 @@ begin
   TabNode := TabRootNode.ChildNodes.First;
   while Assigned(TabNode) do
   begin
-    Inc(TabsCountNew);
+    Inc(TabsCount);
     TabNumber := TabNode.Attributes['Number'];
     GrowTabNames(TabNumber);
     TabNames.Strings[TabNumber - 1] := GetStr(TabNode, 'Name');
@@ -1126,7 +1043,7 @@ begin
     Exit;
 
   PanelNode := PanelRootNode.ChildNodes.First;
-  for TabNumber := 0 to TabsCountNew - 1 do
+  for TabNumber := 0 to TabsCount - 1 do
   begin
     if (not Assigned(PanelNode)) or (not PanelNode.HasChildNodes) then
       Exit;
@@ -1135,6 +1052,16 @@ begin
     ColsCount := GetInt(PanelNode, 'Columns');
     FLPanel.RowsCount := RowsCount;
     FLPanel.ColsCount := ColsCount;
+
+    IconNode := PanelNode.ChildNodes.FindNode('Icons');
+    if Assigned(IconNode) and IconNode.HasChildNodes then
+    begin
+      ButtonWidth := GetInt(IconNode, 'Width');
+      ButtonHeight := GetInt(IconNode, 'Height');
+      FLPanel.ButtonWidth := ButtonWidth;
+      FLPanel.ButtonHeight := ButtonHeight;
+    end;
+
     LPadding := GetInt(PanelNode, 'Padding');
     FLPanel.Padding := LPadding;
     ButtonsColor := GetColor(PanelNode, 'Color');
@@ -1641,14 +1568,26 @@ begin
     sini.Free;
   end;
 
-  LoadIni;
-  ButtonsColor := PanelColor;
-  TabsCountNew := tabscount;
-  ButtonWidth := iconwidth - panelzoom;
-  ButtonHeight := iconheight - panelzoom;
+  if FileExists(WorkDir + 'FLaunch.xml') then
+  begin
+    //--Читаем настройки кнопок
+    LoadLinksSettings;
+    //--Читаем иконки кнопок из кэша
+    LoadLinksIconsFromCache;
+  end
+  else
+  begin
+    LoadIni;
+    LoadLinksCfgFile;
+    LoadLinks;
 
-  //--Читаем настройки кнопок
-  LoadLinksSettings;
+    ButtonsColor := PanelColor;
+    ButtonWidth := iconwidth - panelzoom;
+    ButtonHeight := iconheight - panelzoom;
+
+    GrowTabNames(TabsCount);
+  end;
+
   Language.AddNotifier(LoadLanguage);
   Language.Load(lngfilename);
   //--Разрешаем/запрешаем автозагрузку
@@ -1663,24 +1602,17 @@ begin
   FLPanel.OnButtonMouseLeave := FLPanelButtonMouseLeave;
   FLPanel.OnDropFile := FLPanelDropFile;
   FLPanel.ButtonsPopup := ButtonPopupMenu;
-  for I := 1 to TabsCountNew do
-    TabNames.Add('');
   SetTabNames;
-  //--Читаем иконки кнопок из кэша
-  LoadLinksIconsFromCache;
 
   GenerateWnd;
   MainTabsNew.TabIndex := tabind;
-  LoadLinksCfgFile;
-  if fileexists(workdir + '.session') then
-    LoadLinks
-  else
-    begin
-      LoadLinksFromCash;
-      //--Создаем файл, который будет идентифицировать сессию. При корректном завершении программы файл будет удален
-      FileClose(FileCreate(workdir + '.session'));
-      SetFileAttributes(PChar(workdir + '.session'), FILE_ATTRIBUTE_HIDDEN);
-    end;
+
+  if not fileexists(workdir + '.session') then
+  begin
+    //--Создаем файл, который будет идентифицировать сессию. При корректном завершении программы файл будет удален
+    FileClose(FileCreate(workdir + '.session'));
+    SetFileAttributes(PChar(workdir + '.session'), FILE_ATTRIBUTE_HIDDEN);
+  end;
   TrayIcon.Hint := Format('%s %s',[cr_progname, GetFLVersion]);
   if not StartHide then
     ChWinView(True)
@@ -1711,7 +1643,7 @@ begin
   if (Source is TTabControl) then
   begin
     //--Перебираем все вкладки
-    for i := 0 to TabsCountNew - 1 do
+    for i := 0 to TabsCount - 1 do
     begin
       //--Определяем регион вкладки
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
@@ -1745,7 +1677,7 @@ begin
     if not Accept then
       Exit;
     //--Перебираем все вкладки
-    for i := 0 to TabsCountNew - 1 do
+    for i := 0 to TabsCount - 1 do
     begin
       //--Определяем регион вкладки
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
@@ -1775,7 +1707,7 @@ begin
   if Button = mbRight then
   begin
     //--Перебираем все вкладки
-    for i := 0 to TabsCountNew - 1 do
+    for i := 0 to TabsCount - 1 do
     begin
       //--Определяем регион вкладки
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
