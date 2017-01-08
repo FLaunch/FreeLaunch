@@ -209,7 +209,7 @@ object SettingsForm: TSettingsForm
         Width = 64
         Height = 22
         MaxValue = 100
-        MinValue = 0
+        MinValue = 1
         TabOrder = 9
         Value = 1
       end
@@ -219,7 +219,7 @@ object SettingsForm: TSettingsForm
         Width = 64
         Height = 22
         MaxValue = 100
-        MinValue = 0
+        MinValue = 1
         TabOrder = 10
         Value = 1
       end
@@ -229,7 +229,7 @@ object SettingsForm: TSettingsForm
         Width = 64
         Height = 22
         MaxValue = 100
-        MinValue = 0
+        MinValue = 1
         TabOrder = 11
         Value = 1
       end

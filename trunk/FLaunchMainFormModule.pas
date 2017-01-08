@@ -42,17 +42,9 @@ const
 
   inisection = 'general';
 
-  mint = 1;
-  minr = 1;
-  minc = 1;
-  minp = 1;
-
   maxt = 8;
   maxr = 5;
   maxc = 15;
-  maxp = 5;
-
-  panelzoom = 4;
 
   MultKey = 13574;
   AddKey = 46287;
@@ -213,7 +205,7 @@ var
   FlaunchMainForm: TFlaunchMainForm;
   SettingsMode: integer; //–ежим работы (0 - инсталл€ци€, настройки хран€тс€ в APPDATA; 1 - инсталл€ци€, настройки хран€тс€ в папке программы; 2 - портабельный режим, инсталл€ци€, настройки хран€тс€ в папке программы)
   PropertiesMode: integer; //ѕеременна€ содержит тип кнопки, свойства которой редактируютс€ в данный момент
-  iconwidth, iconheight, rowscount, colscount, lpadding, tabind,
+  rowscount, colscount, lpadding, tabind,
     LeftPer, TopPer, CurScrW, CurScrH: integer;
   templinks: link;
   links: array[0..maxt - 1] of link;
@@ -228,9 +220,8 @@ var
   Nim: TNotifyIconData;
   Ini: TIniFile;
   Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
-    statusbarvis, altlinkscolor, altformscolor: boolean;
+    statusbarvis: boolean;
   titlebar, tabsview: integer;
-  PanelColor, FormColor: TColor;
   lngfilename: string;
   workdir: string;
   ChPos: boolean = false;
@@ -430,8 +421,20 @@ begin
 end;
 
 procedure TFlaunchMainForm.LoadIni;
+const
+  mint = 1;
+  minr = 1;
+  minc = 1;
+  minp = 1;
+
+  maxt = 8;
+  maxr = 5;
+  maxc = 15;
+  maxp = 5;
+
 var
   i: integer;
+  altlinkscolor: boolean;
 begin
   Ini := TIniFile.Create(workdir+'FLaunch.ini');
   lngfilename := ini.ReadString(inisection, 'language', 'English.lng');
@@ -455,12 +458,12 @@ begin
     lpadding := maxp;
   if lpadding < minp then
     lpadding := minp;
-  iconwidth := ini.ReadInteger(inisection, 'iconwidth', 32) + panelzoom;
-  if (iconwidth < 16 + panelzoom) or (iconwidth > 256 + panelzoom) then
-    iconwidth := 32 + panelzoom;
-  iconheight:= ini.ReadInteger(inisection, 'iconheight', 32) + panelzoom;
-  if (iconheight < 16 + panelzoom) or (iconheight > 256 + panelzoom) then
-    iconheight := 32 + panelzoom;
+  ButtonWidth := ini.ReadInteger(inisection, 'iconwidth', 32);
+  if (ButtonWidth < 16) or (ButtonWidth > 256) then
+    ButtonWidth := 32;
+  ButtonHeight := ini.ReadInteger(inisection, 'iconheight', 32);
+  if (ButtonHeight < 16) or (ButtonHeight > 256) then
+    ButtonHeight := 32;
   tabind := ini.ReadInteger(inisection, 'activetab', 0);
   if (tabind < 0) or (tabind > tabscount-1) then
     tabind := 0;
@@ -475,8 +478,8 @@ begin
   Timer1.Enabled := statusbarvis;
   autorun := ini.ReadBool(inisection, 'autorun', false);
   starthide := ini.ReadBool(inisection, 'starthide', false);
-  GrowTabNames(maxt);
-  for i := 1 to maxt do
+  GrowTabNames(tabscount);
+  for i := 1 to tabscount do
     TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
 
   LeftPer := ini.ReadInteger(inisection, 'formleftpos', 100);
@@ -488,14 +491,9 @@ begin
 
   altlinkscolor := ini.ReadBool(inisection, 'altlinkscolor', false);
   if altlinkscolor then
-    PanelColor := ColorStrToColor(ini.ReadString(inisection, 'linkscolor', 'default'))
+    ButtonsColor := ColorStrToColor(ini.ReadString(inisection, 'linkscolor', 'default'))
   else
-    PanelColor := clBtnFace;
-  altformscolor := ini.ReadBool(inisection, 'altformscolor', false);
-  if altformscolor then
-    FormColor := ColorStrToColor(ini.ReadString(inisection, 'formscolor', 'default'))
-  else
-    FormColor := clBtnFace;
+    ButtonsColor := clBtnFace;
 
   MainTabsNew.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
   MainTabsNew.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
@@ -1550,8 +1548,7 @@ begin
   //--—оздаем экземпл€р панели с кнопками
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
   ChPos := true;
-  PanelColor := clBtnFace;
-  FormColor := clBtnFace;
+  ButtonsColor := clBtnFace;
   randomize;
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
   fl_dir := ExtractFilePath(Application.ExeName);
@@ -1589,15 +1586,20 @@ begin
   else
   begin
     LoadIni;
-    LoadLinksCfgFile;
-    LoadLinks;
 
-    ButtonsColor := PanelColor;
-    ButtonWidth := iconwidth - panelzoom;
-    ButtonHeight := iconheight - panelzoom;
+    FLPanel.ButtonColor := ButtonsColor;
+    FLPanel.Padding := LPadding;
+    FLPanel.ButtonWidth := ButtonWidth;
+    FLPanel.ButtonHeight := ButtonHeight;
+    FLPanel.RowsCount := RowsCount;
+    FLPanel.ColsCount := ColsCount;
 
     GrowTabNames(TabsCount);
     MainTabsNew.TabIndex := tabind;
+    FLPanel.PageNumber := MainTabsNew.TabIndex;
+
+    LoadLinksCfgFile;
+    LoadLinks;
   end;
 
   Language.AddNotifier(LoadLanguage);
