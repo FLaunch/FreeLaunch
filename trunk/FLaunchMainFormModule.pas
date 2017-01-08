@@ -1030,8 +1030,6 @@ begin
     MainTabsNew.Font.Size := GetInt(FontNode, 'Size');
   end;
 
-  MainTabsNew.TabIndex := GetInt(TabRootNode, 'ActiveTab') - 1;
-
   TabNode := TabRootNode.ChildNodes.FindNode('Tab');
   while Assigned(TabNode) and TabNode.HasChildNodes do
   begin
@@ -1042,6 +1040,9 @@ begin
 
     TabNode := TabNode.NextSibling;
   end;
+
+  MainTabsNew.TabIndex := GetInt(TabRootNode, 'ActiveTab') - 1;
+  FLPanel.PageNumber := MainTabsNew.TabIndex;
 
   PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
   if (not Assigned(PanelRootNode)) or (not PanelRootNode.HasChildNodes) then
@@ -1596,6 +1597,7 @@ begin
     ButtonHeight := iconheight - panelzoom;
 
     GrowTabNames(TabsCount);
+    MainTabsNew.TabIndex := tabind;
   end;
 
   Language.AddNotifier(LoadLanguage);
@@ -1612,7 +1614,6 @@ begin
   SetTabNames;
 
   GenerateWnd;
-  MainTabsNew.TabIndex := tabind;
 
   if not fileexists(workdir + '.session') then
   begin
