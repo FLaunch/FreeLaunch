@@ -202,7 +202,6 @@ procedure TSettingsForm.FormShow(Sender: TObject);
 var
   w: integer;
 begin
-  Color := FormColor;
   settingsshowing := true;
   //--Loading language
   OKButton.Caption := Language.BtnOk;
@@ -255,16 +254,11 @@ begin
   TabsBox.ItemIndex := tabsview;
   TabsEdit.MaxValue := maxt;
   TabsEdit.Value := FlaunchMainForm.tabscount;
-  TabsEdit.MinValue := mint;
   RowsEdit.MaxValue := maxr;
   RowsEdit.Value := rowscount;
-  RowsEdit.MinValue := minr;
   ColsEdit.MaxValue := maxc;
   ColsEdit.Value := colscount;
-  ColsEdit.MinValue := minc;
-  PaddingEdit.MaxValue := maxp;
   PaddingEdit.Value := lpadding;
-  PaddingEdit.MinValue := minp;
   IWEdit.Value := FlaunchMainForm.ButtonWidth;
   IHEdit.Value := FlaunchMainForm.ButtonHeight;
   AutoRunCheckBox.Enabled := SettingsMode <> 2;
@@ -291,8 +285,6 @@ begin
   rowscount := strtoint(RowsEdit.Text);
   colscount := strtoint(ColsEdit.Text);
   lpadding := strtoint(PaddingEdit.Text);
-  iconwidth := strtoint(IWEdit.Text) + 4;
-  iconheight := strtoint(IHEdit.Text) + 4;
 
   FlaunchMainForm.GrowTabNames(FlaunchMainForm.tabscount);
   FlaunchMainForm.SetTabNames;
