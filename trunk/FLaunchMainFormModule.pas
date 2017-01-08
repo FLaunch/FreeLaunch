@@ -31,8 +31,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, PanelClass,
-  ComObj, ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
+  Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, ComObj,
+  ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
   ProgrammPropertiesFormModule, FilePropertiesFormModule, RenameTabFormModule,
   SettingsFormModule, AboutFormModule, FLFunctions, FLLanguage, FLClasses;
 
@@ -68,7 +68,6 @@ type
   TPAByte = ^TAByte;
 
   link = array[0..maxr - 1,0..maxc - 1] of lnk;
-  panel = array[0..maxr - 1,0..maxc - 1] of TMyPanel;
 
   TFlaunchMainForm = class(TForm)
     StatusBar: TStatusBar;
@@ -209,7 +208,6 @@ var
     LeftPer, TopPer, CurScrW, CurScrH: integer;
   templinks: link;
   links: array[0..maxt - 1] of link;
-  panels: array[0..maxt - 1] of panel;
   GlobTab: integer = -1;
   GlobRow: integer = -1;
   GlobCol: integer = -1;
@@ -1221,36 +1219,16 @@ begin
 end;
 
 procedure TFlaunchMainForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-var
-  d: integer;
 begin
-  if Key = vk_F2 then
-    begin
-      ButtonPopupItem_RunClick(Nil);
-    end;
   if ((Key = ord('S')) and (ssCtrl in Shift)) then
     NI_SettingsClick(NI_Settings);
   if ((Key = ord('Q')) and (ssCtrl in Shift)) then
     Application.Terminate;
-  if (FocusTab > -1) and (FocusRow > -1) and (FocusCol > -1) then
-    begin
-      if Key = vk_down then
-        Panels[FocusTab][(FocusRow+1) mod rowscount][FocusCol].SetFocus;
-      if Key = vk_up then
-        begin
-          d := FocusRow-1;
-          if d < 0 then d := rowscount - 1;
-          Panels[FocusTab][d mod rowscount][FocusCol].SetFocus;
-        end;
-      if Key = vk_left then
-        begin
-          d := FocusCol-1;
-          if d < 0 then d := colscount - 1;
-          Panels[FocusTab][FocusRow][d mod colscount].SetFocus;
-        end;
-      if Key = vk_right then
-        Panels[FocusTab][FocusRow][(FocusCol+1) mod colscount].SetFocus;
-    end;
+  FLPanel.KeyDown(Key, Shift);
+  //--Ctrl + W -> удалить вкладку
+  if ((Key = ord('W')) and (ssCtrl in Shift)) then DeleteTab(MainTabsNew.TabIndex);
+  //--F2 -> переименовать вкладку
+  if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ClearClick(Sender: TObject);
