@@ -240,6 +240,10 @@ type
       procedure SetRowsCount(const Value: Integer);
       function GetColor: TColor;
       procedure SetColor(const Value: TColor);
+      function GetImagesHeight: Integer;
+      function GetImagesWidth: Integer;
+      procedure SetImagesHeight(const Value: Integer);
+      procedure SetImagesWidth(const Value: Integer);
     public
       //--Конструктор
       constructor Create(PageNumber, ColsCount, RowsCount: integer);
@@ -254,6 +258,8 @@ type
       property ColsCount: Integer read FColsCount write SetColsCount;
       property RowsCount: Integer read FRowsCount write SetRowsCount;
       property Color: TColor read GetColor write SetColor;
+      property ImagesWidth: Integer read GetImagesWidth write SetImagesWidth;
+      property ImagesHeight: Integer read GetImagesHeight write SetImagesHeight;
   end;
 
   //--Коллекция данных - двусвязный список страниц данных ;)
@@ -1013,6 +1019,26 @@ begin
   fColsCount := Value;
 end;
 
+procedure TFLDataTable.SetImagesHeight(const Value: Integer);
+var
+  i, j: Integer;
+begin
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      if Assigned(fItems[i][j]) then
+        fItems[i][j].Height := Value;
+end;
+
+procedure TFLDataTable.SetImagesWidth(const Value: Integer);
+var
+  i, j: Integer;
+begin
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      if Assigned(fItems[i][j]) then
+        fItems[i][j].Width := Value;
+end;
+
 procedure TFLDataTable.SetRowsCount(const Value: Integer);
 var
   i, j: Integer;
@@ -1057,6 +1083,36 @@ end;
 
 //--Определяет, является ли ячейка активной
 //--Входные параметры: номер ряда и колонки
+function TFLDataTable.GetImagesHeight: Integer;
+var
+  i, j: Integer;
+begin
+  Result := 0;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      if Assigned(fItems[i][j]) then
+      begin
+        Result := fItems[i][j].Height;
+        Exit;
+      end;
+end;
+
+function TFLDataTable.GetImagesWidth: Integer;
+var
+  i, j: Integer;
+begin
+  Result := 0;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      if Assigned(fItems[i][j]) then
+      begin
+        Result := fItems[i][j].Width;
+        Exit;
+      end;
+end;
+
 function TFLDataTable.GetIsActive(RowNumber, ColNumber: integer): boolean;
 begin
   //--Ячейка активна, если класс, ее описывающий, создан
@@ -1309,20 +1365,21 @@ end;
 procedure TFLPanel.SetButtonHeight(const Value: Integer);
 var
   i, j: integer;
+  DataTable: TFLDataTable;
 begin
   if FButtonHeight = Value + 4 then
     Exit;
 
   FButtonHeight := Value + 4;
 
+  for DataTable in fDataCollection do
+    DataTable.ImagesHeight := FButtonHeight;
+
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
     begin
       fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
       fButtons[i, j].Height := FButtonHeight;
-
-      if fButtons[i, j].IsActive then
-        fButtons[i, j].Data.Height := FButtonHeight;
     end;
 end;
 
@@ -1342,20 +1399,21 @@ end;
 procedure TFLPanel.SetButtonWidth(const Value: integer);
 var
   i, j: integer;
+  DataTable: TFLDataTable;
 begin
   if FButtonWidth = Value + 4 then
     Exit;
 
   FButtonWidth := Value + 4;
 
+  for DataTable in fDataCollection do
+    DataTable.ImagesWidth := FButtonWidth;
+
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
     begin
       fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
       fButtons[i, j].Width := FButtonWidth;
-
-      if fButtons[i, j].IsActive then
-        fButtons[i, j].Data.Width := FButtonWidth;
     end;
 end;
 
