@@ -290,10 +290,15 @@ begin
   FlaunchMainForm.SetTabNames;
   FlaunchMainForm.FLPanel.ColsCount := colscount;
   FlaunchMainForm.FLPanel.RowsCount := rowscount;
-  FlaunchMainForm.FLPanel.ButtonWidth := StrToInt(IWEdit.Text);
-  FlaunchMainForm.FLPanel.ButtonHeight := StrToInt(IHEdit.Text);
-  FlaunchMainForm.ButtonWidth := FlaunchMainForm.FLPanel.ButtonWidth;
-  FlaunchMainForm.ButtonHeight := FlaunchMainForm.FLPanel.ButtonHeight;
+  if (FlaunchMainForm.ButtonWidth <> IWEdit.Value) or
+    (FlaunchMainForm.ButtonHeight <> IHEdit.Value)
+  then
+  begin
+    FlaunchMainForm.ButtonWidth := IWEdit.Value;
+    FlaunchMainForm.ButtonHeight := IHEdit.Value;
+    FlaunchMainForm.FLPanel.ButtonWidth := FlaunchMainForm.ButtonWidth;
+    FlaunchMainForm.FLPanel.ButtonHeight := FlaunchMainForm.ButtonHeight;
+  end;
   FlaunchMainForm.FLPanel.Padding := lpadding;
   FlaunchMainForm.ReloadIcons;
   if tabnum < FlaunchMainForm.tabscount then
