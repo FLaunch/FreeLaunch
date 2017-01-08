@@ -298,9 +298,9 @@ begin
     FlaunchMainForm.ButtonHeight := IHEdit.Value;
     FlaunchMainForm.FLPanel.ButtonWidth := FlaunchMainForm.ButtonWidth;
     FlaunchMainForm.FLPanel.ButtonHeight := FlaunchMainForm.ButtonHeight;
+    FlaunchMainForm.ReloadIcons;
   end;
   FlaunchMainForm.FLPanel.Padding := lpadding;
-  FlaunchMainForm.ReloadIcons;
   if tabnum < FlaunchMainForm.tabscount then
     FlaunchMainForm.MainTabsNew.TabIndex := tabnum
   else
