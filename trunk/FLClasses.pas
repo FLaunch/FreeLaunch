@@ -1288,6 +1288,9 @@ var
   DataTable: TFLDataTable;
   i, j: integer;
 begin
+  if fPanelColor = Value then
+    Exit;
+
   fPanelColor := Value;
   if fPanelColor = clBtnFace then
     TempColor := GetSysColor(COLOR_BTNFACE)
