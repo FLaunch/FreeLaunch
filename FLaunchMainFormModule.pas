@@ -190,8 +190,6 @@ type
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
     function GetFLVersion: string;
-    procedure LoadIc(t, r, c: integer);
-    procedure LoadLinks;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
     procedure ChWinView(b: boolean);
     procedure ReloadIcons;
@@ -253,7 +251,6 @@ begin
     result := round(p / (WorkArea.Bottom - Height) * 100);
 end;
 
-//--Вызов диалога переименовывания вкладки
 procedure TFlaunchMainForm.ReloadIcons;
 var
   t, r, c: Integer;
@@ -266,8 +263,10 @@ begin
           FLPanel.Buttons[t,r,c].Data.AssignIcons;
           FLPanel.Buttons[t,r,c].Repaint;
         end;
+  FLPanel.PageNumber := MainTabsNew.TabIndex;
 end;
 
+//--Вызов диалога переименовывания вкладки
 procedure TFlaunchMainForm.RenameTab(i: integer);
 begin
   MainTabsNew.Tabs.Strings[i] :=
@@ -570,25 +569,27 @@ begin
 end;
 
 procedure TFlaunchMainForm.LnkToButton(ALink: Lnk; var AButton: TFLButton);
+var
+  Data: TFLDataItem;
 begin
   if ALink.active then
   begin
-    AButton.InitializeData;
-    AButton.Data.LType := ALink.ltype;
-    AButton.Data.Exec := ALink.exec;
-    AButton.Data.WorkDir := ALink.workdir;
-    AButton.Data.Icon := ALink.icon;
-    AButton.Data.IconIndex := ALink.iconindex;
-    AButton.Data.Params := ALink.params;
-    AButton.Data.DropFiles := ALink.dropfiles;
-    AButton.Data.DropParams := ALink.dropparams;
-    AButton.Data.Descr := ALink.descr;
-    AButton.Data.Ques := ALink.ques;
-    AButton.Data.Hide := ALink.hide;
-    AButton.Data.Pr := ALink.pr;
-    AButton.Data.WSt := ALink.wst;
+    Data := AButton.InitializeData;
+    Data.LType := ALink.ltype;
+    Data.Exec := ALink.exec;
+    Data.WorkDir := ALink.workdir;
+    Data.Icon := ALink.icon;
+    Data.IconIndex := ALink.iconindex;
+    Data.Params := ALink.params;
+    Data.DropFiles := ALink.dropfiles;
+    Data.DropParams := ALink.dropparams;
+    Data.Descr := ALink.descr;
+    Data.Ques := ALink.ques;
+    Data.Hide := ALink.hide;
+    Data.Pr := ALink.pr;
+    Data.WSt := ALink.wst;
 
-    AButton.Data.AssignIcons;
+    Data.AssignIcons;
     AButton.Repaint;
   end
   else
@@ -693,6 +694,7 @@ var
   t,r,c: integer;
   FileName, VerStr: string;
   LinksCfgFile: THandle;
+  Button: TFLButton;
 begin
   result := false;
   FileName := workdir + 'FLaunch.dat';
@@ -706,45 +708,55 @@ begin
     end;
   VerStr := LoadCfgFileString(LinksCfgFile);
   if VerStr <> version then
+  begin
+    FileClose(LinksCfgFile);
+
+    if ConfirmDialog(format(Language.Messages.OldSettings,[VerStr]),
+      Language.Messages.Confirmation)
+    then
     begin
-      FileClose(LinksCfgFile);
       if (VerStr = '1.21') or (VerStr = '1.2') or ((VerStr = '1.1')) then
-        if ConfirmDialog(format(Language.Messages.OldSettings,[VerStr]),
-          Language.Messages.Confirmation) then
-          begin
-            LoadLinksCfgFileV121_12_11;
-            exit;
-          end;
-      if VerStr = '1.0' then
-        if ConfirmDialog(format(Language.Messages.OldSettings,[VerStr]),
-          Language.Messages.Confirmation) then
-          begin
-            LoadLinksCfgFileV10;
-            exit;
-          end;
+        LoadLinksCfgFileV121_12_11
+      else
+        if VerStr = '1.0' then
+          LoadLinksCfgFileV10
+        else
+          RenameFile(FileName, workdir + Format('Flaunch_%s.dat',[VerStr]));
+    end
+    else
       RenameFile(FileName, workdir + Format('Flaunch_%s.dat',[VerStr]));
-      exit;
-    end;
-  for t := 0 to maxt - 1 do
-    for r := 0 to maxr - 1 do
-      for c := 0 to maxc - 1 do
-        begin
-          FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
-          FileRead(LinksCfgFile, links[t,r,c].ltype, sizeof(byte));
-          links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
-          links[t,r,c].workdir := LoadCfgFileString(LinksCfgFile);
-          links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-          links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
-          links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
-          FileRead(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
-          FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
-          FileRead(LinksCfgFile, links[t,r,c].wst, sizeof(byte));
-        end;
-  FileClose(LinksCfgFile);
+  end
+  else
+  begin
+    for t := 0 to maxt - 1 do
+      for r := 0 to maxr - 1 do
+        for c := 0 to maxc - 1 do
+          begin
+            FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
+            FileRead(LinksCfgFile, links[t,r,c].ltype, sizeof(byte));
+            links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
+            links[t,r,c].workdir := LoadCfgFileString(LinksCfgFile);
+            links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
+            FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
+            links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
+            FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
+            links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
+            links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
+            FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
+            FileRead(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
+            FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
+            FileRead(LinksCfgFile, links[t,r,c].wst, sizeof(byte));
+          end;
+    FileClose(LinksCfgFile);
+  end;
+
+  for t := 0 to TabsCount - 1 do
+    for r := 0 to RowsCount - 1 do
+      for c := 0 to ColsCount - 1 do
+      begin
+        Button := FLPanel.Buttons[t, r, c];
+        LnkToButton(links[t,r,c], Button);
+      end;
 end;
 
 /// <summary>Сохранение иконок кнопок в кэш</summary>
@@ -1038,7 +1050,6 @@ begin
   end;
 
   MainTabsNew.TabIndex := GetInt(TabRootNode, 'ActiveTab') - 1;
-  FLPanel.PageNumber := MainTabsNew.TabIndex;
 
   PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
   if (not Assigned(PanelRootNode)) or (not PanelRootNode.HasChildNodes) then
@@ -1186,22 +1197,6 @@ begin
     icon.Handle := LoadIcon(hinstance, 'RBLANKICON');
   Im.Picture.Assign(icon);
   icon.Free;
-end;
-
-procedure TFlaunchMainForm.LoadIc(t, r, c: integer);
-begin
-  if FLPanel.Buttons[t, r, c].IsActive then
-    FLPanel.Buttons[t, r, c].Data.AssignIcons;
-end;
-
-procedure TFlaunchMainForm.LoadLinks;
-var
-  tt,rr,cc: integer;
-begin
-  for tt := 0 to tabscount - 1 do
-    for rr := 0 to rowscount - 1 do
-      for cc := 0 to colscount - 1 do
-        LoadIc(tt,rr,cc);
 end;
 
 procedure TFlaunchMainForm.FormDestroy(Sender: TObject);
@@ -1574,11 +1569,11 @@ begin
 
     GrowTabNames(TabsCount);
     MainTabsNew.TabIndex := tabind;
-    FLPanel.PageNumber := MainTabsNew.TabIndex;
 
     LoadLinksCfgFile;
-    LoadLinks;
   end;
+
+  FLPanel.PageNumber := MainTabsNew.TabIndex;
 
   Language.AddNotifier(LoadLanguage);
   Language.Load(lngfilename);
