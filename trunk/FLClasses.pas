@@ -925,6 +925,8 @@ begin
   {**} else
   {**}   SmoothResize(TempBmp, PushedIconBmp);
   {*---------------------------------------------*}
+  if TFile.Exists(IconCache) then
+    TFile.Delete(IconCache);
   IconCache := '%FL_DIR%' + IconCacheDir + TPath.DirectorySeparatorChar +
     ExtractFileNameNoExt(Exec) + '_' + TPath.GetGUIDFileName() + '.png';
 
