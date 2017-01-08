@@ -1555,6 +1555,9 @@ begin
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
   fl_dir := ExtractFilePath(Application.ExeName);
   fl_root := IncludeTrailingPathDelimiter(ExtractFileDrive(fl_dir));
+  {*--Заполняем переменные FL_*--*}
+  FLPanel.SetFLVariable('FL_DIR', FL_DIR);
+  FLPanel.SetFLVariable('FL_ROOT', FL_ROOT);
 
   sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //Считываем файл первичных настроек для определения режима работы программы и места хранения настроек
   try
@@ -1599,9 +1602,6 @@ begin
   Language.Load(lngfilename);
   //--Разрешаем/запрешаем автозагрузку
   SetAutorun(Autorun);
-  {*--Заполняем переменные FL_*--*}
-  FLPanel.SetFLVariable('FL_DIR', FL_DIR);
-  FLPanel.SetFLVariable('FL_ROOT', FL_ROOT);
   {*--Связываем события панели--*}
   FLPanel.OnButtonMouseDown := FLPanelButtonMouseDown;
   FLPanel.OnButtonClick := FLPanelButtonClick;
