@@ -464,7 +464,6 @@ begin
 
   Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber].Father := Father;
   Result := Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber];
-  fCurPage := 255;
 end;
 
 //--Освобождение ячейки данных текущей кнопки текущей страницы
@@ -520,7 +519,6 @@ function TFLButton.GetDataItem: TFLDataItem;
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Данные ячейки [fRowNumber, fColNumber] (совпадающие с координатами кнопки)
   Result := Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber];
-  fCurPage := 255;
 end;
 
 //--Является ли текущая кнопка текущей страницы активной
@@ -528,7 +526,6 @@ function TFLButton.GetIsActive: boolean;
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Является ли ячейка активной
   Result := Father.GetDataPageByPageNumber(fCurPage).IsActive[fRowNumber, fColNumber];
-  fCurPage := 255;
 end;
 
 //--Установлена ли иконка на кнопке
@@ -536,7 +533,6 @@ function TFLButton.GetHasIcon: boolean;
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Ячейка данных с координатами [fRowNumber, fColNumber] -> Имеет ли иконку
   Result := Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber].fHasIcon;
-  fCurPage := 255;
 end;
 
 //--Установлена ли иконка на кнопке
@@ -544,7 +540,6 @@ procedure TFLButton.SetHasIcon(NewHasIcon: boolean);
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Ячейка данных с координатами [fRowNumber, fColNumber] -> Имеет ли иконку
   Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber].fHasIcon := NewHasIcon;
-  fCurPage := 255;
 end;
 
 //--Метод генерируется при покидании курсора мыши кнопки
@@ -1268,6 +1263,7 @@ end;
 //--Входные параметры: номер страницы, ряда и колонки
 function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButton;
 begin
+  fCurrentDataIndex := PageNumber;
   fButtons[RowNumber][ColNumber].fCurPage := PageNumber;
   Result := fButtons[RowNumber][ColNumber];
 end;
@@ -1417,9 +1413,19 @@ end;
 //--Установка номера текущей страницы
 //--Входной параметр: номер страницы
 procedure TFLPanel.SetPageNumber(PageNumber: Integer);
+var
+  i, j: integer;
 begin
+  if fCurrentDataIndex = PageNumber then
+    Exit;
+
   //--Устанавливаем указатель на текущую страницу данных <- указатель на страницу с выбранным номером
   fCurrentDataIndex := PageNumber;
+
+  for i := 0 to fRowsCount - 1 do
+    for j := 0 to fColsCount - 1 do
+      fButtons[i, j].fCurPage := PageNumber;
+
   Repaint;
 end;
 
