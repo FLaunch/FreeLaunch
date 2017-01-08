@@ -77,7 +77,6 @@ end;
 
 procedure TRenameTabForm.FormShow(Sender: TObject);
 begin
-  Color := FormColor;
   //--Loading language
   OKButton.Caption := Language.BtnOk;
   CancelButton.Caption := Language.BtnCancel;

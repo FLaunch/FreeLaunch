@@ -65,7 +65,6 @@ end;
 
 procedure TAboutForm.FormShow(Sender: TObject);
 begin
-  Color := FormColor;
   aboutshowing := true;
   //--Loading language
   Caption := Language.About.Caption;
