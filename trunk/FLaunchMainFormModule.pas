@@ -856,7 +856,7 @@ begin
         IconNode := LinkNode.AddChild('Icon');
         IconNode.AddChild('File').NodeValue := TempData.Icon;
         IconNode.AddChild('Index').NodeValue := TempData.IconIndex;
-        IconNode.AddChild('Cache').NodeValue := TempData.GetIconCacheRaw;
+        IconNode.AddChild('Cache').NodeValue := TempData.IconCache;
 
         LinkNode.AddChild('Parameters').NodeValue := TempData.Params;
 
@@ -1525,9 +1525,9 @@ begin
   end;
 
   {*--Заполняем переменные FL_*--*}
-  FLPanel.SetFLVariable('FL_DIR', FL_DIR);
-  FLPanel.SetFLVariable('FL_ROOT', FL_ROOT);
-  FLPanel.SetFLVariable('FL_CONFIG', workdir);
+  AddEnvironmentVariable('FL_DIR', FL_DIR);
+  AddEnvironmentVariable('FL_ROOT', FL_ROOT);
+  AddEnvironmentVariable('FL_CONFIG', workdir);
 
   if FileExists(WorkDir + 'FLaunch.xml') then
   begin

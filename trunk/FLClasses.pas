@@ -220,7 +220,6 @@ type
       property Height: Integer read FHeight write SetHeight;
       property Width: Integer read FWidth write SetWidth;
       property Color: TColor read fPanelColor write SetColor;
-      function GetIconCacheRaw: string;
   end;
 
   //--Класс описывает страницу данных (матрица данных для кнопок одной вкладки)
@@ -294,9 +293,6 @@ type
       fCurrentDataIndex: Integer;
       //--Заменять ли в строковых параметрах в ячейках данных переменные FL_*
       fExpandStrings: boolean;
-      {*--Переменные FL_*--*}
-      {**} fFL_DIR: string;
-      {**} fFL_ROOT: string;
       {*-------------------*}
       //--Выполняется ли сейчас перетягивание кнопки
       fDragNow: boolean;
@@ -366,8 +362,6 @@ type
       function AddPage: integer;
       //--Перерисовка всех кнопок
       procedure FullRepaint;
-      //--Установка переменной FL_*
-      procedure SetFLVariable(VarName: string; VarVal: string);
       //--Заменять ли в строковых параметрах в ячейках данных переменные FL_*
       property ExpandStrings: boolean read fExpandStrings write fExpandStrings;
       //--Ссылка на кнопку с фокусом
@@ -812,8 +806,7 @@ function TFLDataItem.GetExec: string;
 begin
   Result := fExec;
   if not Father.ExpandStrings then Exit;
-  Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+  Result := ExpandEnvironmentVariables(Result);
 end;
 
 //--read для свойства WorkDir
@@ -821,8 +814,7 @@ function TFLDataItem.GetWorkDir: string;
 begin
   Result := fWorkDir;
   if not Father.ExpandStrings then Exit;
-  Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+  Result := ExpandEnvironmentVariables(Result);
 end;
 
 procedure TFLDataItem.SetColor(const Value: TColor);
@@ -852,21 +844,14 @@ function TFLDataItem.GetIcon: string;
 begin
   Result := fIcon;
   if not Father.ExpandStrings then Exit;
-  Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+  Result := ExpandEnvironmentVariables(Result);
 end;
 
 function TFLDataItem.GetIconCache: string;
 begin
   Result := fIconCache;
   if not Father.ExpandStrings then Exit;
-  Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
-end;
-
-function TFLDataItem.GetIconCacheRaw: string;
-begin
-  Result := fIconCache;
+  Result := ExpandEnvironmentVariables(Result);
 end;
 
 //--read для свойства Params
@@ -874,8 +859,7 @@ function TFLDataItem.GetParams: string;
 begin
   Result := fParams;
   if not Father.ExpandStrings then Exit;
-  Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+  Result := ExpandEnvironmentVariables(Result);
 end;
 
 //--read для свойства DropParams
@@ -883,8 +867,7 @@ function TFLDataItem.GetDropParams: string;
 begin
   Result := fDropParams;
   if not Father.ExpandStrings then Exit;
-  Result := StringReplace(Result, '%FL_ROOT%', Father.fFL_ROOT, [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '%FL_DIR%', Father.fFL_DIR, [rfReplaceAll, rfIgnoreCase]);
+  Result := ExpandEnvironmentVariables(Result);
 end;
 
 //--Функция генерирует иконки (обычную и "нажатую" для ячейки памяти)
@@ -1283,14 +1266,6 @@ begin
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
       fButtons[i, j].Repaint;
-end;
-
-//--Установка переменной FL_*
-//--Входные параметры: имя переменной, значение переменной
-procedure TFLPanel.SetFLVariable(VarName: string; VarVal: string);
-begin
-  if VarName = 'FL_ROOT' then fFL_ROOT := VarVal;
-  if VarName = 'FL_DIR' then fFL_DIR := VarVal;
 end;
 
 //--Возвращает ссылку на последнюю перетаскиваемую кнопку

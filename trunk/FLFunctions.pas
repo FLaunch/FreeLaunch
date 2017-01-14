@@ -98,6 +98,10 @@ procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 function MyCutting(Str: string; Len: byte): string;
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
 procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string = '');
+/// Замена всех переменных окружения их значениями
+function ExpandEnvironmentVariables(const AFileName: string): string;
+/// Добавление новой переменной окружения
+procedure AddEnvironmentVariable(const AName, AValue: string);
 
 var
   fl_root, fl_dir: string;
@@ -505,6 +509,32 @@ begin
     begin
       ThreadLaunch(ALink, AMainHandle, ADroppedFile);
     end).Start;
+end;
+
+function ExpandEnvironmentVariables(const AFileName: string): string;
+var
+  BuffSize: integer;
+  Buffer: string;
+begin
+  Result := AFileName;
+  SetLastError(0);
+  BuffSize := ExpandEnvironmentStrings(PChar(AFileName), nil, 0);
+  if BuffSize = 0 then
+    RaiseLastWin32Error
+  else
+  begin
+    SetLength(Buffer, BuffSize);
+    if ExpandEnvironmentStrings(PChar(AFileName), PChar(Buffer), BuffSize) = 0 then
+      RaiseLastWin32Error;
+  end;
+  Result := Copy(Buffer, 1, BuffSize - 1);
+end;
+
+procedure AddEnvironmentVariable(const AName, AValue: string);
+begin
+  SetLastError(0);
+  if not SetEnvironmentVariable(PChar(AName), PChar(AValue)) then
+    RaiseLastWin32Error;
 end;
 
 end.
