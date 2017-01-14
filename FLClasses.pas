@@ -928,7 +928,7 @@ begin
   {*---------------------------------------------*}
   if TFile.Exists(IconCache) then
     TFile.Delete(IconCache);
-  IconCache := '%FL_DIR%' + IconCacheDir + TPath.DirectorySeparatorChar +
+  IconCache := '%FL_CONFIG%' + IconCacheDir + TPath.DirectorySeparatorChar +
     ExtractFileNameNoExt(Exec) + '_' + TPath.GetGUIDFileName() + '.png';
 
   fHasIcon := true;
