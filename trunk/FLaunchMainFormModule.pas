@@ -203,7 +203,7 @@ var
   SettingsMode: integer; //Режим работы (0 - инсталляция, настройки хранятся в APPDATA; 1 - инсталляция, настройки хранятся в папке программы; 2 - портабельный режим, инсталляция, настройки хранятся в папке программы)
   PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
   rowscount, colscount, lpadding, tabind,
-    LeftPer, TopPer, CurScrW, CurScrH: integer;
+    LeftPer, TopPer: integer;
   templinks: link;
   links: array[0..maxt - 1] of link;
   GlobTab: integer = -1;
@@ -241,14 +241,11 @@ begin
 end;
 
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
-var
-  WorkArea: TRect;
 begin
-  SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
   if iswidth then
-    result := round(p / (WorkArea.Right - Width) * 100)
+    result := round(p / (Screen.DesktopWidth - Width) * 100)
   else
-    result := round(p / (WorkArea.Bottom - Height) * 100);
+    result := round(p / (Screen.DesktopHeight - Height) * 100);
 end;
 
 procedure TFlaunchMainForm.ReloadIcons;
@@ -275,16 +272,11 @@ begin
 end;
 
 function TFlaunchMainForm.PercentToPosition(p: integer; iswidth: boolean): integer;
-var
-  WorkArea: TRect;
 begin
-  SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
-  CurScrW := WorkArea.Right;
-  CurScrH := WorkArea.Bottom;
   if iswidth then
-    result := round(p * (WorkArea.Right - Width) / 100)
+    result := round(p * (Screen.DesktopWidth - Width) / 100)
   else
-    result := round(p * (WorkArea.Bottom - Height) / 100);
+    result := round(p * (Screen.DesktopHeight - Height) / 100);
 end;
 
 procedure TFlaunchMainForm.LoadLanguage;
@@ -778,7 +770,7 @@ begin
           //--Если кнопка активна и у нее есть иконка
           if (FLPanel.Buttons[t,r,c].IsActive) and (FLPanel.Buttons[t,r,c].HasIcon) then
           begin
-            {*--Сохраняем обычную и нажатую иконку в файл--*}
+            {*--Сохраняем обычную иконку в файл--*}
             PngImg.Assign(FLPanel.Buttons[t,r,c].Data.IconBmp);
             PngImg.SaveToFile(FLPanel.Buttons[t,r,c].Data.IconCache);
             FLPanel.Buttons[t,r,c].Data.IconCache := '';
@@ -1138,26 +1130,13 @@ begin
 end;
 
 procedure TFlaunchMainForm.WMWindowPosChanging(var Msg: TWMWindowPosChanging);
-var
-  WorkArea: TRect;
-  StickAt : Word;
 begin
-  StickAt := 10;
-  SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
-  if (not ChPos) and (CurScrW = WorkArea.Right) and (CurScrH = WorkArea.Bottom) then
-    begin
-      with WorkArea, Msg.WindowPos^ do
-        begin
-          Right:=Right-cx;
-          Bottom:=Bottom-cy;
-          if (abs(Left - x) <= StickAt) or (x < Left) then x := Left;
-          if (abs(Right - x) <= StickAt) or (x > Right) then x := Right;
-          if (abs(Top - y) <= StickAt) or (y < Top) then y := Top;
-          if (abs(Bottom - y) <= StickAt) or (y > Bottom) then y := Bottom;
-        end;
-      LeftPer := PositionToPercent(Left, true);
-      TopPer := PositionToPercent(Top, false);
-    end;
+  if not ChPos then
+  begin
+    LeftPer := PositionToPercent(Left, true);
+    TopPer := PositionToPercent(Top, false);
+  end;
+
   inherited;
 end;
 
