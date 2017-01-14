@@ -1274,22 +1274,27 @@ end;
 
 function TFlaunchMainForm.ButtonToLnk(AButton: TFLButton): lnk;
 begin
-  Result.active := AButton.IsActive;
-  if Assigned(AButton.Data) then
-  begin
-    Result.ltype := AButton.Data.LType;
-    Result.exec := AButton.Data.Exec;
-    Result.workdir := AButton.Data.WorkDir;
-    Result.icon := AButton.Data.Icon;
-    Result.iconindex := AButton.Data.IconIndex;
-    Result.params := AButton.Data.Params;
-    Result.dropfiles := AButton.Data.DropFiles;
-    Result.dropparams := AButton.Data.DropParams;
-    Result.descr := AButton.Data.Descr;
-    Result.ques := AButton.Data.Ques;
-    Result.hide := AButton.Data.Hide;
-    Result.pr := AButton.Data.Pr;
-    Result.wst := AButton.Data.WSt;
+  FLPanel.ExpandStrings := False;
+  try
+    Result.active := AButton.IsActive;
+    if Assigned(AButton.Data) then
+    begin
+      Result.ltype := AButton.Data.LType;
+      Result.exec := AButton.Data.Exec;
+      Result.workdir := AButton.Data.WorkDir;
+      Result.icon := AButton.Data.Icon;
+      Result.iconindex := AButton.Data.IconIndex;
+      Result.params := AButton.Data.Params;
+      Result.dropfiles := AButton.Data.DropFiles;
+      Result.dropparams := AButton.Data.DropParams;
+      Result.descr := AButton.Data.Descr;
+      Result.ques := AButton.Data.Ques;
+      Result.hide := AButton.Data.Hide;
+      Result.pr := AButton.Data.Pr;
+      Result.wst := AButton.Data.WSt;
+    end;
+  finally
+    FLPanel.ExpandStrings := True;
   end;
 end;
 
@@ -1386,15 +1391,6 @@ var
   LnkInfo: TShellLinkInfoStruct;
   ext: string;
   Link: lnk;
-
-  //--Определение реального пути (раскрытие %SYSTEMROOT% и т.п.)
-  function GetRealPath(Path: PChar): string;
-  var
-    TempPChar: array[0..MAX_PATH] of char;
-  begin
-    ExpandEnvironmentStrings(Path, TempPChar, SizeOf(TempPChar));
-    Result := string(TempPChar);
-  end;
 begin
   Link := ButtonToLnk(Button);
   //--Если кнопка активна и "умеет" принимать перетягиваемые файлы
@@ -1436,12 +1432,19 @@ begin
     //--Извлекаем информацию о ярлыке
     GetLinkInfo(@lnkinfo);
     {*--Заполняем информацию в поля кнопки--*}
-    Button.Data.Exec := GetRealPath(LnkInfo.FullPathAndNameOfFileToExecute);
+    Button.Data.Exec := LnkInfo.FullPathAndNameOfFileToExecute;
     Button.Data.IconIndex := LnkInfo.IconIndex;
-    Button.Data.Icon := GetRealPath(LnkInfo.FullPathAndNameOfFileContiningIcon);
+    Button.Data.Icon := LnkInfo.FullPathAndNameOfFileContiningIcon;
     if Button.Data.Icon = '' then
-      Button.Data.Icon := Button.Data.Exec;
-    Button.Data.WorkDir := GetRealPath(LnkInfo.FullPathAndNameOfWorkingDirectroy);
+    begin
+      FLPanel.ExpandStrings := False;
+      try
+        Button.Data.Icon := Button.Data.Exec;
+      finally
+        FLPanel.ExpandStrings := True;
+      end;
+    end;
+    Button.Data.WorkDir := LnkInfo.FullPathAndNameOfWorkingDirectroy;
     Button.Data.Params := LnkInfo.ParamStringsOfFileToExecute;
     Button.Data.Descr := LnkInfo.Description;
     {*--------------------------------------*}

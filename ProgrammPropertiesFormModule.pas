@@ -254,7 +254,7 @@ end;
 procedure TProgrammPropertiesForm.RefreshProps;
 var
   lnkinfo: TShellLinkInfoStruct;
-  pch: array[0..MAX_PATH] of char;
+  FName: string;
   ext: string;
 begin
   if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then exit;
@@ -263,16 +263,15 @@ begin
     begin
       StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
       GetLinkInfo(@lnkinfo);
-      ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileToExecute,pch,sizeof(pch));
-      ext := extractfileext(pch).ToLower;
-      if not ((ext = '.exe') or (ext = '.bat')) then exit;
-      CommandEdit.Text := pch;
-      ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfFileContiningIcon,pch,sizeof(pch));
-      Ic := pch;
+      FName := lnkinfo.FullPathAndNameOfFileToExecute;
+      ext := extractfileext(FName).ToLower;
+      if not ((ext = '.exe') or (ext = '.bat')) then
+        exit;
+      CommandEdit.Text := FName;
+      Ic := lnkinfo.FullPathAndNameOfFileContiningIcon;
       if Ic = '' then Ic := CommandEdit.Text;
       iconindex := lnkinfo.IconIndex;
-      ExpandEnvironmentStrings(lnkinfo.FullPathAndNameOfWorkingDirectroy,pch,sizeof(pch));
-      WorkFolderEdit.Text := pch;
+      WorkFolderEdit.Text := lnkinfo.FullPathAndNameOfWorkingDirectroy;
       ParamsEdit.Text := lnkinfo.ParamStringsOfFileToExecute;
       DescrEdit.Text := lnkinfo.Description;
     end
