@@ -170,8 +170,7 @@ end;
 
 function GetAbsolutePath(s: string): string;
 begin
-  result := StringReplace(s, '{FL_ROOT}', fl_root, [rfReplaceAll, rfIgnoreCase]);
-  result := StringReplace(result, '{FL_DIR}', fl_dir, [rfReplaceAll, rfIgnoreCase]);
+  result := ExpandEnvironmentVariables(s);
 end;
 
 //--Функция бреобразует строку вида 0xXXXXXX в цвет
@@ -383,7 +382,7 @@ begin
   PersistFile.Load(PWChar(WideString(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile)), 0);
   with ShellLink do
     begin
-      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile), lpShellLinkInfoStruct^.FindData, SLGP_UNCPRIORITY);
+      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile), lpShellLinkInfoStruct^.FindData, SLGP_RAWPATH);
       GetDescription(lpShellLinkInfoStruct^.Description, SizeOf(lpShellLinkInfoStruct^.Description));
       GetArguments(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute));
       GetWorkingDirectory(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
