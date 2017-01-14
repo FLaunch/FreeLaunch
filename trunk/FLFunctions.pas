@@ -533,7 +533,9 @@ end;
 procedure AddEnvironmentVariable(const AName, AValue: string);
 begin
   SetLastError(0);
-  if not SetEnvironmentVariable(PChar(AName), PChar(AValue)) then
+  if not SetEnvironmentVariable(PChar(AName),
+    PChar(ExcludeTrailingPathDelimiter(AValue)))
+  then
     RaiseLastWin32Error;
 end;
 
