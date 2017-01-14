@@ -13,6 +13,7 @@ object FlaunchMainForm: TFlaunchMainForm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  ScreenSnap = True
   ShowHint = True
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
