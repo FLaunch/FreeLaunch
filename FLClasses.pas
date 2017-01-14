@@ -911,8 +911,9 @@ begin
   {*---------------------------------------------*}
   if TFile.Exists(IconCache) then
     TFile.Delete(IconCache);
-  IconCache := '%FL_CONFIG%' + IconCacheDir + TPath.DirectorySeparatorChar +
-    ExtractFileNameNoExt(Exec) + '_' + TPath.GetGUIDFileName() + '.png';
+  IconCache := '%FL_CONFIG%' + TPath.DirectorySeparatorChar + IconCacheDir +
+    TPath.DirectorySeparatorChar + ExtractFileNameNoExt(Exec) + '_' +
+    TPath.GetGUIDFileName() + '.png';
 
   fHasIcon := true;
   TempIcon.Free;
