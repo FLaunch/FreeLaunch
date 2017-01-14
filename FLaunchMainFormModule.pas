@@ -1514,7 +1514,6 @@ end;
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
 var
   sini: TIniFile;
-  i: Integer;
 begin
   //--Создаем список имен вкладок
   TabNames := TStringList.Create;
@@ -1526,9 +1525,6 @@ begin
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
   fl_dir := ExtractFilePath(Application.ExeName);
   fl_root := IncludeTrailingPathDelimiter(ExtractFileDrive(fl_dir));
-  {*--Заполняем переменные FL_*--*}
-  FLPanel.SetFLVariable('FL_DIR', FL_DIR);
-  FLPanel.SetFLVariable('FL_ROOT', FL_ROOT);
 
   sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //Считываем файл первичных настроек для определения режима работы программы и места хранения настроек
   try
@@ -1548,6 +1544,11 @@ begin
   finally
     sini.Free;
   end;
+
+  {*--Заполняем переменные FL_*--*}
+  FLPanel.SetFLVariable('FL_DIR', FL_DIR);
+  FLPanel.SetFLVariable('FL_ROOT', FL_ROOT);
+  FLPanel.SetFLVariable('FL_CONFIG', workdir);
 
   if FileExists(WorkDir + 'FLaunch.xml') then
   begin
