@@ -605,6 +605,11 @@ begin
     Exit;
 
   Result := buff;
+
+  Result := StringReplace(Result, '{FL_ROOT}', '%FL_ROOT%',
+    [rfReplaceAll, rfIgnoreCase]);
+  Result := StringReplace(Result, '{FL_DIR}', '%FL_DIR%',
+    [rfReplaceAll, rfIgnoreCase]);
 end;
 
 function TFlaunchMainForm.LoadLinksCfgFileV121_12_11: boolean;
