@@ -610,9 +610,9 @@ begin
 
   Result := buff;
 
-  Result := StringReplace(Result, '{FL_ROOT}', '%FL_ROOT%',
+  Result := StringReplace(Result, '{FL_ROOT}', '%FL_ROOT%\',
     [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '{FL_DIR}', '%FL_DIR%',
+  Result := StringReplace(Result, '{FL_DIR}', '%FL_DIR%\',
     [rfReplaceAll, rfIgnoreCase]);
 end;
 
