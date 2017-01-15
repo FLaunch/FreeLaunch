@@ -46,6 +46,10 @@ const
   maxr = 5;
   maxc = 15;
 
+  TabsCountMax = 50;
+  RowsCountMax = 100;
+  ColsCountMax = 150;
+
   MultKey = 13574;
   AddKey = 46287;
 
@@ -229,7 +233,7 @@ implementation
 {$R *.dfm}
 
 uses
-  XMLDoc, XMLIntf, PngImage, IOUtils;
+  XMLDoc, XMLIntf, PngImage, IOUtils, Math;
 
 function TFlaunchMainForm.GetFLVersion: string;
 begin
@@ -1046,6 +1050,9 @@ begin
     TabNode := TabNode.NextSibling;
   end;
 
+  TabsCount := Min(TabsCount, TabsCountMax);
+  GrowTabNames(TabNumber);
+
   MainTabsNew.TabIndex := GetInt(TabRootNode, 'ActiveTab') - 1;
 
   PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
@@ -1060,6 +1067,8 @@ begin
 
     RowsCount := GetInt(PanelNode, 'Rows');
     ColsCount := GetInt(PanelNode, 'Columns');
+    RowsCount := Min(RowsCount, RowsCountMax);
+    ColsCount := Min(ColsCount, ColsCountMax);
     FLPanel.RowsCount := RowsCount;
     FLPanel.ColsCount := ColsCount;
 

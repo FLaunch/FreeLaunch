@@ -252,11 +252,11 @@ begin
   StatusBarBox.Checked := StatusBarVis;
   TBarBox.ItemIndex := titlebar;
   TabsBox.ItemIndex := tabsview;
-  TabsEdit.MaxValue := maxt;
+  TabsEdit.MaxValue := TabsCountMax;
   TabsEdit.Value := FlaunchMainForm.tabscount;
-  RowsEdit.MaxValue := maxr;
+  RowsEdit.MaxValue := RowsCountMax;
   RowsEdit.Value := rowscount;
-  ColsEdit.MaxValue := maxc;
+  ColsEdit.MaxValue := ColsCountMax;
   ColsEdit.Value := colscount;
   PaddingEdit.Value := lpadding;
   IWEdit.Value := FlaunchMainForm.ButtonWidth;
