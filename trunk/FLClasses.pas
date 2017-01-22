@@ -50,7 +50,7 @@ type
   end;
 
   //--Класс кнопки на компоненте
-  TFLButton = class(TCustomControl)
+  TFLButton = class(TGraphicControl)
     private
       //--Если 255, то используется текущая страница, иначе этот номер страницы
       fCurPage: Integer;
@@ -62,6 +62,7 @@ type
       fFrameColor: TColor;
       //--Номер строки и колонки данной кнопки
       fRowNumber, fColNumber: Integer;
+      FFocused: Boolean;
       //--Возвращает ссылку на родительскую панель (read для свойства Father)
       function GetFather: TFLPanel;
       //--Метод рисует полупрозрачную рамку
@@ -77,17 +78,11 @@ type
       //--Установлена ли иконка на кнопке (write для свойства HasIcon)
       procedure SetHasIcon(NewHasIcon: boolean);
       //--Метод генерируется при покидании курсора мыши кнопки
-      procedure WMMouseLeave(var Msg: TMessage); message WM_MOUSELEAVE;
-      //--Метод генерируется при получении кнопкой фокуса
-      procedure WMSetFocus(var Msg: TWMSetFocus); message WM_SETFOCUS;
-      //--Метод генерируется при потере кнопкой фокуса
-      procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
-      //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
-      procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
-      //--Метод генерируется при перетаскивании файла на кнопку
-      procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
+      procedure CMMouseLeave(var Msg: TMessage); message CM_MOUSELEAVE;
+      procedure SetFocused(const Value: Boolean);
     protected
-
+      //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
+      procedure Paint; override;
     public
       //--Конструктор
       constructor Create(AOwner: TComponent; RowNumber, ColNumber: Integer);
@@ -108,14 +103,15 @@ type
       property Data: TFLDataItem read GetDataItem;
       //--Является ли кнопка активной (занятой чем-либо)
       property IsActive: boolean read GetIsActive;
+      property Focused: Boolean read FFocused write SetFocused;
       //--Установлена ли иконка на кнопке
       property HasIcon: boolean read GetHasIcon write SetHasIcon;
       //--Удаляет полупрозрачную рамку (очищает)
       procedure RemoveFrame;
       //--Метод генерируется при нажатии кнопки на клавиатуре
-      procedure KeyDown(var Key: Word; Shift: TShiftState); override;
+      procedure KeyDown(var Key: Word; Shift: TShiftState);
       //--Метод генерируется при "отжатии" кнопки на клавиатуре
-      procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+      procedure KeyUp(var Key: Word; Shift: TShiftState);
       //--Метод генерируется при клике мышью
       procedure Click; override;
       //--Метод генерируется при нажатии кнопки мыши
@@ -326,6 +322,10 @@ type
       procedure SetPageNumber(PageNumber: Integer);
       //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
       procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
+      //--Метод генерируется при перетаскивании файла на кнопку
+      procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
+      //--Метод генерируется при потере кнопкой фокуса
+      procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
       //--Определение актуального размера компонента (согласно количеству строк и колонок кнопок, а также их размера. write для ActualSize)
       function GetActualSize: TSize;
       //--Метод возвращает указатель на страницу данных по номеру страницы
@@ -341,6 +341,7 @@ type
       procedure SetPadding(const Value: Integer);
       function GetButtonHeight: Integer;
       function GetButtonWidth: Integer;
+      procedure SetFocusedButton(const Value: TFLButton);
     protected
 
     public
@@ -365,7 +366,7 @@ type
       //--Заменять ли в строковых параметрах в ячейках данных переменные FL_*
       property ExpandStrings: boolean read fExpandStrings write fExpandStrings;
       //--Ссылка на кнопку с фокусом
-      property FocusedButton: TFLButton read fFocusedButton;
+      property FocusedButton: TFLButton read fFocusedButton write SetFocusedButton;
       //--Ссылка на последнюю задействованную кнопку
       property LastUsedButton: TFLButton read fLastUsedButton;
       //--Кол-во страниц, колонок и строк
@@ -402,6 +403,8 @@ type
       property ActualSize: TSize read GetActualSize;
       //--Контекстное меню для кнопок
       property ButtonsPopup: TPopupMenu read fButtonsPopup write SetButtonsPopup;
+      //--Метод генерируется при "отжатии" кнопки на клавиатуре
+      procedure KeyUp(var Key: Word; Shift: TShiftState); override;
       //--Метод генерируется при нажатии кнопки на клавиатуре
       procedure KeyDown(var Key: Word; Shift: TShiftState); override;
       //--Событие при клике по кнопке
@@ -433,11 +436,8 @@ constructor TFLButton.Create(AOwner: TComponent; RowNumber, ColNumber: integer);
 begin
   inherited Create(AOwner);
   Parent := TWinControl(AOwner);
-  ParentBackground := false;
   Width := Father.fButtonWidth;
   Height := Father.fButtonHeight;
-  //--Позволяем переключаться по Tab
-  TabStop := true;
   Color := Father.fPanelColor;
   FrameColor := Father.fPanelColor;
   fRowNumber := RowNumber;
@@ -445,8 +445,6 @@ begin
   fPushed := false;
   fCanClick := true;
   fCurPage := 255;
-  //--Позволяем перетягивать файлы на кнопку
-  DragAcceptFiles(Handle, True);
 end;
 
 //--Деструктор класса
@@ -506,6 +504,17 @@ begin
       end;
 end;
 
+procedure TFLButton.SetFocused(const Value: Boolean);
+begin
+  FFocused := Value;
+
+  if FFocused then
+    //--Иммитируем движение мыши по кнопке
+    MouseMove([], 0, 0);
+
+  Repaint;
+end;
+
 //--Устанавливает цвет полупрозрачной рамки
 //--Входной параметр: цвет рамки
 procedure TFLButton.SetFrameColor(FrameColor: TColor);
@@ -543,27 +552,10 @@ begin
 end;
 
 //--Метод генерируется при покидании курсора мыши кнопки
-procedure TFLButton.WMMouseLeave(var Msg: TMessage);
+procedure TFLButton.CMMouseLeave(var Msg: TMessage);
 begin
   //--Генерируем событие родительской панели OnButtonMouseLeave, передавая текущую кнопку
   if Assigned(Father.fButtonMouseLeave) then Father.fButtonMouseLeave(Father, Self);
-end;
-
-//--Метод генерируется при получении кнопкой фокуса
-procedure TFLButton.WMSetFocus(var Msg: TWMSetFocus);
-begin
-  //--Устанавливаем ссылку на кнопку с фокусом <- текущую кнопку
-  Father.fFocusedButton := Self;
-  //--Иммитируем движение мыши по кнопке
-  MouseMove([], 0, 0);
-  Repaint;
-end;
-
-//--Метод генерируется при потере кнопкой фокуса
-procedure TFLButton.WMKillFocus(var Msg: TWMKillFocus);
-begin
-  Father.fFocusedButton := nil;
-  Repaint;
 end;
 
 //--Удаляет полупрозрачную рамку (очищает)
@@ -580,7 +572,6 @@ procedure TFLButton.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_RETURN then
     MouseDown(mbLeft, [], 0, 0);
-  inherited KeyDown(Key, Shift);
 end;
 
 //--Метод генерируется при "отжатии" кнопки на клавиатуре
@@ -592,7 +583,6 @@ begin
       MouseUp(mbLeft, [], 0, 0);
       Click;
     end;
-  inherited KeyUp(Key, Shift);
 end;
 
 //--Метод генерируется при клике мышью
@@ -654,6 +644,9 @@ begin
       fPushed := false;
       Repaint;
     end;
+
+  Father.FocusedButton := nil;
+
   inherited MouseUp(Button, Shift, X, Y);
 end;
 
@@ -712,7 +705,7 @@ begin
 end;
 
 //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
-procedure TFLButton.WMPaint(var Msg: TWMPaint);
+procedure TFLButton.Paint;
 begin
   inherited;
   //--Если кнопка нажата в данный момент
@@ -756,20 +749,6 @@ begin
     end;
   //--Рисуем полупрозрачную рамку (если установлена)
   DrawFrame;
-end;
-
-//--Метод генерируется при перетаскивании файла на кнопку
-procedure TFLButton.WMDropFiles(var Msg: TWMDropFiles);
-var
-  buf: array[0..MAX_PATH] of char;
-begin
-  if Assigned(Father.fDropFile) then
-    begin
-      DragQueryFile(Msg.Drop, 0, buf, SizeOf(buf));
-      //--Генерируем событие родительской панели OnDropFile, передавая текущую кнопку и путь к файлу
-      Father.fDropFile(Father, Self, buf);
-      DragFinish(Msg.Drop);
-    end;
 end;
 
 {*********************************}
@@ -1138,6 +1117,7 @@ begin
   inherited Create(AOwner);
   Parent := TWinControl(AOwner);
   ParentBackground := false;
+  TabStop := True;
   Align := alClient;
   Self.Color := Color;
   fPanelColor := Color;
@@ -1175,6 +1155,8 @@ begin
         {**} fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
         {*-----------------------------------------*}
       end;
+  //--Позволяем перетягивать файлы на кнопку
+  DragAcceptFiles(Handle, True);
   //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
   if TOSVersion.Check(6) then
   begin
@@ -1430,6 +1412,16 @@ begin
   fColsCount := Value;
 end;
 
+procedure TFLPanel.SetFocusedButton(const Value: TFLButton);
+begin
+  if Assigned(fFocusedButton) then
+    fFocusedButton.Focused := False;
+  if Assigned(Value) then
+    Value.Focused := True;
+
+  fFocusedButton := Value;
+end;
+
 procedure TFLPanel.SetPadding(const Value: Integer);
 var
   i, j: integer;
@@ -1462,6 +1454,7 @@ begin
     for j := 0 to fColsCount - 1 do
       fButtons[i, j].fCurPage := fCurrentDataIndex;
 
+  FocusedButton := nil;
   Repaint;
 end;
 
@@ -1518,6 +1511,28 @@ begin
   fRowsCount := Value;
 end;
 
+//--Метод генерируется при перетаскивании файла на кнопку
+procedure TFLPanel.WMDropFiles(var Msg: TWMDropFiles);
+var
+  buf: array[0..MAX_PATH] of char;
+  Button: TFLButton;
+begin
+  if Assigned(fDropFile) then
+  begin
+    DragQueryFile(Msg.Drop, 0, buf, SizeOf(buf));
+    Button := ControlAtPos(ScreenToClient(Mouse.CursorPos), False) as TFLButton;
+    //--Генерируем событие родительской панели OnDropFile, передавая текущую кнопку и путь к файлу
+    fDropFile(Self, Button, buf);
+    DragFinish(Msg.Drop);
+  end;
+end;
+
+procedure TFLPanel.WMKillFocus(var Msg: TWMKillFocus);
+begin
+  FocusedButton := nil;
+  inherited;
+end;
+
 //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
 procedure TFLPanel.WMPaint(var Msg: TWMPaint);
 begin
@@ -1538,15 +1553,8 @@ begin
 end;
 
 //--Метод генерируется при нажатии кнопки на клавиатуре
-//--Чтобы работало, нужно связать:
-//--
-//--procedure TMainForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-//--begin
-//--  FLPanel.KeyDown(Key, Shift);
-//--end;
-//--
 //--Здесь происходит обработка нажатия клавиш со стрелками, для навигации фокуса по кнопкам
-//--В форме необходимо разрешить отлавливать нажатия:
+//--Чтобы работало, форме необходимо разрешить отлавливать нажатия:
 //--
 //--private
 //--  procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
@@ -1563,36 +1571,53 @@ procedure TFLPanel.KeyDown(var Key: Word; Shift: TShiftState);
 var
   d: integer;
 begin
-  //--Если существует кнопка с фокусом
-  if Assigned(fFocusedButton) then
-    begin
-      //--Если нажата стрелка "вниз"
-      if Key = vk_down then
-        //--Отдаем фокус кнопке, находяшейся снизу (циклически)
-        fButtons[(fFocusedButton.RowNumber + 1) mod fRowsCount][fFocusedButton.ColNumber].SetFocus;
-      //--Если нажата стрелка "вверх"
-      if Key = vk_up then
-        begin
-          d := fFocusedButton.RowNumber - 1;
-          if d < 0 then d := fRowsCount - 1;
-          //--Отдаем фокус кнопке, находяшейся сверху (циклически)
-          fButtons[d mod fRowsCount][fFocusedButton.ColNumber].SetFocus;
-        end;
-      //--Если нажата стрелка "влево"
-      if Key = vk_left then
-        begin
-          d := fFocusedButton.ColNumber - 1;
-          if d < 0 then
-          d := ColsCount - 1;
-          //--Отдаем фокус кнопке, находяшейся слева (циклически)
-          fButtons[fFocusedButton.RowNumber][d mod fColsCount].SetFocus;
-        end;
-      //--Если нажата стрелка "вправо"
-      if Key = vk_right then
-        //--Отдаем фокус кнопке, находяшейся справа (циклически)
-        fButtons[fFocusedButton.RowNumber][(fFocusedButton.ColNumber + 1) mod fColsCount].SetFocus;
-    end;
+  //--Если нету кнопки с фокусом, то начинаем с первой
+  if not Assigned(fFocusedButton) then
+  begin
+    FocusedButton := fButtons[0, 0];
+  end
+  else
+  begin
+    //--Если нажата стрелка "вниз"
+    if Key = vk_down then
+      //--Отдаем фокус кнопке, находяшейся снизу (циклически)
+      FocusedButton :=
+        fButtons[(fFocusedButton.RowNumber + 1) mod fRowsCount][fFocusedButton.ColNumber];
+    //--Если нажата стрелка "вверх"
+    if Key = vk_up then
+      begin
+        d := fFocusedButton.RowNumber - 1;
+        if d < 0 then d := fRowsCount - 1;
+        //--Отдаем фокус кнопке, находяшейся сверху (циклически)
+        FocusedButton := fButtons[d mod fRowsCount][fFocusedButton.ColNumber];
+      end;
+    //--Если нажата стрелка "влево"
+    if Key = vk_left then
+      begin
+        d := fFocusedButton.ColNumber - 1;
+        if d < 0 then
+        d := ColsCount - 1;
+        //--Отдаем фокус кнопке, находяшейся слева (циклически)
+        FocusedButton := fButtons[fFocusedButton.RowNumber][d mod fColsCount];
+      end;
+    //--Если нажата стрелка "вправо"
+    if Key = vk_right then
+      //--Отдаем фокус кнопке, находяшейся справа (циклически)
+      FocusedButton :=
+        fButtons[fFocusedButton.RowNumber][(fFocusedButton.ColNumber + 1) mod fColsCount];
+  end;
+
+  fFocusedButton.KeyDown(Key, Shift);
+
   inherited KeyDown(Key, Shift);
+end;
+
+procedure TFLPanel.KeyUp(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+  if Assigned(fFocusedButton) then
+    fFocusedButton.KeyUp(Key, Shift);
 end;
 
 end.

@@ -1212,7 +1212,6 @@ begin
     NI_SettingsClick(NI_Settings);
   if ((Key = ord('Q')) and (ssCtrl in Shift)) then
     Application.Terminate;
-  FLPanel.KeyDown(Key, Shift);
   //--Ctrl + W -> удалить вкладку
   if ((Key = ord('W')) and (ssCtrl in Shift)) then DeleteTab(MainTabsNew.TabIndex);
   //--F2 -> переименовать вкладку
