@@ -1,9 +1,8 @@
 {
   ##########################################################################
-  #  FreeLaunch 2.0 - free links manager for Windows                       #
+  #  FreeLaunch 2.5 - free links manager for Windows                       #
   #  ====================================================================  #
-  #  Copyright (C) 2010 Joker-jar                                          #
-  #  E-Mail joker-jar@yandex.ru                                            #
+  #  Copyright (C) 2017 FreeLaunch Team                                    #
   #  WEB http://sourceforge.net/projects/freelaunch                        #
   #  ====================================================================  #
   #  This file is part of FreeLaunch.                                      #
@@ -53,8 +52,8 @@ const
   MultKey = 13574;
   AddKey = 46287;
 
-  version = '2.0 beta 1';
-  dev_version = '2.0.xxx beta'; // xxx is revision number, may be replaced
+  version = '2.5';
+  dev_version = '2.5.xxx beta'; // xxx is revision number, may be replaced
   releasedate = '__BUILDDATE__'; // build date in dd-mm-yyyy format
 
   cr_wmr = 'R273772850462';
