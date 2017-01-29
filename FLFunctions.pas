@@ -494,12 +494,11 @@ begin
       {$WARN SYMBOL_PLATFORM ON}
       CloseHandle(PI.hThread);
       CloseHandle(PI.hProcess);
-
-      if ALink.hide then
-        PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
     end;
   if ALink.ltype = 1 then
     ShellExecute(AMainHandle, '', exec, '', path, WinType);
+  if ALink.hide then
+    PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
 end;
 
 procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
