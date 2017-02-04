@@ -64,7 +64,9 @@
         <VerInfo_Locale>1049</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <Icon_MainIcon>Image\Main.ico</Icon_MainIcon>
+        <BRCC_EnableMultiByte>true</BRCC_EnableMultiByte>
+        <Manifest_File>Custom.manifest</Manifest_File>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
@@ -79,6 +81,7 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <Manifest_File>Custom.manifest</Manifest_File>
         <DCC_Define>EUREKALOG;EUREKALOG_VER7;$(DCC_Define)</DCC_Define>
         <DCC_DebugInformation>2</DCC_DebugInformation>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -94,8 +97,9 @@
         <DCC_Optimize>false</DCC_Optimize>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <Manifest_File>Custom.manifest</Manifest_File>
+        <BRCC_Verbose>true</BRCC_Verbose>
         <DCC_Define>EUREKALOG;EUREKALOG_VER7;$(DCC_Define)</DCC_Define>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <ItemGroup>
@@ -127,6 +131,26 @@
         <DCCReference Include="FLClasses.pas"/>
         <DCCReference Include="FLLanguage.pas"/>
         <DCCReference Include="FLDialogs.pas"/>
+        <RcItem Include="Image\Blank.ico">
+            <ResourceType>ICON</ResourceType>
+            <ResourceId>RBLANKICON</ResourceId>
+        </RcItem>
+        <RcItem Include="Image\Open.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>OPEN</ResourceId>
+        </RcItem>
+        <RcItem Include="Image\Open_H.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>OPEN_H</ResourceId>
+        </RcItem>
+        <RcItem Include="Image\Refresh.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>REFRESH</ResourceId>
+        </RcItem>
+        <RcItem Include="Image\Refresh_H.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>REFRESH_H</ResourceId>
+        </RcItem>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -157,6 +181,36 @@
                 <Platform value="Win64">False</Platform>
             </Platforms>
             <Deployment>
+                <DeployFile LocalName="Image\Open.png" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Image\Blank.ico" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Image\Open_H.png" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Image\Refresh_H.png" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Image\Refresh.png" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Win32\Debug\FLaunch.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>FLaunch.exe</RemoteName>
