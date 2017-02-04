@@ -227,8 +227,6 @@ var
 
 implementation
 
-{$R Manifest.res}
-{$R png.res}
 {$R *.dfm}
 
 uses

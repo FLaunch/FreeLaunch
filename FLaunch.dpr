@@ -25,6 +25,10 @@
 
 program FLaunch;
 
+
+
+{$R *.dres}
+
 uses
   EMemLeaks,
   EResLeaks,
@@ -52,7 +56,7 @@ uses
 
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED}
 
-{$R Resources.res}
+{$R *.res}
 
 var
   Wnd: Hwnd;
