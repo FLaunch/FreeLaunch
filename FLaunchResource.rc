@@ -1,5 +1,0 @@
-RBLANKICON ICON "Image\\Blank.ico"
-OPEN RCDATA "Image\\Open.png"
-OPEN_H RCDATA "Image\\Open_H.png"
-REFRESH RCDATA "Image\\Refresh.png"
-REFRESH_H RCDATA "Image\\Refresh_H.png"
