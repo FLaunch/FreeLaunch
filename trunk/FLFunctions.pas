@@ -529,12 +529,12 @@ begin
   SetLastError(0);
   BuffSize := ExpandEnvironmentStrings(PChar(AFileName), nil, 0);
   if BuffSize = 0 then
-    RaiseLastWin32Error
+    RaiseLastOSError
   else
   begin
     SetLength(Buffer, BuffSize);
     if ExpandEnvironmentStrings(PChar(AFileName), PChar(Buffer), BuffSize) = 0 then
-      RaiseLastWin32Error;
+      RaiseLastOSError;
   end;
   Result := Copy(Buffer, 1, BuffSize - 1);
 end;
@@ -545,7 +545,7 @@ begin
   if not SetEnvironmentVariable(PChar(AName),
     PChar(ExcludeTrailingPathDelimiter(AValue)))
   then
-    RaiseLastWin32Error;
+    RaiseLastOSError;
 end;
 
 const
