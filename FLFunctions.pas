@@ -97,6 +97,11 @@ procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 function MyCutting(Str: string; Len: byte): string;
 /// Простая обертка над MessageBox
 procedure WarningMessage(AHandle: HWND; AText: string);
+/// Обертка над CreateProcess
+function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
+  APriority: Integer; var AErrorCode: Integer): Boolean;
+/// Запуск процесса внутри потока
+procedure ThreadLaunch(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
 procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string = '');
 /// Замена всех переменных окружения их значениями
@@ -448,12 +453,62 @@ begin
   end;
 end;
 
-procedure ThreadLaunch(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
+function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
+  APriority: Integer; var AErrorCode: Integer): Boolean;
 var
-  WinType, Prior: integer;
-  execparams, path, exec, params: string;
   pi: TProcessInformation;
   si: TStartupInfo;
+begin
+  ZeroMemory(@si, sizeof(si));
+  si.cb := SizeOf(si);
+  si.dwFlags := STARTF_USESHOWWINDOW;
+  si.wShowWindow := AWindowState;
+  ZeroMemory(@PI, SizeOf(PI));
+
+  SetLastError(ERROR_INVALID_PARAMETER);
+  {$WARN SYMBOL_PLATFORM OFF}
+  Result := Windows.CreateProcess(PChar(AExecutable), PChar(AParameters),
+    nil, nil, false,
+    APriority or CREATE_DEFAULT_ERROR_MODE or CREATE_UNICODE_ENVIRONMENT, nil,
+    PChar(APath), si, pi);
+  if Result then
+    AErrorCode := 0
+  else
+    AErrorCode := GetLastError;
+  {$WARN SYMBOL_PLATFORM ON}
+  CloseHandle(PI.hThread);
+  CloseHandle(PI.hProcess);
+end;
+
+procedure LaunchInExecutor(ALink: lnk; AMainHandle: HWND;
+  ADroppedFile: string);
+var
+  Executor, Parameters: string;
+  LinkStrings: TStringList;
+begin
+  Executor := GetAbsolutePath('%FL_DIR%\FLExecutor.exe');
+
+  LinkStrings := TStringList.Create;
+  try
+    LnkToStrings(ALink, LinkStrings);
+    LinkStrings.Delimiter := ';';
+    LinkStrings.QuoteChar := '''';
+    Parameters := AnsiQuotedStr(LinkStrings.DelimitedText, '"');
+  finally
+    LinkStrings.Free;
+  end;
+
+  Parameters := Parameters + ' ' + IntToStr(AMainHandle);
+  Parameters := Parameters + ' ' + AnsiQuotedStr(Language.FileName, '"');
+  Parameters := Parameters + ' ' + AnsiQuotedStr(ADroppedFile, '"');
+
+  ShellExecute(AMainHandle, '', Executor, Parameters);
+end;
+
+procedure ThreadLaunch(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
+var
+  WinType, Prior, ErrorCode: integer;
+  execparams, path, exec, params: string;
 begin
   exec := GetAbsolutePath(ALink.exec);
   path := GetAbsolutePath(ALink.workdir);
@@ -491,20 +546,13 @@ begin
       params := GetAbsolutePath(params);
       execparams := Format('"%s" %s', [exec, params]);
 
-      ZeroMemory(@si, sizeof(si));
-      si.cb := SizeOf(si);
-      si.dwFlags := STARTF_USESHOWWINDOW;
-      si.wShowWindow := WinType;
-      ZeroMemory(@PI, SizeOf(PI));
-
-      SetLastError(ERROR_INVALID_PARAMETER);
-      {$WARN SYMBOL_PLATFORM OFF}
-      Win32Check(CreateProcess(PChar(exec), PChar(execparams), nil, nil, false,
-        Prior or CREATE_DEFAULT_ERROR_MODE or CREATE_UNICODE_ENVIRONMENT, nil,
-        PChar(path), si, pi));
-      {$WARN SYMBOL_PLATFORM ON}
-      CloseHandle(PI.hThread);
-      CloseHandle(PI.hProcess);
+      if not CreateProcess(exec, execparams, path, WinType, Prior, ErrorCode) then
+      begin
+        if ErrorCode = 740 then
+          LaunchInExecutor(ALink, AMainHandle, ADroppedFile)
+        else
+          RaiseLastOSError(ErrorCode);
+      end;
     end;
   if ALink.ltype = 1 then
     ShellExecute(AMainHandle, '', exec, '', path, WinType);
