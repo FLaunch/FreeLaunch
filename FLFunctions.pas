@@ -27,7 +27,7 @@ unit FLFunctions;
 interface
 
 uses
-  Windows, Messages, Graphics;
+  Windows, Messages, Graphics, System.Classes;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -101,6 +101,10 @@ procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string = '');
 function ExpandEnvironmentVariables(const AFileName: string): string;
 /// Добавление новой переменной окружения
 procedure AddEnvironmentVariable(const AName, AValue: string);
+/// Конвертация линка в набор строк
+procedure LnkToStrings(ALink: Lnk; AStrings: TStrings);
+/// Конвертация набора строк в линк
+function StringsToLnk(AStrings: TStrings): Lnk;
 
 var
   fl_root, fl_dir, FLVersion: string;
@@ -108,7 +112,8 @@ var
 implementation
 
 uses
-  ShellApi, ShFolder, SysUtils, Classes, ActiveX, ComObj, ShlObj, FLLanguage;
+  ShellApi, ShFolder, SysUtils, ActiveX, ComObj, ShlObj, FLLanguage,
+  System.IniFiles;
 
 //--Функция не позволяет уйти значению за пределы допустимых
 //--Входные параметры: значение, минимальное значение, максимальное значение
@@ -534,6 +539,67 @@ begin
     PChar(ExcludeTrailingPathDelimiter(AValue)))
   then
     RaiseLastWin32Error;
+end;
+
+const
+  BUTTON_INI_SECTION = 'button';
+
+procedure LnkToStrings(ALink: Lnk; AStrings: TStrings);
+var
+  Ini: TMemIniFile;
+begin
+  Ini := TMemIniFile.Create('');
+  try
+    Ini.WriteString(BUTTON_INI_SECTION, 'version', FLVersion);
+    Ini.WriteString(BUTTON_INI_SECTION, 'object', ALink.Exec);
+    Ini.WriteString(BUTTON_INI_SECTION, 'workdir', ALink.WorkDir);
+    Ini.WriteString(BUTTON_INI_SECTION, 'icon', ALink.Icon);
+    Ini.WriteInteger(BUTTON_INI_SECTION, 'iconindex', ALink.IconIndex);
+    Ini.WriteString(BUTTON_INI_SECTION, 'parameters', ALink.Params);
+    Ini.WriteBool(BUTTON_INI_SECTION, 'dropfiles', ALink.DropFiles);
+    Ini.WriteString(BUTTON_INI_SECTION, 'dropparameters', ALink.DropParams);
+    Ini.WriteString(BUTTON_INI_SECTION, 'describe', ALink.Descr);
+    Ini.WriteBool(BUTTON_INI_SECTION, 'question', ALink.Ques);
+    Ini.WriteBool(BUTTON_INI_SECTION, 'hide', ALink.Hide);
+    Ini.WriteInteger(BUTTON_INI_SECTION, 'priority', ALink.Pr);
+    Ini.WriteInteger(BUTTON_INI_SECTION, 'windowstate', ALink.WSt);
+
+    Ini.GetStrings(AStrings);
+  finally
+    Ini.Free;
+  end;
+end;
+
+function StringsToLnk(AStrings: TStrings): Lnk;
+var
+  Ini: TMemIniFile;
+  Ext: string;
+begin
+  Ini := TMemIniFile.Create('');
+  try
+    Ini.SetStrings(AStrings);
+
+    Result.Exec := Ini.ReadString(BUTTON_INI_SECTION, 'object', '');
+    Result.WorkDir := Ini.ReadString(BUTTON_INI_SECTION, 'workdir', '');
+    Result.Icon := Ini.ReadString(BUTTON_INI_SECTION, 'icon', '');
+    Result.IconIndex := Ini.ReadInteger(BUTTON_INI_SECTION, 'iconindex', 0);
+    Result.Params := Ini.ReadString(BUTTON_INI_SECTION, 'parameters', '');
+    Result.DropFiles := Ini.ReadBool(BUTTON_INI_SECTION, 'dropfiles', false);
+    Result.DropParams := Ini.ReadString(BUTTON_INI_SECTION, 'dropparameters', '');
+    Result.Descr := Ini.ReadString(BUTTON_INI_SECTION, 'describe', '');
+    Result.Ques := Ini.ReadBool(BUTTON_INI_SECTION, 'question', false);
+    Result.Hide := Ini.ReadBool(BUTTON_INI_SECTION, 'hide', false);
+    Result.Pr := Ini.ReadInteger(BUTTON_INI_SECTION, 'priority', 0);
+    Result.WSt := Ini.ReadInteger(BUTTON_INI_SECTION, 'windowstate', 0);
+
+    Ext := ExtractFileExt(Result.Exec).ToLower;
+    if (Ext = '.exe') or (Ext = '.bat') then
+      Result.LType := 0
+    else
+      Result.LType := 1;
+  finally
+    Ini.Free;
+  end;
 end;
 
 end.

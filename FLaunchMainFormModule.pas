@@ -62,8 +62,6 @@ const
   cr_authormail = 'joker-jar@yandex.ru';
   cr_progname = 'FreeLaunch';
 
-  BUTTON_INI_SECTION = 'button';
-
   DesignDPI = 96;
 
 type
@@ -1711,52 +1709,38 @@ end;
 //--Ёкспортирование настроек кнопки в файл
 procedure TFlaunchMainForm.ExportButton(Button: TFLButton; FileName: string);
 var
-  SIni: TIniFile;
+  Strings: TStringList;
+  Link: Lnk;
 begin
   FLPanel.ExpandStrings := false;
-  SIni := TIniFile.Create(FileName);
-  SIni.WriteString(BUTTON_INI_SECTION, 'version', FLVersion);
-  SIni.WriteString(BUTTON_INI_SECTION, 'object', Button.Data.Exec);
-  SIni.WriteString(BUTTON_INI_SECTION, 'workdir', Button.Data.WorkDir);
-  SIni.WriteString(BUTTON_INI_SECTION, 'icon', Button.Data.Icon);
-  SIni.WriteInteger(BUTTON_INI_SECTION, 'iconindex', Button.Data.IconIndex);
-  SIni.WriteString(BUTTON_INI_SECTION, 'parameters', Button.Data.Params);
-  SIni.WriteBool(BUTTON_INI_SECTION, 'dropfiles', Button.Data.DropFiles);
-  SIni.WriteString(BUTTON_INI_SECTION, 'dropparameters', Button.Data.DropParams);
-  SIni.WriteString(BUTTON_INI_SECTION, 'describe', Button.Data.Descr);
-  SIni.WriteBool(BUTTON_INI_SECTION, 'question', Button.Data.Ques);
-  SIni.WriteBool(BUTTON_INI_SECTION, 'hide', Button.Data.Hide);
-  SIni.WriteInteger(BUTTON_INI_SECTION, 'priority', Button.Data.Pr);
-  SIni.WriteInteger(BUTTON_INI_SECTION, 'windowstate', Button.Data.WSt);
-  SIni.Free;
+  Link := ButtonToLnk(Button);
+  Strings := TStringList.Create;
+  try
+    LnkToStrings(Link, Strings);
+    Strings.SaveToFile(FileName);
+  finally
+    Strings.Free;
+  end;
   FLPanel.ExpandStrings := true;
 end;
 
 //--»мпортирование настроек кнопки из файла
 procedure TFlaunchMainForm.ImportButton(Button: TFLButton; FileName: string);
 var
-  SIni: TIniFile;
+  Strings: TStringList;
+  Link: Lnk;
 begin
-  SIni := TIniFile.Create(FileName);
-  //--»нициализируем €чейку данных
-  if not Button.IsActive then Button.InitializeData;
-  Button.Data.Exec := SIni.ReadString(BUTTON_INI_SECTION, 'object', '');
-  Button.Data.WorkDir := SIni.ReadString(BUTTON_INI_SECTION, 'workdir', '');
-  Button.Data.Icon := SIni.ReadString(BUTTON_INI_SECTION, 'icon', '');
-  Button.Data.IconIndex := SIni.ReadInteger(BUTTON_INI_SECTION, 'iconindex', 0);
-  Button.Data.Params := SIni.ReadString(BUTTON_INI_SECTION, 'parameters', '');
-  Button.Data.DropFiles := SIni.ReadBool(BUTTON_INI_SECTION, 'dropfiles', false);
-  Button.Data.DropParams := SIni.ReadString(BUTTON_INI_SECTION, 'dropparameters', '');
-  Button.Data.Descr := SIni.ReadString(BUTTON_INI_SECTION, 'describe', '');
-  Button.Data.Ques := SIni.ReadBool(BUTTON_INI_SECTION, 'question', false);
-  Button.Data.Hide := SIni.ReadBool(BUTTON_INI_SECTION, 'hide', false);
-  Button.Data.Pr := SIni.ReadInteger(BUTTON_INI_SECTION, 'priority', 0);
-  Button.Data.WSt := SIni.ReadInteger(BUTTON_INI_SECTION, 'windowstate', 0);
-  SIni.Free;
-  //--–исуем иконки на кнопке
-  Button.Data.AssignIcons;
-  //--ѕерерисовываем кнопку
-  Button.Repaint;
+  Strings := TStringList.Create;
+  try
+    Strings.LoadFromFile(FileName);
+    Link := StringsToLnk(Strings);
+  finally
+    Strings.Free;
+  end;
+
+  if not Button.IsActive then
+    Button.InitializeData;
+  LnkToButton(Link, Button);
 end;
 
 /// <summary>‘ункци€ определ€ет, наход€тс€ ли координаты t,r,c в пределах
