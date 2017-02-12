@@ -95,6 +95,8 @@ function ExtractFileNameNoExt(FileName: string): string;
 procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 //--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
 function MyCutting(Str: string; Len: byte): string;
+/// Простая обертка над MessageBox
+procedure WarningMessage(AHandle: HWND; AText: string);
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
 procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string = '');
 /// Замена всех переменных окружения их значениями
@@ -405,6 +407,12 @@ begin
     Result := Copy(Str, 1, Len) + '...';
 end;
 
+procedure WarningMessage(AHandle: HWND; AText: string);
+begin
+  MessageBox(AHandle, PChar(AText), PChar(Language.Messages.Caution),
+    MB_ICONWARNING or MB_OK);
+end;
+
 procedure ShellExecute(const AWnd: HWND; const AOperation, AFileName: String;
   const AParameters: String = ''; const ADirectory: String = ''; const AShowCmd: Integer = SW_SHOWNORMAL);
 var
@@ -467,9 +475,8 @@ begin
     begin
       if not FileExists(exec) then
         begin
-          MessageBox(AMainHandle,
-            PChar(format(Language.Messages.NotFound,[ExtractFileName(exec)])),
-            PChar(Language.Messages.Caution), MB_ICONWARNING or MB_OK);
+          WarningMessage(AMainHandle,
+            format(Language.Messages.NotFound, [ExtractFileName(exec)]));
           exit;
         end;
       case ALink.pr of
@@ -513,9 +520,8 @@ begin
         ThreadLaunch(ALink, AMainHandle, ADroppedFile);
       except
         on e: Exception do
-          MessageBox(AMainHandle,
-            PChar(StringReplace(e.Message, '%1', ExtractFileName(ALink.exec), [rfReplaceAll])),
-            PChar(Language.Messages.Caution), MB_ICONWARNING or MB_OK);
+          WarningMessage(AMainHandle,
+            StringReplace(e.Message, '%1', ExtractFileName(ALink.exec), [rfReplaceAll]));
       end;
     end).Start;
 end;
