@@ -103,7 +103,7 @@ function ExpandEnvironmentVariables(const AFileName: string): string;
 procedure AddEnvironmentVariable(const AName, AValue: string);
 
 var
-  fl_root, fl_dir: string;
+  fl_root, fl_dir, FLVersion: string;
 
 implementation
 
