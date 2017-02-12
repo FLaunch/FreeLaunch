@@ -478,7 +478,7 @@ begin
         2: Prior := IDLE_PRIORITY_CLASS;
       end;
       if ADroppedFile <> '' then
-        params := stringreplace(ALink.dropparams, '%1', ADroppedFile, [])
+        params := stringreplace(ALink.dropparams, '%1', ADroppedFile, [rfReplaceAll])
       else
         params := ALink.params;
       params := GetAbsolutePath(params);
@@ -509,7 +509,14 @@ procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
 begin
   TThread.CreateAnonymousThread(procedure
     begin
-      ThreadLaunch(ALink, AMainHandle, ADroppedFile);
+      try
+        ThreadLaunch(ALink, AMainHandle, ADroppedFile);
+      except
+        on e: Exception do
+          MessageBox(AMainHandle,
+            PChar(StringReplace(e.Message, '%1', ExtractFileName(ALink.exec), [rfReplaceAll])),
+            PChar(Language.Messages.Caution), MB_ICONWARNING or MB_OK);
+      end;
     end).Start;
 end;
 
