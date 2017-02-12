@@ -82,6 +82,7 @@ type
     Settings: TLngSettings;
     Menu: TLngMenu;
     Main: TLngMain;
+    FileName: string;
     TabRename: string;
     FlbFilter: string;
     BtnOk, BtnCancel: string;
@@ -136,8 +137,9 @@ var
   Ini: TMemIniFile;
   CurrentNotifier: TLngNotifier;
 begin
+  FileName := ALanguage;
   Ini := TMemIniFile.Create(ExtractFilePath(Application.ExeName) + 'Languages\' +
-    ALanguage);
+    FileName);
   try
     Main.TabName :=      Parse(Ini.ReadString(SctMain, 'tabname',
       'Tab %%'), '%d');
