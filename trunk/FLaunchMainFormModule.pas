@@ -192,7 +192,6 @@ type
     procedure LoadIni;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
-    function GetFLVersion: string;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
     procedure ChWinView(b: boolean);
     procedure ReloadIcons;
@@ -231,15 +230,6 @@ implementation
 
 uses
   XMLDoc, XMLIntf, PngImage, IOUtils, Math;
-
-function TFlaunchMainForm.GetFLVersion: string;
-begin
-  {$IFDEF NIGHTBUILD}
-    result := dev_version;
-  {$ELSE}
-    result := version;
-  {$ENDIF}
-end;
 
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 begin
@@ -800,7 +790,7 @@ begin
   XMLDocument.Options := [doNodeAutoIndent];
   XMLDocument.Active := true;
   RootNode := XMLDocument.AddChild('FLaunch');
-  RootNode.AddChild('Version').NodeValue := GetFLVersion;
+  RootNode.AddChild('Version').NodeValue := FLVersion;
 
   RootNode.AddChild('AutoRun').NodeValue := autorun;
   RootNode.AddChild('Language').NodeValue := lngfilename;
@@ -1507,6 +1497,12 @@ procedure TFlaunchMainForm.FormCreate(Sender: TObject);
 var
   sini: TIniFile;
 begin
+  {$IFDEF NIGHTBUILD}
+    FLVersion := dev_version;
+  {$ELSE}
+    FLVersion := version;
+  {$ENDIF}
+
   //--Создаем список имен вкладок
   TabNames := TStringList.Create;
   //--Создаем экземпляр панели с кнопками
@@ -1589,7 +1585,7 @@ begin
     FileClose(FileCreate(workdir + '.session'));
     SetFileAttributes(PChar(workdir + '.session'), FILE_ATTRIBUTE_HIDDEN);
   end;
-  TrayIcon.Hint := Format('%s %s',[cr_progname, GetFLVersion]);
+  TrayIcon.Hint := Format('%s %s',[cr_progname, FLVersion]);
   if not StartHide then
     ChWinView(True)
   else
@@ -1719,7 +1715,7 @@ var
 begin
   FLPanel.ExpandStrings := false;
   SIni := TIniFile.Create(FileName);
-  SIni.WriteString(BUTTON_INI_SECTION, 'version', GetFLVersion);
+  SIni.WriteString(BUTTON_INI_SECTION, 'version', FLVersion);
   SIni.WriteString(BUTTON_INI_SECTION, 'object', Button.Data.Exec);
   SIni.WriteString(BUTTON_INI_SECTION, 'workdir', Button.Data.WorkDir);
   SIni.WriteString(BUTTON_INI_SECTION, 'icon', Button.Data.Icon);

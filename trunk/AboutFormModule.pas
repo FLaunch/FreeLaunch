@@ -52,7 +52,7 @@ type
 implementation
 
 uses
-  FLaunchMainFormModule;
+  FLaunchMainFormModule, FLFunctions;
 
 {$R *.dfm}
 
@@ -68,7 +68,7 @@ begin
   //--Loading language
   Caption := Language.About.Caption;
   Label1.Caption := cr_progname;
-  Label2.Caption := format('%s: %s (%s)',[Language.About.Version, FlaunchMainForm.GetFLVersion, releasedate]);
+  Label2.Caption := format('%s: %s (%s)',[Language.About.Version, FLVersion, releasedate]);
   Label3.Caption := format('%s: %s (%s)',[Language.About.Author, cr_author, cr_authormail]);
   Label4.Caption := format('%s: %s',[Language.About.Translate, Language.Info.Author]);
   Label7.Caption := Language.About.Donate + ':';
