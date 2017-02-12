@@ -599,6 +599,7 @@ begin
     Result.Pr := Ini.ReadInteger(BUTTON_INI_SECTION, 'priority', 0);
     Result.WSt := Ini.ReadInteger(BUTTON_INI_SECTION, 'windowstate', 0);
 
+    Result.active := True;
     Ext := ExtractFileExt(Result.Exec).ToLower;
     if (Ext = '.exe') or (Ext = '.bat') then
       Result.LType := 0
