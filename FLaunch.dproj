@@ -561,6 +561,7 @@ atWin32=1
 cfoCheckFileCorruption=1
 csoShowELThreads=1
 csoShowRTLThreads=1
+DefaultThreadState=2
 DeleteMapAfterCompile=0
 Dialog Class="TEurekaLogDialog"
 dpMicrosoft=1
