@@ -833,6 +833,7 @@ begin
         LinkNode.AddChild('HideContainer').NodeValue := TempData.Hide;
         LinkNode.AddChild('Priority').NodeValue := TempData.Pr;
         LinkNode.AddChild('WindowState').NodeValue := TempData.WSt;
+        LinkNode.AddChild('RequireAdmin').NodeValue := TempData.IsAdmin;
       end;
   end;
   XMLDocument.SaveToFile(WorkDir + 'FLaunch.xml');
@@ -1076,6 +1077,7 @@ begin
       TempData.Hide := GetBool(LinkNode, 'HideContainer');
       TempData.Pr := GetInt(LinkNode, 'Priority');
       TempData.WSt := GetInt(LinkNode, 'WindowState');
+      TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
 
       LinkNode := LinkNode.NextSibling;
     end;

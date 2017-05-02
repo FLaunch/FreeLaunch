@@ -102,7 +102,7 @@ procedure WarningMessage(AHandle: HWND; AText: string);
 function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
 /// Запуск процесса внутри потока
-procedure ThreadLaunch(ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
+procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
 procedure NewProcess(ALink: TLink; AMainHandle: HWND; ADroppedFile: string = '');
 /// Замена всех переменных окружения их значениями
@@ -113,6 +113,8 @@ procedure AddEnvironmentVariable(const AName, AValue: string);
 procedure LinkToStrings(ALink: TLink; AStrings: TStrings);
 /// Конвертация набора строк в линк
 function StringsToLink(AStrings: TStrings): TLink;
+/// Рисует иконку Щит UAC на канве
+procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
 
 var
   fl_root, fl_dir, FLVersion: string;
@@ -506,7 +508,7 @@ begin
   ShellExecute(AMainHandle, '', Executor, Parameters);
 end;
 
-procedure ThreadLaunch(ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
+procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 var
   WinType, Prior, ErrorCode: integer;
   execparams, path, exec, params: string;
@@ -528,6 +530,10 @@ begin
     3: WinType := SW_HIDE;
   end;
   if ALink.ltype = 0 then
+  begin
+    if ALink.IsAdmin then
+      LaunchInExecutor(ALink, AMainHandle, ADroppedFile)
+    else
     begin
       if not FileExists(exec) then
         begin
@@ -550,12 +556,16 @@ begin
       if not CreateProcess(exec, execparams, path, WinType, Prior, ErrorCode) then
       begin
         if ErrorCode = 740 then
+        begin
+          ALink.IsAdmin := True;
           LaunchInExecutor(ALink, AMainHandle, ADroppedFile)
+        end
         else
           RaiseLastOSError(ErrorCode);
       end;
     end;
-  if ALink.ltype = 1 then
+  end
+  else
     ShellExecute(AMainHandle, '', exec, '', path, WinType);
   if ALink.hide then
     PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
@@ -625,6 +635,7 @@ begin
     Ini.WriteBool(BUTTON_INI_SECTION, 'hide', ALink.Hide);
     Ini.WriteInteger(BUTTON_INI_SECTION, 'priority', ALink.Pr);
     Ini.WriteInteger(BUTTON_INI_SECTION, 'windowstate', ALink.WSt);
+    Ini.WriteBool(BUTTON_INI_SECTION, 'IsAdmin', ALink.IsAdmin);
 
     Ini.GetStrings(AStrings);
   finally
@@ -653,8 +664,9 @@ begin
     Result.Hide := Ini.ReadBool(BUTTON_INI_SECTION, 'hide', false);
     Result.Pr := Ini.ReadInteger(BUTTON_INI_SECTION, 'priority', 0);
     Result.WSt := Ini.ReadInteger(BUTTON_INI_SECTION, 'windowstate', 0);
+    Result.IsAdmin := Ini.ReadBool(BUTTON_INI_SECTION, 'IsAdmin', False);
 
-    Result.active := True;
+    Result.Active := True;
     Ext := ExtractFileExt(Result.Exec).ToLower;
     if (Ext = '.exe') or (Ext = '.bat') then
       Result.LType := 0
@@ -663,6 +675,82 @@ begin
   finally
     Ini.Free;
   end;
+end;
+
+// Modified version of http://www.sql.ru/forum/actualutils.aspx?action=gotomsg&tid=1160302&msg=17742423
+function GetSystemIcon(AIconID: PChar; ALarge: Boolean; ASz: PSize): HICON;
+var
+  IcoWidth: Integer;
+  IcoHeight: Integer;
+  LoadIconWithScaleDown: function(hinst: HMODULE; pszName: PWideChar; cx, cy: Integer; out Ico: HICON): HRESULT; stdcall;
+
+  procedure SetStandartSize;
+  begin
+    if ALarge then
+    begin
+      IcoWidth := GetSystemMetrics(SM_CXICON);
+      IcoHeight := GetSystemMetrics(SM_CYICON);
+    end
+    else
+    begin
+      IcoWidth := GetSystemMetrics(SM_CXSMICON);
+      IcoHeight := GetSystemMetrics(SM_CYSMICON);
+    end;
+  end;
+
+begin
+  if Assigned(ASz) then
+  begin
+    IcoWidth := ASz.cx;
+    IcoHeight := ASz.cy;
+  end
+  else
+    SetStandartSize;
+
+  LoadIconWithScaleDown := GetProcAddress(GetModuleHandle(comctl32), 'LoadIconWithScaleDown'); // Do Not Localize
+  if Assigned(LoadIconWithScaleDown) then
+  begin
+    if Failed(LoadIconWithScaleDown(0, AIconID, IcoWidth, IcoHeight, Result)) then
+      Result := 0;
+  end
+  else
+    Result := 0;
+
+  try
+    if Result = 0 then
+    begin
+      SetStandartSize;
+      Result := LoadImage(0, AIconID, IMAGE_ICON, IcoWidth, IcoHeight, LR_DEFAULTCOLOR or LR_SHARED);
+      if Result = 0 then
+        RaiseLastOSError;
+      Result := CopyIcon(Result);
+      if Result = 0 then
+        RaiseLastOSError;
+    end;
+  except
+    if Result <> 0 then
+      DestroyIcon(Result);
+    raise;
+  end;
+
+  if Assigned(ASz) then
+  begin
+    ASz.cx := IcoWidth;
+    ASz.cy := IcoHeight;
+  end;
+end;
+
+procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
+var
+  IconHandle: HICON;
+begin
+  if not TOSVersion.Check(6) then
+    Exit;
+
+  IconHandle := GetSystemIcon(IDI_SHIELD, False, @ASize);
+
+  DrawIconEx(ACanvas.Handle, APosition.X, APosition.Y, IconHandle, ASize.cx,
+    ASize.cy, 0, 0, DI_NORMAL);
 end;
 
 end.
