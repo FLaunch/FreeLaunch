@@ -30,6 +30,7 @@ begin
       try
         LinkStrings.Delimiter := ';';
         LinkStrings.QuoteChar := '''';
+        LinkStrings.StrictDelimiter := True;
         LinkStrings.DelimitedText := ParamStr(1);
         Link := StringsToLink(LinkStrings);
       finally
