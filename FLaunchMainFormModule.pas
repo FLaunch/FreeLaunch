@@ -68,7 +68,7 @@ type
   TAByte = array [0..maxInt-1] of byte;
   TPAByte = ^TAByte;
 
-  link = array[0..maxr - 1,0..maxc - 1] of lnk;
+  link = array[0..maxr - 1,0..maxc - 1] of TLink;
 
   TFlaunchMainForm = class(TForm)
     StatusBar: TStatusBar;
@@ -145,8 +145,6 @@ type
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
     function ConfirmDialog(Msg, Title: string): Boolean;
-    function ButtonToLnk(AButton: TFLButton): lnk;
-    procedure LnkToButton(ALink: Lnk; var AButton: TFLButton);
     //--Событие генерируется при клике по кнопке на панели
     procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
     //--Событие генерируется при нажатии кнопки мыши на кнопке панели
@@ -549,34 +547,6 @@ begin
   ChWinView((not nowactive) or not (Showing));
 end;
 
-procedure TFlaunchMainForm.LnkToButton(ALink: Lnk; var AButton: TFLButton);
-var
-  Data: TFLDataItem;
-begin
-  if ALink.active then
-  begin
-    Data := AButton.InitializeData;
-    Data.LType := ALink.ltype;
-    Data.Exec := ALink.exec;
-    Data.WorkDir := ALink.workdir;
-    Data.Icon := ALink.icon;
-    Data.IconIndex := ALink.iconindex;
-    Data.Params := ALink.params;
-    Data.DropFiles := ALink.dropfiles;
-    Data.DropParams := ALink.dropparams;
-    Data.Descr := ALink.descr;
-    Data.Ques := ALink.ques;
-    Data.Hide := ALink.hide;
-    Data.Pr := ALink.pr;
-    Data.WSt := ALink.wst;
-
-    Data.AssignIcons;
-    AButton.Repaint;
-  end
-  else
-    AButton.FreeData;
-end;
-
 function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
 var
   buff: array[0..255] of AnsiChar;
@@ -741,7 +711,7 @@ begin
       for c := 0 to ColsCount - 1 do
       begin
         Button := FLPanel.Buttons[t, r, c];
-        LnkToButton(links[t,r,c], Button);
+        Button.LinkToData(links[t,r,c]);
       end;
 end;
 
@@ -1254,9 +1224,9 @@ begin
       PropertiesMode := 1;
 
   if PropertiesMode = 0 then
-    LnkToButton(TProgrammPropertiesForm.Execute(ButtonToLnk(TempButton)), TempButton);
+    TempButton.LinkToData(TProgrammPropertiesForm.Execute(TempButton.DataToLink));
   if PropertiesMode = 1 then
-    LnkToButton(TFilePropertiesForm.Execute(ButtonToLnk(TempButton)), TempButton);
+    TempButton.LinkToData(TFilePropertiesForm.Execute(TempButton.DataToLink));
   TempButton.RemoveFrame;
 end;
 
@@ -1268,32 +1238,6 @@ end;
 procedure TFlaunchMainForm.ButtonPopupMenuPopup(Sender: TObject);
 begin
   FLPanel.LastUsedButton.MouseUp(mbLeft, [], 0, 0);
-end;
-
-function TFlaunchMainForm.ButtonToLnk(AButton: TFLButton): lnk;
-begin
-  FLPanel.ExpandStrings := False;
-  try
-    Result.active := AButton.IsActive;
-    if Assigned(AButton.Data) then
-    begin
-      Result.ltype := AButton.Data.LType;
-      Result.exec := AButton.Data.Exec;
-      Result.workdir := AButton.Data.WorkDir;
-      Result.icon := AButton.Data.Icon;
-      Result.iconindex := AButton.Data.IconIndex;
-      Result.params := AButton.Data.Params;
-      Result.dropfiles := AButton.Data.DropFiles;
-      Result.dropparams := AButton.Data.DropParams;
-      Result.descr := AButton.Data.Descr;
-      Result.ques := AButton.Data.Ques;
-      Result.hide := AButton.Data.Hide;
-      Result.pr := AButton.Data.Pr;
-      Result.wst := AButton.Data.WSt;
-    end;
-  finally
-    FLPanel.ExpandStrings := True;
-  end;
 end;
 
 procedure TFlaunchMainForm.ChangeWndSize;
@@ -1328,8 +1272,9 @@ end;
 procedure TFlaunchMainForm.FLPanelButtonClick(Sender: TObject;
   Button: TFLButton);
 begin
-  if not Button.IsActive then Exit;
-  NewProcess(ButtonToLnk(Button), Handle);
+  if not Button.IsActive then
+    Exit;
+  NewProcess(Button.DataToLink, Handle);
 end;
 
 procedure TFlaunchMainForm.FLPanelButtonMouseDown(Sender: TObject;
@@ -1388,9 +1333,9 @@ procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
 var
   LnkInfo: TShellLinkInfoStruct;
   ext: string;
-  Link: lnk;
+  Link: TLink;
 begin
-  Link := ButtonToLnk(Button);
+  Link := Button.DataToLink;
   //--Если кнопка активна и "умеет" принимать перетягиваемые файлы
   if (Link.active) and (Link.dropfiles) then
   begin
@@ -1710,37 +1655,33 @@ end;
 procedure TFlaunchMainForm.ExportButton(Button: TFLButton; FileName: string);
 var
   Strings: TStringList;
-  Link: Lnk;
+  Link: TLink;
 begin
-  FLPanel.ExpandStrings := false;
-  Link := ButtonToLnk(Button);
+  Link := Button.DataToLink;
   Strings := TStringList.Create;
   try
-    LnkToStrings(Link, Strings);
+    LinkToStrings(Link, Strings);
     Strings.SaveToFile(FileName);
   finally
     Strings.Free;
   end;
-  FLPanel.ExpandStrings := true;
 end;
 
 //--Импортирование настроек кнопки из файла
 procedure TFlaunchMainForm.ImportButton(Button: TFLButton; FileName: string);
 var
   Strings: TStringList;
-  Link: Lnk;
+  Link: TLink;
 begin
   Strings := TStringList.Create;
   try
     Strings.LoadFromFile(FileName);
-    Link := StringsToLnk(Strings);
+    Link := StringsToLink(Strings);
   finally
     Strings.Free;
   end;
 
-  if not Button.IsActive then
-    Button.InitializeData;
-  LnkToButton(Link, Button);
+  Button.LinkToData(Link);
 end;
 
 /// <summary>Функция определяет, находятся ли координаты t,r,c в пределах

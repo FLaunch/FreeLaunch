@@ -71,11 +71,11 @@ type
     procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
   private
-    Link: lnk;
+    Link: TLink;
     BrowseExec, RefProps: TPNGButton;
   public
     procedure RefreshProps;
-    class function Execute(ALink: lnk): lnk;
+    class function Execute(ALink: TLink): TLink;
   end;
 
 var
@@ -110,7 +110,7 @@ procedure TProgrammPropertiesForm.OKButtonClick(Sender: TObject);
 begin
   if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then
     begin
-      fillchar(Link, sizeof(lnk), 0);
+      fillchar(Link, sizeof(TLink), 0);
       exit;
     end;
   link.active := true;
@@ -146,7 +146,7 @@ begin
     end;
 end;
 
-class function TProgrammPropertiesForm.Execute(ALink: lnk): lnk;
+class function TProgrammPropertiesForm.Execute(ALink: TLink): TLink;
 begin
   with TProgrammPropertiesForm.Create(Application.MainForm) do
   try

@@ -9,7 +9,7 @@ var
   WinHandle: HWND;
   ErrorCode: Integer;
   LinkStrings: TStringList;
-  Link: lnk;
+  Link: TLink;
 
 begin
   try
@@ -30,7 +30,7 @@ begin
         LinkStrings.Delimiter := ';';
         LinkStrings.QuoteChar := '''';
         LinkStrings.DelimitedText := ParamStr(1);
-        Link := StringsToLnk(LinkStrings);
+        Link := StringsToLink(LinkStrings);
       finally
         LinkStrings.Free;
       end;

@@ -63,11 +63,11 @@ type
     procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
   private
-    Link: lnk;
+    Link: TLink;
     BrowseExec, RefProps: TPNGButton;
   public
     procedure RefreshProps;
-    class function Execute(ALink: lnk): lnk;
+    class function Execute(ALink: TLink): TLink;
   end;
 
 var
@@ -95,7 +95,7 @@ begin
   OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) or DirectoryExists(GetAbsolutePath(CommandEdit.Text));
 end;
 
-class function TFilePropertiesForm.Execute(ALink: lnk): lnk;
+class function TFilePropertiesForm.Execute(ALink: TLink): TLink;
 begin
   with TFilePropertiesForm.Create(Application.MainForm) do
   try
@@ -111,7 +111,7 @@ procedure TFilePropertiesForm.OKButtonClick(Sender: TObject);
 begin
   if (not FileExists(GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(GetAbsolutePath(CommandEdit.Text))) then
     begin
-      fillchar(Link, sizeof(lnk), 0);
+      fillchar(Link, sizeof(TLink), 0);
       exit;
     end;
   Link.active := true;
