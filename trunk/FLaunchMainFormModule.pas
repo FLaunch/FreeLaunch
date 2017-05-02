@@ -693,7 +693,7 @@ begin
       exit;
     end;
   VerStr := LoadCfgFileString(LinksCfgFile);
-  if VerStr <> version then
+  if VerStr <> '2.0 beta 1' then
   begin
     FileClose(LinksCfgFile);
 
