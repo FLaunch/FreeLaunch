@@ -13,10 +13,11 @@ var
 
 begin
   try
+    InitEnvironment;
     if ParamCount = 0 then
     begin
-      if not CreateProcess(ExtractFilePath(ParamStr(0)) + 'FLaunch.exe', '',
-        ExtractFilePath(ParamStr(0)), SW_NORMAL, NORMAL_PRIORITY_CLASS, ErrorCode)
+      if not CreateProcess(fl_dir + 'FLaunch.exe', '', fl_dir, SW_NORMAL,
+        NORMAL_PRIORITY_CLASS, ErrorCode)
       then
         RaiseLastOSError(ErrorCode);
     end

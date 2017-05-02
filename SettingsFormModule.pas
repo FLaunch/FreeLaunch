@@ -29,7 +29,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, IniFiles, Vcl.Samples.Spin,
-  FLLanguage;
+  FLLanguage, FLFunctions;
 
 const
   DesignDPI = 96;

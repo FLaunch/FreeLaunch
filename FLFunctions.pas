@@ -117,9 +117,14 @@ procedure LinkToStrings(ALink: TLink; AStrings: TStrings);
 function StringsToLink(AStrings: TStrings): TLink;
 /// –исует иконку ўит UAC на канве
 procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
+/// »нициализаци€ путей
+procedure InitEnvironment;
 
 var
-  fl_root, fl_dir, FLVersion: string;
+  fl_root, fl_dir, fl_WorkDir, FLVersion: string;
+  SettingsMode: integer; //–ежим работы (0 - инсталл€ци€, настройки хран€тс€ в APPDATA;
+  //1 - инсталл€ци€, настройки хран€тс€ в папке программы;
+  //2 - портабельный режим, инсталл€ци€, настройки хран€тс€ в папке программы)
 
 implementation
 
@@ -755,6 +760,35 @@ begin
 
   DrawIconEx(ACanvas.Handle, APosition.X, APosition.Y, IconHandle, ASize.cx,
     ASize.cy, 0, 0, DI_NORMAL);
+end;
+
+procedure InitEnvironment;
+var
+  sini: TIniFile;
+begin
+  fl_dir := ExtractFilePath(ParamStr(0));
+  fl_root := IncludeTrailingPathDelimiter(ExtractFileDrive(fl_dir));
+
+  sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //—читываем файл первичных настроек дл€ определени€ режима работы программы и места хранени€ настроек
+  try
+    SettingsMode := sini.ReadInteger('general', 'settingsmode', 0);
+    if SettingsMode > 2 then SettingsMode := 0;
+    if (SettingsMode = 0) then
+    begin
+      fl_WorkDir := GetSpecialDir(CSIDL_APPDATA) + 'FreeLaunch\';
+      if not DirectoryExists(fl_WorkDir) then
+        CreateDir(fl_WorkDir);
+    end
+    else
+      fl_WorkDir := fl_dir;
+  finally
+    sini.Free;
+  end;
+
+  {*--«аполн€ем переменные FL_*--*}
+  AddEnvironmentVariable('FL_DIR', FL_DIR);
+  AddEnvironmentVariable('FL_ROOT', FL_ROOT);
+  AddEnvironmentVariable('FL_CONFIG', fl_WorkDir);
 end;
 
 end.

@@ -202,7 +202,6 @@ type
 
 var
   FlaunchMainForm: TFlaunchMainForm;
-  SettingsMode: integer; //Режим работы (0 - инсталляция, настройки хранятся в APPDATA; 1 - инсталляция, настройки хранятся в папке программы; 2 - портабельный режим, инсталляция, настройки хранятся в папке программы)
   PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
   rowscount, colscount, lpadding, tabind,
     LeftPer, TopPer: integer;
@@ -221,7 +220,6 @@ var
     statusbarvis: boolean;
   titlebar, tabsview: integer;
   lngfilename: string;
-  workdir: string;
   ChPos: boolean = false;
 
 implementation
@@ -416,7 +414,7 @@ var
   i: integer;
   altlinkscolor: boolean;
 begin
-  Ini := TIniFile.Create(workdir+'FLaunch.ini');
+  Ini := TIniFile.Create(fl_WorkDir+'FLaunch.ini');
   lngfilename := ini.ReadString(inisection, 'language', 'English.lng');
   tabscount := ini.ReadInteger(inisection, 'tabs', 3);
   if tabscount > maxt then
@@ -609,7 +607,7 @@ var
   LinksCfgFile: THandle;
 begin
   result := false;
-  FileName := workdir + 'FLaunch.dat';
+  FileName := fl_WorkDir + 'FLaunch.dat';
   LinksCfgFile := FileOpen(FileName, fmOpenRead);
   LoadCfgFileString(LinksCfgFile, 4);
   LoadCfgFileString(LinksCfgFile);
@@ -646,7 +644,7 @@ var
   LinksCfgFile: THandle;
 begin
   result := false;
-  FileName := workdir + 'Flaunch.dat';
+  FileName := fl_WorkDir + 'Flaunch.dat';
   LinksCfgFile := FileOpen(FileName, fmOpenRead);
   LoadCfgFileString(LinksCfgFile, 4);
   LoadCfgFileString(LinksCfgFile);
@@ -684,13 +682,13 @@ var
   Button: TFLButton;
 begin
   result := false;
-  FileName := workdir + 'FLaunch.dat';
+  FileName := fl_WorkDir + 'FLaunch.dat';
   if not (fileexists(FileName)) then exit;
   LinksCfgFile := FileOpen(FileName, fmOpenRead);
   if LoadCfgFileString(LinksCfgFile, 4) <> 'LCFG' then
     begin
       FileClose(LinksCfgFile);
-      RenameFile(FileName, workdir + 'Flaunch_Unknown.dat');
+      RenameFile(FileName, fl_WorkDir + 'Flaunch_Unknown.dat');
       exit;
     end;
   VerStr := LoadCfgFileString(LinksCfgFile);
@@ -708,10 +706,10 @@ begin
         if VerStr = '1.0' then
           LoadLinksCfgFileV10
         else
-          RenameFile(FileName, workdir + Format('Flaunch_%s.dat',[VerStr]));
+          RenameFile(FileName, fl_WorkDir + Format('Flaunch_%s.dat',[VerStr]));
     end
     else
-      RenameFile(FileName, workdir + Format('Flaunch_%s.dat',[VerStr]));
+      RenameFile(FileName, fl_WorkDir + Format('Flaunch_%s.dat',[VerStr]));
   end
   else
   begin
@@ -755,7 +753,7 @@ var
 begin
   PngImg := TPngImage.Create;
   try
-    FilePath := WorkDir + IconCacheDir + TPath.DirectorySeparatorChar;
+    FilePath := fl_WorkDir + IconCacheDir + TPath.DirectorySeparatorChar;
     if not TDirectory.Exists(FilePath) then
       TDirectory.CreateDirectory(FilePath);
 
@@ -867,7 +865,7 @@ begin
         LinkNode.AddChild('RequireAdmin').NodeValue := TempData.IsAdmin;
       end;
   end;
-  XMLDocument.SaveToFile(WorkDir + 'FLaunch.xml');
+  XMLDocument.SaveToFile(fl_WorkDir + 'FLaunch.xml');
   XMLDocument.Active := false;
   FLPanel.ExpandStrings := true;
 end;
@@ -972,12 +970,12 @@ var
   end;
 
 begin
-  if not FileExists(WorkDir + 'FLaunch.xml') then
+  if not FileExists(fl_WorkDir + 'FLaunch.xml') then
     Exit;
   XMLDocument := TXMLDocument.Create(Self);
   XMLDocument.Options := [doNodeAutoIndent];
   XMLDocument.Active := true;
-  XMLDocument.LoadFromFile(WorkDir + 'FLaunch.xml');
+  XMLDocument.LoadFromFile(fl_WorkDir + 'FLaunch.xml');
   RootNode := XMLDocument.ChildNodes.FindNode('FLaunch');
   if (not Assigned(RootNode)) or (not RootNode.HasChildNodes) then
     Exit;
@@ -1154,7 +1152,7 @@ end;
 procedure TFlaunchMainForm.EndWork;
 begin
   unregisterhotkey(Handle, HotKeyID);
-  DeleteFile(workdir + '.session');
+  DeleteFile(fl_WorkDir + '.session');
 
   //--Сохраняем настройки кнопок
   SaveLinksSettings;
@@ -1469,8 +1467,6 @@ begin
 end;
 
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
-var
-  sini: TIniFile;
 begin
   {$IFDEF NIGHTBUILD}
     FLVersion := dev_version;
@@ -1487,34 +1483,11 @@ begin
   ButtonsColor := clBtnFace;
   randomize;
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
-  fl_dir := ExtractFilePath(Application.ExeName);
-  fl_root := IncludeTrailingPathDelimiter(ExtractFileDrive(fl_dir));
 
-  sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //Считываем файл первичных настроек для определения режима работы программы и места хранения настроек
-  try
-    SettingsMode := sini.ReadInteger('general', 'settingsmode', 0);
-    if SettingsMode > 2 then SettingsMode := 0;
-    if (SettingsMode = 0) then
-    begin
-      workdir := GetSpecialDir(CSIDL_APPDATA) + 'FreeLaunch\';
-      if not DirectoryExists(workdir) then
-        CreateDir(workdir);
-    end
-    else
-    begin
-      workdir := ExtractFilePath(ParamStr(0));
-      CurrentEurekaLogOptions.OutputPath := workdir;
-    end;
-  finally
-    sini.Free;
-  end;
+  InitEnvironment;
+  CurrentEurekaLogOptions.OutputPath := fl_WorkDir;
 
-  {*--Заполняем переменные FL_*--*}
-  AddEnvironmentVariable('FL_DIR', FL_DIR);
-  AddEnvironmentVariable('FL_ROOT', FL_ROOT);
-  AddEnvironmentVariable('FL_CONFIG', workdir);
-
-  if FileExists(WorkDir + 'FLaunch.xml') then
+  if FileExists(fl_WorkDir + 'FLaunch.xml') then
   begin
     //--Читаем настройки кнопок
     LoadLinksSettings;
@@ -1555,11 +1528,11 @@ begin
 
   GenerateWnd;
 
-  if not fileexists(workdir + '.session') then
+  if not fileexists(fl_WorkDir + '.session') then
   begin
     //--Создаем файл, который будет идентифицировать сессию. При корректном завершении программы файл будет удален
-    FileClose(FileCreate(workdir + '.session'));
-    SetFileAttributes(PChar(workdir + '.session'), FILE_ATTRIBUTE_HIDDEN);
+    FileClose(FileCreate(fl_WorkDir + '.session'));
+    SetFileAttributes(PChar(fl_WorkDir + '.session'), FILE_ATTRIBUTE_HIDDEN);
   end;
   TrayIcon.Hint := Format('%s %s',[cr_progname, FLVersion]);
   if not StartHide then
