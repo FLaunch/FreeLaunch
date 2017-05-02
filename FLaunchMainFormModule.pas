@@ -33,7 +33,8 @@ uses
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, ComObj,
   ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
   ProgrammPropertiesFormModule, FilePropertiesFormModule, RenameTabFormModule,
-  SettingsFormModule, AboutFormModule, FLFunctions, FLLanguage, FLClasses;
+  SettingsFormModule, AboutFormModule, FLFunctions, FLLanguage, FLClasses,
+  System.Generics.Collections;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -130,6 +131,8 @@ type
   private
     //--Список имен вкладок
     TabNames: TStringList;
+    /// Список кнопок в процессе запуска
+    LaunchingButtons: TDictionary<Integer, TFLButton>;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging); message WM_WINDOWPOSCHANGING;
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
@@ -137,7 +140,8 @@ type
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
     procedure UMShowMainForm(var Msg: TMessage); message UM_ShowMainForm;
     procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
-
+    procedure UMLaunchDone(var Msg: TMessage); message UM_LaunchDone;
+    procedure LaunchButton(AButton: TFLButton; ADroppedFile: string = '');
     procedure ImportButton(Button: TFLButton; FileName: string);
     procedure ExportButton(Button: TFLButton; FileName: string);
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -488,6 +492,22 @@ begin
   ChWinView(False);
 end;
 
+procedure TFlaunchMainForm.UMLaunchDone(var Msg: TMessage);
+var
+  Button: TFLButton;
+
+begin
+  Button := LaunchingButtons.Items[Msg.LParam];
+  LaunchingButtons.Remove(Msg.LParam);
+
+  if (Button.IsActive) and (Button.Data.IsAdmin <> Msg.WParam.ToBoolean) then
+  begin
+    Button.Data.IsAdmin := Msg.WParam.ToBoolean;
+    Button.Data.AssignIcons;
+    Button.Repaint;
+  end;
+end;
+
 procedure TFlaunchMainForm.UMShowMainForm(var Msg: TMessage);
 begin
   ChWinView(True);
@@ -545,6 +565,17 @@ end;
 procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
 begin
   ChWinView((not nowactive) or not (Showing));
+end;
+
+var
+  LaunchID: Integer = 0;
+
+procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
+  ADroppedFile: string);
+begin
+  Inc(LaunchID);
+  LaunchingButtons.Add(LaunchID, AButton);
+  NewProcess(AButton.DataToLink, Handle, LaunchID, ADroppedFile);
 end;
 
 function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -1130,6 +1161,7 @@ begin
   //--Сохраняем иконки кнопок в кэш
   SaveLinksIconsToCache;
 
+  LaunchingButtons.Free;
   //--Удаляем список имен вкладок
   TabNames.Free;
 end;
@@ -1276,7 +1308,7 @@ procedure TFlaunchMainForm.FLPanelButtonClick(Sender: TObject;
 begin
   if not Button.IsActive then
     Exit;
-  NewProcess(Button.DataToLink, Handle);
+  LaunchButton(Button);
 end;
 
 procedure TFlaunchMainForm.FLPanelButtonMouseDown(Sender: TObject;
@@ -1335,17 +1367,15 @@ procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
 var
   LnkInfo: TShellLinkInfoStruct;
   ext: string;
-  Link: TLink;
 begin
-  Link := Button.DataToLink;
   //--Если кнопка активна и "умеет" принимать перетягиваемые файлы
-  if (Link.active) and (Link.dropfiles) then
+  if (Button.IsActive) and (Button.Data.DropFiles) then
   begin
-    NewProcess(Link, Handle, FileName);
+    LaunchButton(Button, FileName);
     exit;
   end;
   {*--Если кнопка активна, просим подтверждение замены--*}
-  if Link.active then
+  if Button.IsActive then
   begin
     Button.FrameColor := clBlue;
     if not ConfirmDialog(Language.Messages.BusyReplace,
@@ -1452,6 +1482,7 @@ begin
   TabNames := TStringList.Create;
   //--Создаем экземпляр панели с кнопками
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
+  LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   ChPos := true;
   ButtonsColor := clBtnFace;
   randomize;

@@ -33,6 +33,7 @@ const
   TCM_GETITEMRECT = $130A;
   UM_ShowMainForm = WM_USER + 1;
   UM_HideMainForm = WM_USER + 2;
+  UM_LaunchDone = WM_USER + 3;
 
 type
   TAByte = array [0..maxInt-1] of byte;
@@ -104,7 +105,8 @@ function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
 /// Запуск процесса внутри потока
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
-procedure NewProcess(ALink: TLink; AMainHandle: HWND; ADroppedFile: string = '');
+procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
+  ADroppedFile: string);
 /// Замена всех переменных окружения их значениями
 function ExpandEnvironmentVariables(const AFileName: string): string;
 /// Добавление новой переменной окружения
@@ -571,7 +573,8 @@ begin
     PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
 end;
 
-procedure NewProcess(ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
+procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
+  ADroppedFile: string);
 begin
   TThread.CreateAnonymousThread(procedure
     begin
@@ -582,6 +585,7 @@ begin
           WarningMessage(AMainHandle,
             StringReplace(e.Message, '%1', ExtractFileName(ALink.exec), [rfReplaceAll]));
       end;
+      PostMessage(AMainHandle, UM_LaunchDone, ALink.IsAdmin.ToInteger, ALaunchID);
     end).Start;
 end;
 
