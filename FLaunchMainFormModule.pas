@@ -54,7 +54,7 @@ const
   AddKey = 46287;
 
   version = '2.5';
-  dev_version = '2.5.xxx beta'; // xxx is revision number, may be replaced
+  dev_version = '2.6 testing 1';
   releasedate = '__BUILDDATE__'; // build date in dd-mm-yyyy format
 
   cr_wmr = 'R273772850462';
