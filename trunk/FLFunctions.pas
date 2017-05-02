@@ -40,7 +40,7 @@ type
   TRGBArray = array[Word] of TRGBTriple;
   pRGBArray = ^TRGBArray;
 
-  lnk = record
+  TLink = record
     ltype: byte;
     active: boolean;
     exec: string;
@@ -55,6 +55,7 @@ type
     hide: boolean;
     pr: byte;
     wst: byte;
+    IsAdmin: Boolean;
   end;
 
   //--Структура информации о ярлыке
@@ -101,17 +102,17 @@ procedure WarningMessage(AHandle: HWND; AText: string);
 function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
 /// Запуск процесса внутри потока
-procedure ThreadLaunch(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
+procedure ThreadLaunch(ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
-procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string = '');
+procedure NewProcess(ALink: TLink; AMainHandle: HWND; ADroppedFile: string = '');
 /// Замена всех переменных окружения их значениями
 function ExpandEnvironmentVariables(const AFileName: string): string;
 /// Добавление новой переменной окружения
 procedure AddEnvironmentVariable(const AName, AValue: string);
 /// Конвертация линка в набор строк
-procedure LnkToStrings(ALink: Lnk; AStrings: TStrings);
+procedure LinkToStrings(ALink: TLink; AStrings: TStrings);
 /// Конвертация набора строк в линк
-function StringsToLnk(AStrings: TStrings): Lnk;
+function StringsToLink(AStrings: TStrings): TLink;
 
 var
   fl_root, fl_dir, FLVersion: string;
@@ -480,7 +481,7 @@ begin
   CloseHandle(PI.hProcess);
 end;
 
-procedure LaunchInExecutor(ALink: lnk; AMainHandle: HWND;
+procedure LaunchInExecutor(ALink: TLink; AMainHandle: HWND;
   ADroppedFile: string);
 var
   Executor, Parameters: string;
@@ -490,7 +491,7 @@ begin
 
   LinkStrings := TStringList.Create;
   try
-    LnkToStrings(ALink, LinkStrings);
+    LinkToStrings(ALink, LinkStrings);
     LinkStrings.Delimiter := ';';
     LinkStrings.QuoteChar := '''';
     Parameters := AnsiQuotedStr(LinkStrings.DelimitedText, '"');
@@ -505,7 +506,7 @@ begin
   ShellExecute(AMainHandle, '', Executor, Parameters);
 end;
 
-procedure ThreadLaunch(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
+procedure ThreadLaunch(ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 var
   WinType, Prior, ErrorCode: integer;
   execparams, path, exec, params: string;
@@ -560,7 +561,7 @@ begin
     PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
 end;
 
-procedure NewProcess(ALink: lnk; AMainHandle: HWND; ADroppedFile: string);
+procedure NewProcess(ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 begin
   TThread.CreateAnonymousThread(procedure
     begin
@@ -605,7 +606,7 @@ end;
 const
   BUTTON_INI_SECTION = 'button';
 
-procedure LnkToStrings(ALink: Lnk; AStrings: TStrings);
+procedure LinkToStrings(ALink: TLink; AStrings: TStrings);
 var
   Ini: TMemIniFile;
 begin
@@ -631,7 +632,7 @@ begin
   end;
 end;
 
-function StringsToLnk(AStrings: TStrings): Lnk;
+function StringsToLink(AStrings: TStrings): TLink;
 var
   Ini: TMemIniFile;
   Ext: string;

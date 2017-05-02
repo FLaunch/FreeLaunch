@@ -127,6 +127,8 @@ type
       procedure DoEndDrag(Target: TObject; X, Y: Integer); override;
       //--Метод генерируется при вызове контекстного меню
       procedure DoContextPopup(MousePos: TPoint; var Handled: Boolean); override;
+      function DataToLink: TLink;
+      procedure LinkToData(const ALink: TLink);
     published
 
   end;
@@ -151,6 +153,7 @@ type
       fHide: boolean;
       fPr: integer;
       fWSt: integer;
+      FIsAdmin: Boolean;
       {*----------------*}
       //--Цвет кнопок
       fPanelColor: TColor;
@@ -446,6 +449,37 @@ begin
   fCurPage := 255;
 end;
 
+/// Конвертация TFLDataItem в TLink
+function TFLButton.DataToLink: TLink;
+var
+  TmpData: TFLDataItem;
+begin
+  Father.ExpandStrings := False;
+  try
+    Result.active := IsActive;
+    TmpData := GetDataItem;
+    if Assigned(TmpData) then
+    begin
+      Result.ltype := TmpData.LType;
+      Result.exec := TmpData.Exec;
+      Result.workdir := TmpData.WorkDir;
+      Result.icon := TmpData.Icon;
+      Result.iconindex := TmpData.IconIndex;
+      Result.params := TmpData.Params;
+      Result.dropfiles := TmpData.DropFiles;
+      Result.dropparams := TmpData.DropParams;
+      Result.descr := TmpData.Descr;
+      Result.ques := TmpData.Ques;
+      Result.hide := TmpData.Hide;
+      Result.pr := TmpData.Pr;
+      Result.wst := TmpData.WSt;
+      Result.IsAdmin := TmpData.FIsAdmin;
+    end;
+  finally
+    Father.ExpandStrings := True;
+  end;
+end;
+
 //--Деструктор класса
 destructor TFLButton.Destroy;
 begin
@@ -582,6 +616,36 @@ begin
       MouseUp(mbLeft, [], 0, 0);
       Click;
     end;
+end;
+
+/// Конвертация TLink в TFLDataItem
+procedure TFLButton.LinkToData(const ALink: TLink);
+var
+  TmpData: TFLDataItem;
+begin
+  if ALink.active then
+  begin
+    TmpData := InitializeData;
+    TmpData.LType := ALink.ltype;
+    TmpData.Exec := ALink.exec;
+    TmpData.WorkDir := ALink.workdir;
+    TmpData.Icon := ALink.icon;
+    TmpData.IconIndex := ALink.iconindex;
+    TmpData.Params := ALink.params;
+    TmpData.DropFiles := ALink.dropfiles;
+    TmpData.DropParams := ALink.dropparams;
+    TmpData.Descr := ALink.descr;
+    TmpData.Ques := ALink.ques;
+    TmpData.Hide := ALink.hide;
+    TmpData.Pr := ALink.pr;
+    TmpData.WSt := ALink.wst;
+    TmpData.FIsAdmin := ALink.IsAdmin;
+
+    TmpData.AssignIcons;
+    Repaint;
+  end
+  else
+    FreeData;
 end;
 
 //--Метод генерируется при клике мышью
