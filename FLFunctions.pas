@@ -538,7 +538,7 @@ begin
   end;
   if ALink.ltype = 0 then
   begin
-    if ALink.IsAdmin then
+    if (ALink.IsAdmin) and (not ParamStr(0).Contains('FLExecutor.exe')) then
       LaunchInExecutor(ALink, AMainHandle, ADroppedFile)
     else
     begin
