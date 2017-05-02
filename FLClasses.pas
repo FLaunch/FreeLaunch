@@ -43,11 +43,6 @@ type
   {**} TFLDataItem = class;
   {*----------------------------------------*}
 
-  //--Структура для передачи размера (ширина, высота). Используется для передачи оптимального размера компонента
-  TSize = record
-    Width, Height: integer;
-  end;
-
   //--Класс кнопки на компоненте
   TFLButton = class(TGraphicControl)
     private
@@ -213,6 +208,7 @@ type
       property Hide: boolean read fHide write fHide;
       //--Приоритет запущенного процесса
       property Pr: integer read fPr write fPr;
+      property IsAdmin: Boolean read FIsAdmin write FIsAdmin;
       //--Состояние окна
       property WSt: integer read fWSt write fWSt;
       property Height: Integer read FHeight write SetHeight;
@@ -918,6 +914,19 @@ var
   TempIcon: TIcon;
   TempBmp: TBitMap;
   icx,icy: integer;
+
+  procedure DrawShield(ABitmap: TBitmap);
+  var
+    Size:TSize;
+    Position: TPoint;
+  begin
+    Size.Width := ABitmap.Width div 2;
+    Size.Height := ABitmap.Height div 2;
+    Position.X := ABitmap.Width - Size.Width;
+    Position.Y := ABitmap.Height - Size.Height;
+
+    DrawShieldIcon(ABitmap.Canvas, Position, Size);
+  end;
 begin
   TempIcon := TIcon.Create;
   // AbsolutePath fIcon
@@ -951,6 +960,12 @@ begin
   {**} else
   {**}   SmoothResize(TempBmp, PushedIconBmp);
   {*---------------------------------------------*}
+  if FIsAdmin then
+  begin
+    DrawShield(IconBmp);
+    DrawShield(PushedIconBmp);
+  end;
+
   if TFile.Exists(IconCache) then
     TFile.Delete(IconCache);
   IconCache := '%FL_CONFIG%' + TPath.DirectorySeparatorChar + IconCacheDir +
