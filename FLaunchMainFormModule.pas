@@ -131,7 +131,7 @@ type
   private
     //--Список имен вкладок
     TabNames: TStringList;
-    /// Список кнопок в процессе запуска
+    /// <summary> Список кнопок в процессе запуска </summary>
     LaunchingButtons: TDictionary<Integer, TFLButton>;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging); message WM_WINDOWPOSCHANGING;
@@ -165,15 +165,16 @@ type
     procedure RenameTab(i: integer);
     //--Удаление вкладки
     procedure DeleteTab(i: integer);
-    //--Считывание настроек кнопок из xml-файла
+    /// <summary> Считывание настроек кнопок из xml-файла </summary>
     procedure LoadLinksSettings;
-    //--Функция определяет, находятся ли координаты t,r,c в пределах текущего размера панели
+    /// <summary> Функция определяет, находятся ли координаты t,r,c в пределах
+    /// текущего размера панели </summary>
     function IsTRCInRange(t, r, c: integer): boolean;
-    //--Сохранение настроек кнопок в xml-файл
+    /// <summary> Сохранение настроек в xml-файл </summary>
     procedure SaveLinksSettings;
-    //--Считывание иконок кнопок из кэша
+    /// <summary> Считывание иконок кнопок из кэша </summary>
     procedure LoadLinksIconsFromCache;
-    //--Сохранение иконок кнопок в кэш
+    /// <summary> Сохранение иконок кнопок в кэш </summary>
     procedure SaveLinksIconsToCache;
   public
     FLPanel: TFLPanel;
@@ -744,7 +745,6 @@ begin
       end;
 end;
 
-/// <summary>Сохранение иконок кнопок в кэш</summary>
 procedure TFlaunchMainForm.SaveLinksIconsToCache;
 var
   t,r,c: integer;
@@ -773,7 +773,6 @@ begin
   end;
 end;
 
-/// <summary>Сохранение настроек в xml-файл</summary>
 procedure TFlaunchMainForm.SaveLinksSettings;
 var
   RootNode, LinkNode, PanelNode, TabNode, IconNode, DropNode, WindowNode,
@@ -870,7 +869,6 @@ begin
   FLPanel.ExpandStrings := true;
 end;
 
-/// <summary>Считывание иконок кнопок из кэша</summary>
 procedure TFlaunchMainForm.LoadLinksIconsFromCache;
 var
   t, r, c: Integer;
@@ -919,7 +917,6 @@ begin
   FLPanel.PagesCount := ACount;
 end;
 
-/// <summary>Считывание настроек кнопок из xml-файла</summary>
 procedure TFlaunchMainForm.LoadLinksSettings;
 var
   RootNode, LinkNode, IconNode, TabNode, WindowNode, PositionNode,
@@ -1690,8 +1687,6 @@ begin
   Button.LinkToData(Link);
 end;
 
-/// <summary>Функция определяет, находятся ли координаты t,r,c в пределах
-/// текущего размера панели</summary>
 function TFlaunchMainForm.IsTRCInRange(t, r, c: integer): boolean;
 begin
   Result := (t >= 0) and (t < TabsCount) and (r >= 0) and (r < RowsCount) and (c >= 0) and (c < ColsCount);

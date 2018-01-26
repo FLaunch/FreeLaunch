@@ -122,7 +122,9 @@ type
       procedure DoEndDrag(Target: TObject; X, Y: Integer); override;
       //--Метод генерируется при вызове контекстного меню
       procedure DoContextPopup(MousePos: TPoint; var Handled: Boolean); override;
+      /// <summary> Конвертация TFLDataItem в TLink </summary>
       function DataToLink: TLink;
+      /// <summary> Конвертация TLink в TFLDataItem </summary>
       procedure LinkToData(const ALink: TLink);
     published
 
@@ -445,7 +447,6 @@ begin
   fCurPage := 255;
 end;
 
-/// Конвертация TFLDataItem в TLink
 function TFLButton.DataToLink: TLink;
 var
   TmpData: TFLDataItem;
@@ -614,7 +615,6 @@ begin
     end;
 end;
 
-/// Конвертация TLink в TFLDataItem
 procedure TFLButton.LinkToData(const ALink: TLink);
 var
   TmpData: TFLDataItem;

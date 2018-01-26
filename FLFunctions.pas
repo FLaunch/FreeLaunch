@@ -97,27 +97,27 @@ function ExtractFileNameNoExt(FileName: string): string;
 procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 //--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
 function MyCutting(Str: string; Len: byte): string;
-/// Простая обертка над MessageBox
+/// <summary> Простая обертка над MessageBox </summary>
 procedure WarningMessage(AHandle: HWND; AText: string);
-/// Обертка над CreateProcess
+/// <summary> Обертка над CreateProcess </summary>
 function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
-/// Запуск процесса внутри потока
+/// <summary> Запуск процесса внутри потока </summary>
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
 procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
   ADroppedFile: string);
-/// Замена всех переменных окружения их значениями
+/// <summary> Замена всех переменных окружения их значениями </summary>
 function ExpandEnvironmentVariables(const AFileName: string): string;
-/// Добавление новой переменной окружения
+/// <summary> Добавление новой переменной окружения </summary>
 procedure AddEnvironmentVariable(const AName, AValue: string);
-/// Конвертация линка в набор строк
+/// <summary> Конвертация линка в набор строк </summary>
 procedure LinkToStrings(ALink: TLink; AStrings: TStrings);
-/// Конвертация набора строк в линк
+/// <summary> Конвертация набора строк в линк </summary>
 function StringsToLink(AStrings: TStrings): TLink;
-/// Рисует иконку Щит UAC на канве
+/// <summary> Рисует иконку Щит UAC на канве </summary>
 procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
-/// Инициализация путей
+/// <summary> Инициализация путей </summary>
 procedure InitEnvironment;
 
 var
