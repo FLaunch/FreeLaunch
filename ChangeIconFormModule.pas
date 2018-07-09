@@ -28,20 +28,21 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, PNGExtra, Vcl.Samples.Spin,
+  Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, FLData, Vcl.Samples.Spin,
   FLFunctions, FLLanguage;
 
 type
   TChangeIconForm = class(TForm)
     GroupBox1: TGroupBox;
     Label1: TLabel;
-    IconEdit: TEdit;
     Label2: TLabel;
     CancelButton: TButton;
     OKButton: TButton;
     IcImage: TImage;
     Label3: TLabel;
     IndexEdit: TSpinEdit;
+    RefProps: TButton;
+    IconEdit: TButtonedEdit;
     procedure FormShow(Sender: TObject);
     procedure BrowseIconClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -49,11 +50,9 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefPropsClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure IndexEditChange(Sender: TObject);
   private
     icindex, iconcount: integer;
-    BrowseIcon, RefProps: TPNGButton;
   public
     procedure RefreshProps;
   end;
@@ -119,36 +118,6 @@ end;
 procedure TChangeIconForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   action := CAFree;
-end;
-
-procedure TChangeIconForm.FormCreate(Sender: TObject);
-begin
-  BrowseIcon := TPNGButton.Create(GroupBox1);
-  with BrowseIcon do
-    begin
-      Parent := GroupBox1;
-      Left := IconEdit.Left + IconEdit.Width + 4;
-      Top := IconEdit.Top;
-      Height := IconEdit.Height;
-      Width := Height;
-      ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'OPEN');
-      ImageOver.LoadFromResourceName(HInstance, 'OPEN_H');
-      OnClick := BrowseIconClick;
-    end;
-  RefProps := TPNGButton.Create(GroupBox1);
-  with RefProps do
-    begin
-      Parent := GroupBox1;
-      Left := BrowseIcon.Left + BrowseIcon.Width + 4;;
-      Top := BrowseIcon.Top;
-      Height := BrowseIcon.Height;
-      Width := Height;
-      ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'REFRESH');
-      ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H');
-      OnClick := RefPropsClick;
-    end;
 end;
 
 procedure TChangeIconForm.FormKeyDown(Sender: TObject; var Key: Word;

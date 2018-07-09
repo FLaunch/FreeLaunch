@@ -15,7 +15,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
   OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
-  OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   DesignSize = (
@@ -125,27 +124,19 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Height = 13
         Alignment = taRightJustify
       end
-      object CommandEdit: TEdit
-        Left = 78
-        Top = 15
-        Width = 211
-        Height = 21
-        TabOrder = 0
-        OnChange = CommandEditChange
-      end
       object ParamsEdit: TEdit
         Left = 78
         Top = 75
         Width = 259
         Height = 21
-        TabOrder = 2
+        TabOrder = 3
       end
       object DescrEdit: TEdit
         Left = 78
         Top = 161
         Width = 259
         Height = 21
-        TabOrder = 5
+        TabOrder = 6
       end
       object PriorBox: TComboBox
         Left = 78
@@ -153,14 +144,14 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 107
         Height = 21
         Style = csDropDownList
-        TabOrder = 6
+        TabOrder = 7
       end
       object ChangeIconButton: TButton
         Left = 423
         Top = 128
         Width = 75
         Height = 25
-        TabOrder = 10
+        TabOrder = 11
         OnClick = ChangeIconButtonClick
       end
       object QuesCheckBox: TCheckBox
@@ -168,7 +159,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 37
         Width = 138
         Height = 17
-        TabOrder = 8
+        TabOrder = 9
       end
       object WStyleBox: TComboBox
         Left = 235
@@ -176,14 +167,14 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 102
         Height = 21
         Style = csDropDownList
-        TabOrder = 7
+        TabOrder = 8
       end
       object DropBox: TCheckBox
         Left = 78
         Top = 105
         Width = 259
         Height = 17
-        TabOrder = 3
+        TabOrder = 4
         OnClick = DropBoxClick
       end
       object DropParamsEdit: TEdit
@@ -192,21 +183,46 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 259
         Height = 21
         Enabled = False
-        TabOrder = 4
+        TabOrder = 5
       end
       object HideCheckBox: TCheckBox
         Left = 372
         Top = 60
         Width = 138
         Height = 17
-        TabOrder = 9
+        TabOrder = 10
       end
       object WorkFolderEdit: TEdit
         Left = 78
         Top = 45
         Width = 259
         Height = 21
+        TabOrder = 2
+      end
+      object RefProps: TButton
+        Left = 316
+        Top = 15
+        Width = 21
+        Height = 21
+        HotImageIndex = 3
+        ImageAlignment = iaCenter
+        ImageIndex = 2
+        Images = DataModule1.Images
         TabOrder = 1
+        OnClick = RefPropsClick
+      end
+      object CommandEdit: TButtonedEdit
+        Left = 78
+        Top = 15
+        Width = 236
+        Height = 21
+        Images = DataModule1.Images
+        RightButton.HotImageIndex = 1
+        RightButton.ImageIndex = 0
+        RightButton.Visible = True
+        TabOrder = 0
+        OnChange = CommandEditChange
+        OnRightButtonClick = BrowseExecClick
       end
     end
   end

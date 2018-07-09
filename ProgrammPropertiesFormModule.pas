@@ -29,7 +29,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles, FLLanguage,
-  ChangeIconFormModule, PNGExtra, FLFunctions;
+  ChangeIconFormModule, FLData, FLFunctions;
 
 type
   TProgrammPropertiesForm = class(TForm)
@@ -38,7 +38,6 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label4: TLabel;
-    CommandEdit: TEdit;
     ParamsEdit: TEdit;
     DescrEdit: TEdit;
     Label3: TLabel;
@@ -61,6 +60,8 @@ type
     HideCheckBox: TCheckBox;
     WorkFolderEdit: TEdit;
     Label9: TLabel;
+    RefProps: TButton;
+    CommandEdit: TButtonedEdit;
     procedure FormShow(Sender: TObject);
     procedure BrowseExecClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
@@ -68,11 +69,9 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure DropBoxClick(Sender: TObject);
     procedure RefPropsClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
   private
     Link: TLink;
-    BrowseExec, RefProps: TPNGButton;
   public
     procedure RefreshProps;
     class function Execute(ALink: TLink): TLink;
@@ -158,36 +157,6 @@ begin
   end;
 end;
 
-procedure TProgrammPropertiesForm.FormCreate(Sender: TObject);
-begin
-  BrowseExec := TPNGButton.Create(TabSheet1);
-  with BrowseExec do
-    begin
-      Parent := TabSheet1;
-      Left := CommandEdit.Left + CommandEdit.Width + 4;
-      Top := CommandEdit.Top;
-      Height := CommandEdit.Height;
-      Width := Height;
-      ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'OPEN');
-      ImageOver.LoadFromResourceName(HInstance, 'OPEN_H');
-      OnClick := BrowseExecClick;
-    end;
-  RefProps := TPNGButton.Create(TabSheet1);
-  with RefProps do
-    begin
-      Parent := TabSheet1;
-      Left := BrowseExec.Left + BrowseExec.Width + 4;
-      Top := BrowseExec.Top;
-      Height := BrowseExec.Height;
-      Width := Height;
-      ButtonStyle := pbsFlat;
-      ImageNormal.LoadFromResourceName(HInstance, 'REFRESH');
-      ImageOver.LoadFromResourceName(HInstance, 'REFRESH_H');
-      OnClick := RefPropsClick;
-    end;
-end;
-
 procedure TProgrammPropertiesForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
@@ -219,7 +188,7 @@ begin
   WStyleBox.Items.Add(Language.Properties.ViewMax);
   WStyleBox.Items.Add(Language.Properties.ViewMin);
   WStyleBox.Items.Add(Language.Properties.ViewHidden);
-  BrowseExec.Hint := Language.Properties.BeHint;
+  CommandEdit.RightButton.Hint := Language.Properties.BeHint;
   RefProps.Hint := Language.Properties.RpHint;
   Label5.Caption := Language.Properties.Options;
   Bevel2.Left := Label5.Left + Label5.Width + 7;

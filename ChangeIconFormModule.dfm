@@ -15,7 +15,6 @@ object ChangeIconForm: TChangeIconForm
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
-  OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
@@ -52,13 +51,6 @@ object ChangeIconForm: TChangeIconForm
       Width = 3
       Height = 13
     end
-    object IconEdit: TEdit
-      Left = 62
-      Top = 20
-      Width = 224
-      Height = 21
-      TabOrder = 0
-    end
     object IndexEdit: TSpinEdit
       Left = 62
       Top = 50
@@ -66,9 +58,33 @@ object ChangeIconForm: TChangeIconForm
       Height = 22
       MaxValue = 1
       MinValue = 1
-      TabOrder = 1
+      TabOrder = 2
       Value = 0
       OnChange = IndexEditChange
+    end
+    object RefProps: TButton
+      Left = 314
+      Top = 20
+      Width = 21
+      Height = 21
+      HotImageIndex = 3
+      ImageAlignment = iaCenter
+      ImageIndex = 2
+      Images = DataModule1.Images
+      TabOrder = 1
+      OnClick = RefPropsClick
+    end
+    object IconEdit: TButtonedEdit
+      Left = 62
+      Top = 20
+      Width = 246
+      Height = 21
+      Images = DataModule1.Images
+      RightButton.HotImageIndex = 1
+      RightButton.ImageIndex = 0
+      RightButton.Visible = True
+      TabOrder = 0
+      OnRightButtonClick = BrowseIconClick
     end
   end
   object CancelButton: TButton
