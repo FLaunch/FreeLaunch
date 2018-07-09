@@ -52,7 +52,8 @@ uses
   FLFunctions in 'FLFunctions.pas',
   FLClasses in 'FLClasses.pas',
   FLLanguage in 'FLLanguage.pas',
-  FLDialogs in 'FLDialogs.pas';
+  FLDialogs in 'FLDialogs.pas',
+  FLData in 'FLData.pas' {DataModule1: TDataModule};
 
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED}
 
@@ -68,6 +69,7 @@ begin
   else
   begin
     Application.Initialize;
+    Application.CreateForm(TDataModule1, DataModule1);
     Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
     Application.Run;
   end;

@@ -126,6 +126,11 @@
         <DCCReference Include="FLClasses.pas"/>
         <DCCReference Include="FLLanguage.pas"/>
         <DCCReference Include="FLDialogs.pas"/>
+        <DCCReference Include="FLData.pas">
+            <Form>DataModule1</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
         <RcItem Include="Image\Blank.ico">
             <ResourceType>ICON</ResourceType>
             <ResourceId>RBLANKICON</ResourceId>
