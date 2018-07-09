@@ -6,7 +6,7 @@ uses
   System.SysUtils, System.Classes, System.ImageList, Vcl.ImgList, Vcl.Controls;
 
 type
-  TDataModule1 = class(TDataModule)
+  TData = class(TDataModule)
     Images: TImageList;
   private
     { Private declarations }
@@ -15,7 +15,7 @@ type
   end;
 
 var
-  DataModule1: TDataModule1;
+  Data: TData;
 
 implementation
 
