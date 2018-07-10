@@ -152,7 +152,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Top = 15
         Width = 236
         Height = 21
-        Images = DataModule1.Images
+        Images = Data.Images
         RightButton.HotImageIndex = 1
         RightButton.ImageIndex = 0
         RightButton.Visible = True
@@ -168,7 +168,7 @@ object FilePropertiesForm: TFilePropertiesForm
         HotImageIndex = 3
         ImageAlignment = iaCenter
         ImageIndex = 2
-        Images = DataModule1.Images
+        Images = Data.Images
         TabOrder = 1
         OnClick = RefPropsClick
       end
