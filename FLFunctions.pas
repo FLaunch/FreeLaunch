@@ -79,7 +79,7 @@ function InRange(Value, FromV, ToV: byte): byte;
 //--Функция определяет количество иконок в файле
 function GetIconCount(FileName: string): integer;
 //--Функция извлекает иконку из файла по индексу
-function GetFileIcon(FileName: string; OpenIcon: boolean; Index: integer): HIcon;
+function GetFileIcon(FileName: string; Index: integer; Size: Cardinal = 32): HIcon;
 //--Функция возвращает путь к специальным папкам в Windows
 function GetSpecialDir(const CSIDL: byte): string;
 function GetAbsolutePath(s: string): string;
@@ -132,7 +132,7 @@ implementation
 
 uses
   ShellApi, ShFolder, SysUtils, ActiveX, ComObj, ShlObj, FLLanguage,
-  System.IniFiles;
+  System.IniFiles, Winapi.CommCtrl;
 
 //--Функция не позволяет уйти значению за пределы допустимых
 //--Входные параметры: значение, минимальное значение, максимальное значение
@@ -150,22 +150,81 @@ begin
 end;
 
 //--Функция извлекает иконку из файла по индексу
-function GetFileIcon(FileName: string; OpenIcon: boolean; Index: integer): HIcon;
+function GetFileIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
+
+  function VistaGetIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
+  var
+    Dummy: HIcon;
+  begin
+    if SHDefExtractIcon(PChar(FileName), Index, 0, Result, Dummy, Size) <> S_OK then
+      Result := 0;
+  end;
+
+  function GetShellIcon(ILSize, Index: integer; var MinSize: Integer; ReqSize: Cardinal): HIcon;
+  const
+    IID_IImageList: TGUID = '{46EB5926-582E-4017-9FDF-E8998DAA0950}';
+  var
+    ILHandle: HIMAGELIST;
+    CX, CY: Integer;
+  begin
+    Result := 0;
+
+    if SHGetImageList(ILSize, IID_IImageList, Pointer(ILHandle)) <> S_OK then
+      Exit;
+
+    if not ImageList_GetIconSize(ILHandle, CX, CY) then
+      Exit;
+
+    if (MinSize < ReqSize) and (ReqSize <= CX) then
+      Result := ImageList_GetIcon(ILHandle, Index, ILD_TRANSPARENT);
+
+    MinSize := CX;
+  end;
+
+type
+  TILSizes = array of Integer;
+const
+  XPSizes: TILSizes = [SHIL_SMALL, SHIL_LARGE, SHIL_EXTRALARGE];
+  VistaSizes: TILSizes = [SHIL_SMALL, SHIL_LARGE, SHIL_EXTRALARGE, SHIL_JUMBO];
 var
   SFI: TShFileInfo;
-  Flags: integer;
+  MinSize, CurrentSize: integer;
+  ILSizes: TILSizes;
 begin
+  Result := 0;
+
   if GetIconCount(FileName) > 0 then
-    begin
+  begin
+    if TOSVersion.Check(6) then
+      Result := VistaGetIcon(FileName, Index, Size)
+    else
       Result := ExtractIcon(hinstance, pchar(FileName), Index);
-      exit;
-    end;
-  Flags := SHGFI_ICON or SHGFI_LARGEICON or SHGFI_SYSICONINDEX;
-  if OpenIcon then
-    Flags := Flags or SHGFI_OPENICON;
+
+    Exit;
+  end;
+
+  if TOSVersion.Check(6) then
+  begin
+    FillChar(SFI, sizeof(SFI), 0);
+    ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), SHGFI_ICONLOCATION);
+    if SFI.szDisplayName[0] <> #0 then
+      Result := VistaGetIcon(SFI.szDisplayName, SFI.iIcon, Size);
+
+    ILSizes := VistaSizes;
+  end
+  else
+    ILSizes := XPSizes;
+
   FillChar(SFI, sizeof(SFI), 0);
-  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), Flags);
-  Result := SFI.hIcon;
+  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), SHGFI_SYSICONINDEX);
+  MinSize := 0;
+  for CurrentSize in ILSizes do
+  begin
+    if Result <> 0 then
+      Exit;
+
+    Result := GetShellIcon(CurrentSize, SFI.iIcon, MinSize, Size);
+  end;
 end;
 
 //--Функция возвращает путь к специальным папкам в Windows

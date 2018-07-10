@@ -913,7 +913,6 @@ procedure TFLDataItem.AssignIcons;
 var
   TempIcon: TIcon;
   TempBmp: TBitMap;
-  icx,icy: integer;
 
   procedure DrawShield(ABitmap: TBitmap);
   var
@@ -937,25 +936,19 @@ begin
     TempIcon.Handle := LoadIcon(HInstance, 'RBLANKICON')
   else
     //--Иначе загружаем иконку из файла
-    TempIcon.Handle := GetFileIcon(GetIcon, true, fIconIndex);
+    TempIcon.Handle := GetFileIcon(GetIcon, fIconIndex, IconBmp.Height);
   if TempIcon.Handle = 0 then
     TempIcon.Handle := LoadIcon(hinstance, 'RBLANKICON');
   {*--Рисуем иконку на битмапе с заданным фоном, сохраняя альфа канал--*}
-  {**} icx := GetSystemMetrics(SM_CXICON);
-  {**} icy := GetSystemMetrics(SM_CYICON);
   {**} TempBmp := TBitMap.Create;
-  {**} TempBmp.Width := icx;
-  {**} TempBmp.Height := icy;
-  {**} TempBmp.Canvas.Brush.Color := fPanelColor;
-  {**} TempBmp.Canvas.FillRect(TempBmp.Canvas.ClipRect);
-  {**} DrawIcon(TempBmp.Canvas.Handle, 0, 0, TempIcon.Handle);
+  {**} TempBmp.Assign(TempIcon);
   {*--Изменяем размер иконки, если это требуется--*}
-  {**} if (icx = IconBmp.Width) and (icy = IconBmp.Height) then
+  {**} if (TempBmp.Width = IconBmp.Width) and (TempBmp.Height = IconBmp.Height) then
   {**}   IconBmp.Assign(TempBmp)
   {**} else
   {**}   SmoothResize(TempBmp, IconBmp);
   {*--Таким же образом создаем "нажатую" кнопку--*}
-  {**} if (icx = PushedIconBmp.Width) and (icy = PushedIconBmp.Height) then
+  {**} if (TempBmp.Width = PushedIconBmp.Width) and (TempBmp.Height = PushedIconBmp.Height) then
   {**}   PushedIconBmp.Assign(TempBmp)
   {**} else
   {**}   SmoothResize(TempBmp, PushedIconBmp);

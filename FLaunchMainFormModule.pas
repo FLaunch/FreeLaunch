@@ -1169,7 +1169,7 @@ begin
   if (not fileexists(FileName)) and (not directoryexists(FileName)) then
     icon.Handle := LoadIcon(hinstance, 'RBLANKICON')
   else
-    icon.Handle := GetFileIcon(FileName, true, Index);
+    icon.Handle := GetFileIcon(FileName, Index, Im.Height);
   if icon.Handle = 0 then
     icon.Handle := LoadIcon(hinstance, 'RBLANKICON');
   Im.Picture.Assign(icon);
