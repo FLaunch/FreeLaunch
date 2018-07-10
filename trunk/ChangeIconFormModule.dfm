@@ -70,7 +70,7 @@ object ChangeIconForm: TChangeIconForm
       HotImageIndex = 3
       ImageAlignment = iaCenter
       ImageIndex = 2
-      Images = DataModule1.Images
+      Images = Data.Images
       TabOrder = 1
       OnClick = RefPropsClick
     end
@@ -79,7 +79,7 @@ object ChangeIconForm: TChangeIconForm
       Top = 20
       Width = 246
       Height = 21
-      Images = DataModule1.Images
+      Images = Data.Images
       RightButton.HotImageIndex = 1
       RightButton.ImageIndex = 0
       RightButton.Visible = True
