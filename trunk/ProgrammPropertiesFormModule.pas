@@ -102,7 +102,7 @@ var
   ext: string;
 begin
   ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
-  OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) and ((ext = '.exe') or (ext = '.bat'));
+  OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) and IsExecutable(ext);
 end;
 
 procedure TProgrammPropertiesForm.OKButtonClick(Sender: TObject);
@@ -233,7 +233,7 @@ begin
       GetLinkInfo(@lnkinfo);
       FName := lnkinfo.FullPathAndNameOfFileToExecute;
       ext := extractfileext(FName).ToLower;
-      if not ((ext = '.exe') or (ext = '.bat')) then
+      if not IsExecutable(ext) then
         exit;
       CommandEdit.Text := FName;
       Ic := lnkinfo.FullPathAndNameOfFileContiningIcon;
@@ -246,7 +246,8 @@ begin
   else
     begin
       ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
-      if not ((ext = '.exe') or (ext = '.bat')) then exit;
+      if not IsExecutable(ext) then
+        Exit;
       Ic := CommandEdit.Text;
       //ParamsEdit.Text := '';
       DescrEdit.Text := '';
