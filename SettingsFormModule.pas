@@ -275,7 +275,8 @@ begin
   StartHide := StartHideBox.Checked;
   StatusBarVis := StatusBarBox.Checked;
   FlaunchMainForm.SetAutorun(Autorun);
-  lngfilename := LngFiles[LanguagesBox.ItemIndex];
+  if LanguagesBox.ItemIndex >= 0 then
+    lngfilename := LngFiles[LanguagesBox.ItemIndex];
   tabsview := TabsBox.ItemIndex;
   titlebar := TBarBox.ItemIndex;
   //FlaunchMainForm.MainTabs.SetFocus;
