@@ -619,7 +619,7 @@ begin
           FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
           links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
           ext := extractfileext(links[t,r,c].exec).ToLower;
-          if (not links[t,r,c].active) or (ext = '.exe') or (ext = '.bat') then
+          if (not links[t,r,c].active) or IsExecutable(ext) then
             links[t,r,c].ltype := 0
           else
             links[t,r,c].ltype := 1;
@@ -656,7 +656,7 @@ begin
           FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
           links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
           ext := extractfileext(links[t,r,c].exec).ToLower;
-          if (not links[t,r,c].active) or (ext = '.exe') or (ext = '.bat') then
+          if (not links[t,r,c].active) or IsExecutable(ext) then
             links[t,r,c].ltype := 0
           else
             links[t,r,c].ltype := 1;
@@ -1431,7 +1431,7 @@ begin
     Button.Data.Descr := '';
   end;
   //--Если исполняемый файл
-  if (Ext = '.exe') or (Ext = '.bat') then
+  if IsExecutable(Ext) then
   begin
     Button.Data.LType := 0;
     if Button.Data.Descr = '' then

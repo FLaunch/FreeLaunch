@@ -99,6 +99,8 @@ procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 function MyCutting(Str: string; Len: byte): string;
 /// <summary> Простая обертка над MessageBox </summary>
 procedure WarningMessage(AHandle: HWND; AText: string);
+/// <summary> Определение типа файла </summary>
+function IsExecutable(Ext: string): Boolean;
 /// <summary> Обертка над CreateProcess </summary>
 function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
@@ -428,6 +430,11 @@ begin
     MB_ICONWARNING or MB_OK);
 end;
 
+function IsExecutable(Ext: string): Boolean;
+begin
+  Result := Ext.EndsWith('.exe', True) or Ext.EndsWith('.bat', True);
+end;
+
 procedure ShellExecute(const AWnd: HWND; const AOperation, AFileName: String;
   const AParameters: String = ''; const ADirectory: String = ''; const AShowCmd: Integer = SW_SHOWNORMAL);
 var
@@ -677,7 +684,7 @@ begin
 
     Result.Active := True;
     Ext := ExtractFileExt(Result.Exec).ToLower;
-    if (Ext = '.exe') or (Ext = '.bat') then
+    if IsExecutable(Ext) then
       Result.LType := 0
     else
       Result.LType := 1;

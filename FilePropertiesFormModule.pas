@@ -199,7 +199,7 @@ begin
   else
     begin
       //ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
-      //if not ((ext = '.exe') or (ext = '.bat')) then exit;
+      //if not IsExecutable(ext) then exit;
       Ic := CommandEdit.Text;
       //ParamsEdit.Text := '';
       DescrEdit.Text := '';
