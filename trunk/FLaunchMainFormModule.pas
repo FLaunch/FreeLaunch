@@ -764,7 +764,7 @@ begin
           if (FLPanel.Buttons[t,r,c].IsActive) and (FLPanel.Buttons[t,r,c].HasIcon) then
           begin
             {*--Сохраняем обычную иконку в файл--*}
-            PngImg.Assign(FLPanel.Buttons[t,r,c].Data.IconBmp);
+            AlphaToPng(FLPanel.Buttons[t,r,c].Data.IconBmp, PngImg);
             PngImg.SaveToFile(FLPanel.Buttons[t,r,c].Data.IconCache);
             FLPanel.Buttons[t,r,c].Data.IconCache := '';
           end;

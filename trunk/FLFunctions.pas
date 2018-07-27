@@ -27,7 +27,7 @@ unit FLFunctions;
 interface
 
 uses
-  Windows, Messages, Graphics, System.Classes;
+  Windows, Messages, Graphics, System.Classes, VCL.Imaging.PNGImage;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -85,6 +85,8 @@ function GetSpecialDir(const CSIDL: byte): string;
 function GetAbsolutePath(s: string): string;
 //--Функция бреобразует строку вида 0xXXXXXX в цвет
 function ColorStrToColor(ColorStr: string): TColor;
+/// <summary> Преобразование битмапа в PNG с сохранением альфы </summary>
+procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
 //--Функция делает ресайз изображения
 procedure SmoothResize(Src, Dst: TBitmap);
 //--Нахождение микса двух цветов
@@ -267,6 +269,33 @@ begin
   //--Если не получилось, используем стандартный цвет
   if e <> 0 then
     Result := clBtnFace;
+end;
+
+type
+  TRGBQuadArray  = array[0..MaxInt div sizeof(TRGBQuad) - 1] of TRGBQuad;
+  PRGBQuadArray  = ^TRGBQuadArray;
+
+procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
+var
+  X, Y: Integer;
+  LineS:  PRGBQuadArray;
+  ALineD: VCL.Imaging.PNGImage.PByteArray;
+begin
+  Src.PixelFormat := pf32bit; //На всякий случай
+
+  Dest.Assign(Src);
+  Dest.CreateAlpha;
+
+  for Y := 0 to Src.Height - 1 do
+  begin
+    LineS  := Src.ScanLine[Y];
+    ALineD := Dest.AlphaScanline[Y];
+
+    for X := 0 to Src.Width - 1 do
+      ALineD[X] := LineS[X].rgbReserved;
+  end;
+
+  Dest.Modified := True;
 end;
 
 //--Функция делает ресайз изображения
