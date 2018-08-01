@@ -282,7 +282,7 @@ var
   ALineD: VCL.Imaging.PNGImage.PByteArray;
 begin
   Src.PixelFormat := pf32bit; //На всякий случай
-
+  Src.AlphaFormat := afIgnored;
   Dest.Assign(Src);
   Dest.CreateAlpha;
 
@@ -295,6 +295,7 @@ begin
       ALineD[X] := LineS[X].rgbReserved;
   end;
 
+  Src.AlphaFormat := afDefined;
   Dest.Modified := True;
 end;
 
