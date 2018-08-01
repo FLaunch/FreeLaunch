@@ -303,7 +303,7 @@ end;
 procedure SmoothResize(Src, Dst: TBitmap);
 begin
   Dst.PixelFormat := pf32bit;
-  Stretch(Dst.Width, Dst.Height, rfLanczos3, 0, Src, Dst);
+  Stretch(Dst.Width, Dst.Height, rfMitchell, 0, Src, Dst);
   Dst.AlphaFormat := afDefined;
 end;
 
