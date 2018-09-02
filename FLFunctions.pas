@@ -566,6 +566,20 @@ const
 var
   WinType, Prior, ErrorCode: integer;
   execparams, path, exec, params: string;
+
+  function RunasCanBeUsed: Boolean;
+  begin
+    Result := Prior = NORMAL_PRIORITY_CLASS;
+  end;
+
+  procedure RunElevated;
+  begin
+    if RunasCanBeUsed then
+      ShellExecute(AMainHandle, 'runas', exec, execparams, path, WinType)
+    else
+      LaunchInExecutor(ALink, AMainHandle, ADroppedFile);
+  end;
+
 begin
   exec := GetAbsolutePath(ALink.exec);
   path := GetAbsolutePath(ALink.workdir);
@@ -585,39 +599,37 @@ begin
   end;
   if ALink.ltype = 0 then
   begin
-    if (ALink.IsAdmin) and (not ParamStr(0).Contains('FLExecutor.exe')) then
-      LaunchInExecutor(ALink, AMainHandle, ADroppedFile)
-    else
-    begin
-      if not FileExists(exec) then
-        begin
-          WarningMessage(AMainHandle,
-            format(Language.Messages.NotFound, [ExtractFileName(exec)]));
-          exit;
-        end;
-      case ALink.pr of
-        0: Prior := NORMAL_PRIORITY_CLASS;
-        1: Prior := HIGH_PRIORITY_CLASS;
-        2: Prior := IDLE_PRIORITY_CLASS;
+    if not FileExists(exec) then
+      begin
+        WarningMessage(AMainHandle,
+          format(Language.Messages.NotFound, [ExtractFileName(exec)]));
+        exit;
       end;
-      if ADroppedFile <> '' then
-        params := stringreplace(ALink.dropparams, '%1', ADroppedFile, [rfReplaceAll])
-      else
-        params := ALink.params;
-      params := GetAbsolutePath(params);
-      execparams := Format('"%s" %s', [exec, params]);
+    case ALink.pr of
+      0: Prior := NORMAL_PRIORITY_CLASS;
+      1: Prior := HIGH_PRIORITY_CLASS;
+      2: Prior := IDLE_PRIORITY_CLASS;
+    end;
+    if ADroppedFile <> '' then
+      params := stringreplace(ALink.dropparams, '%1', ADroppedFile, [rfReplaceAll])
+    else
+      params := ALink.params;
+    params := GetAbsolutePath(params);
+    execparams := Format('"%s" %s', [exec, params]);
 
+    if (ALink.IsAdmin) and (not ParamStr(0).Contains('FLExecutor.exe')) then
+      RunElevated
+    else
       if not CreateProcess(exec, execparams, path, WinType, Prior, ErrorCode) then
       begin
         if ErrorCode = ERROR_ELEVATION_REQUIRED then
         begin
           ALink.IsAdmin := True;
-          LaunchInExecutor(ALink, AMainHandle, ADroppedFile)
+          RunElevated;
         end
         else
           RaiseLastOSError(ErrorCode);
       end;
-    end;
   end
   else
     ShellExecute(AMainHandle, '', exec, '', path, WinType);
