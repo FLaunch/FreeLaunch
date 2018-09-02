@@ -56,6 +56,7 @@ chb_hide=Приховувати при запуску
 be_hint=Вибрати об'єкт
 rp_hint=Оновити властивості
 tprogramfilter=Виконуваний файл (*.exe, *.bat)
+chb_admin=Запускати з правами адміністратора
 
 [iconselect]
 iconselect=Вибір ікони
