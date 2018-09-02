@@ -62,6 +62,7 @@ type
     Label9: TLabel;
     RefProps: TButton;
     CommandEdit: TButtonedEdit;
+    AdminBox: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure BrowseExecClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
@@ -126,6 +127,7 @@ begin
   link.hide := HideCheckBox.Checked;
   link.pr := PriorBox.ItemIndex;
   link.wst := WStyleBox.ItemIndex;
+  Link.IsAdmin := AdminBox.Checked;
 end;
 
 procedure TProgrammPropertiesForm.RefPropsClick(Sender: TObject);
@@ -214,6 +216,7 @@ begin
   HideCheckBox.Checked := Link.hide;
   PriorBox.ItemIndex := Link.pr;
   WStyleBox.ItemIndex := Link.wst;
+  AdminBox.Checked := Link.IsAdmin;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
     Link.iconindex);
   CommandEditChange(nil);

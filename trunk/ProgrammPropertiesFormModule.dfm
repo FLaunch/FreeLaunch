@@ -3,7 +3,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  ClientHeight = 309
+  ClientHeight = 320
   ClientWidth = 538
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,21 +19,23 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
   OnShow = FormShow
   DesignSize = (
     538
-    309)
+    320)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 8
     Top = 8
     Width = 521
-    Height = 264
+    Height = 275
     ActivePage = TabSheet1
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
+    ExplicitHeight = 264
     object TabSheet1: TTabSheet
+      ExplicitHeight = 236
       DesignSize = (
         513
-        236)
+        247)
       object Label1: TLabel
         Left = 69
         Top = 18
@@ -66,9 +68,10 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Left = 351
         Top = 9
         Width = 9
-        Height = 214
+        Height = 225
         Anchors = [akLeft, akTop, akBottom]
         Shape = bsLeftLine
+        ExplicitHeight = 214
       end
       object Label5: TLabel
         Left = 366
@@ -151,7 +154,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 128
         Width = 75
         Height = 25
-        TabOrder = 11
+        TabOrder = 12
         OnClick = ChangeIconButtonClick
       end
       object QuesCheckBox: TCheckBox
@@ -159,7 +162,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 37
         Width = 138
         Height = 17
-        TabOrder = 9
+        TabOrder = 10
       end
       object WStyleBox: TComboBox
         Left = 235
@@ -190,7 +193,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 60
         Width = 138
         Height = 17
-        TabOrder = 10
+        TabOrder = 11
       end
       object WorkFolderEdit: TEdit
         Left = 78
@@ -224,25 +227,35 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         OnChange = CommandEditChange
         OnRightButtonClick = BrowseExecClick
       end
+      object AdminBox: TCheckBox
+        Left = 78
+        Top = 218
+        Width = 259
+        Height = 17
+        Caption = 'Run with Admin rights'
+        TabOrder = 9
+      end
     end
   end
   object OKButton: TButton
     Left = 373
-    Top = 278
+    Top = 289
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
     ModalResult = 1
     TabOrder = 1
     OnClick = OKButtonClick
+    ExplicitTop = 278
   end
   object CancelButton: TButton
     Left = 454
-    Top = 278
+    Top = 289
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
     ModalResult = 2
     TabOrder = 2
+    ExplicitTop = 278
   end
 end
