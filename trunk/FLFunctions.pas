@@ -561,6 +561,8 @@ begin
 end;
 
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
+const
+  ERROR_ELEVATION_REQUIRED = 740;
 var
   WinType, Prior, ErrorCode: integer;
   execparams, path, exec, params: string;
@@ -607,7 +609,7 @@ begin
 
       if not CreateProcess(exec, execparams, path, WinType, Prior, ErrorCode) then
       begin
-        if ErrorCode = 740 then
+        if ErrorCode = ERROR_ELEVATION_REQUIRED then
         begin
           ALink.IsAdmin := True;
           LaunchInExecutor(ALink, AMainHandle, ADroppedFile)
