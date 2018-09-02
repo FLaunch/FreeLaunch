@@ -42,7 +42,7 @@ type
     Caption, Folder, LblObject, Parameters, Description, Priority,
     PriorityNormal, PriorityHigh, PriorityLow, View, ViewNormal, ViewMax,
     ViewMin, ViewHidden, BeHint, RpHint, Options, Icon, Change, ChbDrop,
-    ChbQuestion, ChbHide, ProgramFilter: string;
+    ChbQuestion, ChbHide, ProgramFilter, ChbAdmin: string;
   end;
 
   TLngSettings = record
@@ -265,6 +265,8 @@ begin
       'Hide after launch'));
     Properties.ProgramFilter :=  Parse(Ini.ReadString(SctProperties, 'tprogramfilter',
       'Executed file (*.exe, *.bat)'));
+    Properties.ChbAdmin :=       Parse(Ini.ReadString(SctProperties, 'chb_admin',
+      'Run with Admin rights'));
 
     TabRename := Parse(Ini.ReadString(SctTabname, 'tabname', 'Tab name'));
 
