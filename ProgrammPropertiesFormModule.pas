@@ -202,6 +202,7 @@ begin
   DropBox.Caption := Language.Properties.ChbDrop;
   QuesCheckBox.Caption := Language.Properties.ChbQuestion;
   HideCheckBox.Caption := Language.Properties.ChbHide;
+  AdminBox.Caption := Language.Properties.ChbAdmin;
 
   CommandEdit.Text := Link.exec;
   WorkFolderEdit.Text := Link.workdir;
