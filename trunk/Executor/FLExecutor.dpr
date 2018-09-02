@@ -3,6 +3,19 @@ program FLExecutor;
 {$R *.res}
 
 uses
+  {$IFDEF EurekaLog}
+  EMemLeaks,
+  EResLeaks,
+  EDialogWinAPIEurekaLogDetailed,
+  EDialogWinAPIStepsToReproduce,
+  EDebugExports,
+  EDebugMS,
+  EDebugJCL,
+  EFixSafeCallException,
+  EMapWin32,
+  EAppVCL,
+  ExceptionLog7,
+  {$ENDIF EurekaLog}
   System.SysUtils, Winapi.Windows, FLFunctions, FLLanguage, System.Classes;
 
 var
