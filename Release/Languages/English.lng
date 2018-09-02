@@ -56,6 +56,7 @@ chb_hide=Hide after launch
 be_hint=Select object
 rp_hint=Refresh properties
 tprogramfilter=Executed file (*.exe, *.bat)
+chb_admin=Run with Admin rights
 
 [iconselect]
 iconselect=Icon select
