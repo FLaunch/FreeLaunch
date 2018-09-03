@@ -1105,6 +1105,8 @@ begin
       TempData.WSt := GetInt(LinkNode, 'WindowState');
       TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
 
+      TempData.AssignIcons;
+
       LinkNode := LinkNode.NextSibling;
     end;
 
@@ -1207,12 +1209,11 @@ var
   TempButton: TFLButton;
 begin
   TempButton := FLPanel.LastUsedButton;
-  TempButton.FrameColor := clBlue;
+  TempButton.Highlight;
   if ConfirmDialog(Format(Language.Messages.DeleteButton, [ExtractFileName(TempButton.Data.Exec)]),
     Language.Messages.Confirmation)
   then
     TempButton.FreeData;
-  TempButton.RemoveFrame;
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ExportClick(Sender: TObject);
@@ -1220,11 +1221,10 @@ var
   TempButton: TFLButton;
 begin
   TempButton := FLPanel.LastUsedButton;
-  TempButton.FrameColor := clBlue;
+  TempButton.Highlight;
   SaveButtonDialog.FileName := ExtractFileNameNoExt(TempButton.Data.Exec);
   if SaveButtonDialog.Execute(Handle) then
     ExportButton(TempButton, SaveButtonDialog.FileName);
-  TempButton.RemoveFrame;
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ImportClick(Sender: TObject);
@@ -1232,10 +1232,9 @@ var
   TempButton: TFLButton;
 begin
   TempButton := FLPanel.LastUsedButton;
-  TempButton.FrameColor := clBlue;
+  TempButton.Highlight;
   if OpenButtonDialog.Execute(Handle) then
     ImportButton(TempButton, OpenButtonDialog.FileName);
-  TempButton.RemoveFrame;
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_PropsClick(Sender: TObject);
@@ -1243,7 +1242,7 @@ var
   TempButton: TFLButton;
 begin
   TempButton := FLPanel.LastUsedButton;
-  TempButton.FrameColor := clBlue;
+  TempButton.Highlight;
 
   PropertiesMode := 0;
   if Assigned(TempButton.Data) then
@@ -1256,7 +1255,6 @@ begin
     TempButton.LinkToData(TProgrammPropertiesForm.Execute(TempButton.DataToLink));
   if PropertiesMode = 1 then
     TempButton.LinkToData(TFilePropertiesForm.Execute(TempButton.DataToLink));
-  TempButton.RemoveFrame;
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_RunClick(Sender: TObject);
@@ -1372,24 +1370,19 @@ begin
   {*--Если кнопка активна, просим подтверждение замены--*}
   if Button.IsActive then
   begin
-    Button.FrameColor := clBlue;
+    Button.Highlight;
     if not ConfirmDialog(Language.Messages.BusyReplace,
       Language.Messages.Confirmation)
     then
-    begin
-      Button.RemoveFrame;
       Exit;
-    end;
-    Button.RemoveFrame;
   end;
   Ext := ExtractFileExt(FileName).ToLower;
   //--Если был перетянут файл кнопки
   if Ext = '.flb' then
   begin
-    Button.FrameColor := clBlue;
+    Button.Highlight;
     if ConfirmDialog(format(Language.Messages.ImportButton,[FileName]), Language.Messages.Confirmation) then
       ImportButton(Button, FileName);
-    Button.RemoveFrame;
     exit;
   end;
   //--Инициализируем ячейку данных

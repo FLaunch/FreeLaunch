@@ -28,7 +28,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Controls, ExtCtrls, ShellApi, Messages, Graphics, Menus, Dialogs,
-  FLFunctions, System.Generics.Collections;
+  FLFunctions, System.Generics.Collections, VCL.Buttons;
 
 const
   //--Цвет полупрозрачной рамки у кнопки с фокусом
@@ -44,7 +44,7 @@ type
   {*----------------------------------------*}
 
   //--Класс кнопки на компоненте
-  TFLButton = class(TGraphicControl)
+  TFLButton = class(TSpeedButton)
     private
       //--Если 255, то используется текущая страница, иначе этот номер страницы
       fCurPage: Integer;
@@ -52,17 +52,11 @@ type
       fPushed: boolean;
       //--Флаг, необходимый для предотвращения нажатия на кнопку при перетаскивании
       fCanClick: boolean;
-      //--Цвет полупрозрачной рамки
-      fFrameColor: TColor;
       //--Номер строки и колонки данной кнопки
       fRowNumber, fColNumber: Integer;
       FFocused: Boolean;
       //--Возвращает ссылку на родительскую панель (read для свойства Father)
       function GetFather: TFLPanel;
-      //--Метод рисует полупрозрачную рамку
-      procedure DrawFrame;
-      //--Устанавливает цвет полупрозрачной рамки (write для свойства FrameColor)
-      procedure SetFrameColor(FrameColor: TColor);
       //--Возвращает данные (объект, рабочая папка и т.д.) для текущей кнопки текущей страницы (read для свойства Data)
       function GetDataItem: TFLDataItem;
       //--Является ли текущая кнопка текущей страницы активной (read для свойства IsActive)
@@ -77,9 +71,10 @@ type
     protected
       //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
       procedure Paint; override;
+      procedure RemoveHighlight;
     public
       //--Конструктор
-      constructor Create(AOwner: TComponent; RowNumber, ColNumber: Integer);
+      constructor Create(AOwner: TComponent; RowNumber, ColNumber: Integer); reintroduce;
       //--Деструктор
       destructor Destroy; override;
       //--Инициализация ячейки данных текущей кнопки текущей страницы
@@ -88,8 +83,6 @@ type
       procedure FreeData;
       //--Ссылка на родительскую панель
       property Father: TFLPanel read GetFather;
-      //--Цвет полупрозрачной рамки
-      property FrameColor: TColor read fFrameColor write SetFrameColor;
       //--Номер строки и колонки данной кнопки
       property RowNumber: integer read fRowNumber;
       property ColNumber: integer read fColNumber;
@@ -100,8 +93,6 @@ type
       property Focused: Boolean read FFocused write SetFocused;
       //--Установлена ли иконка на кнопке
       property HasIcon: boolean read GetHasIcon write SetHasIcon;
-      //--Удаляет полупрозрачную рамку (очищает)
-      procedure RemoveFrame;
       //--Метод генерируется при нажатии кнопки на клавиатуре
       procedure KeyDown(var Key: Word; Shift: TShiftState);
       //--Метод генерируется при "отжатии" кнопки на клавиатуре
@@ -126,6 +117,7 @@ type
       function DataToLink: TLink;
       /// <summary> Конвертация TLink в TFLDataItem </summary>
       procedure LinkToData(const ALink: TLink);
+      function Highlight: IInterface;
     published
 
   end;
@@ -348,7 +340,7 @@ type
       //--Конструктор
       constructor Create(AOwner: TComponent; PagesCount: integer = 3; ColsCount: integer = 10;
         RowsCount: integer = 2; Padding: integer = 1; ButtonsWidth: integer = 32; ButtonsHeight: integer = 32;
-        Color: TColor = clBtnFace);
+        Color: TColor = clBtnFace); reintroduce;
       //--Деструктор
       destructor Destroy; override;
       //--Инициализация ячейки данных
@@ -439,7 +431,6 @@ begin
   Width := Father.fButtonWidth;
   Height := Father.fButtonHeight;
   Color := Father.fPanelColor;
-  FrameColor := Father.fPanelColor;
   fRowNumber := RowNumber;
   fColNumber := ColNumber;
   fPushed := false;
@@ -498,7 +489,7 @@ end;
 procedure TFLButton.FreeData;
 begin
   FreeAndNil(Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber]);
-  Repaint;
+  Invalidate;
 end;
 
 //--Возвращает ссылку на родительскую панель
@@ -507,50 +498,15 @@ begin
   Result := Parent as TFLPanel;
 end;
 
-//--Метод рисует полупрозрачную рамку
-procedure TFLButton.DrawFrame;
-var
-  i,j: integer;
-  DrawColor: TColor;
-begin
-  //--Если сейчас выполняется перетягивание этой кнопки, то рисуется рамка цвета DraggedColor
-  if (IsActive) and (Father.fDragNow) and (Self = Father.fLastUsedButton) and
-    (Father.fCurrentDataIndex = Father.fDraggedButtonPageNumber)
-  then
-    DrawColor := DraggedColor
-  else
-    if Focused then
-      DrawColor := FocusColor
-    else
-      DrawColor := fFrameColor;
-
-  //--Если кнопка нажата или цвет рамки совпадает с цветом панели, то рамка не рисуется
-  if (fPushed) or (DrawColor = Father.fPanelColor) then Exit;
-
-  for i := 0 to Width - 1 do
-    for j := 0 to Height - 1 do
-      begin
-        Canvas.Pixels[i,j] := GetColorBetween(Canvas.Pixels[i,j], DrawColor, 18, 0, 100);
-      end;
-end;
-
 procedure TFLButton.SetFocused(const Value: Boolean);
 begin
   FFocused := Value;
 
   if FFocused then
     //--Иммитируем движение мыши по кнопке
-    MouseMove([], 0, 0);
-
-  Repaint;
-end;
-
-//--Устанавливает цвет полупрозрачной рамки
-//--Входной параметр: цвет рамки
-procedure TFLButton.SetFrameColor(FrameColor: TColor);
-begin
-  fFrameColor := FrameColor;
-  Repaint;
+    Perform(CM_MOUSEENTER, 0, 0)
+  else
+    Perform(CM_MOUSELEAVE, 0, 0);
 end;
 
 //--Возвращает данные (объект, рабочая папка и т.д.) для текущей кнопки текущей страницы
@@ -565,6 +521,20 @@ function TFLButton.GetIsActive: boolean;
 begin
   //--Родительская панель -> Текущая страница данных (или по индексу) -> Является ли ячейка активной
   Result := Father.GetDataPageByPageNumber(fCurPage).IsActive[fRowNumber, fColNumber];
+end;
+
+type
+  THighlightRemover = class(TInterfacedObject)
+    FButton: TFLButton;
+    constructor Create(AButton: TFLButton);
+    destructor Destroy; override;
+  end;
+
+function TFLButton.Highlight: IInterface;
+begin
+  FState := bsExclusive;
+  Invalidate;
+  Result := THighlightRemover.Create(Self);
 end;
 
 //--Установлена ли иконка на кнопке
@@ -584,16 +554,9 @@ end;
 //--Метод генерируется при покидании курсора мыши кнопки
 procedure TFLButton.CMMouseLeave(var Msg: TMessage);
 begin
+  inherited;
   //--Генерируем событие родительской панели OnButtonMouseLeave, передавая текущую кнопку
   if Assigned(Father.fButtonMouseLeave) then Father.fButtonMouseLeave(Father, Self);
-end;
-
-//--Удаляет полупрозрачную рамку (очищает)
-procedure TFLButton.RemoveFrame;
-begin
-  //--Устанавливаем цвет рамки <- цвет панели
-  fFrameColor := Father.fPanelColor;
-  Repaint;
 end;
 
 //--Метод генерируется при нажатии кнопки на клавиатуре
@@ -611,7 +574,6 @@ begin
   if Key = VK_RETURN then
     begin
       MouseUp(mbLeft, [], 0, 0);
-      Click;
     end;
 end;
 
@@ -638,7 +600,7 @@ begin
     TmpData.FIsAdmin := ALink.IsAdmin;
 
     TmpData.AssignIcons;
-    Repaint;
+    Invalidate;
   end
   else
     FreeData;
@@ -663,6 +625,7 @@ end;
 //--Метод генерируется при нажатии кнопки мыши
 procedure TFLButton.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
+  inherited MouseDown(Button, Shift, X, Y);
   //--Если кнопка мыши - левая
   if button = mbLeft then
     //--Если зажат Ctrl
@@ -678,7 +641,8 @@ begin
         //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
         Father.fLastUsedButton := Self;
         //--Перерисовываем (чтобы появилась рамка)
-        Repaint;
+        FState := bsDown;
+        Invalidate;
       end
     else
       begin
@@ -686,35 +650,31 @@ begin
         fPushed := true;
         //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
         Father.fLastUsedButton := Self;
-        Repaint;
       end;
   //--Генерируем событие родительской панели OnButtonMouseDown, передавая ссылку на текущую кнопку
   if Assigned(Father.fButtonMouseDown) then Father.fButtonMouseDown(Father, Button, Self);
-  inherited MouseDown(Button, Shift, X, Y);
 end;
 
 //--Метод генерируется при "отжатии" кнопки мыши
 procedure TFLButton.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
+  inherited MouseUp(Button, Shift, X, Y);
   //--Если кнопка мыши - левая
   if button = mbleft then
     begin
       //--Делаем кнопку отжатой
       fPushed := false;
-      Repaint;
     end;
 
   Father.FocusedButton := nil;
-
-  inherited MouseUp(Button, Shift, X, Y);
 end;
 
 //--Метод генерируется при движении мыши по кнопке
 procedure TFLButton.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
+  inherited MouseMove(Shift, X, Y);
   //--Генерируем событие родительской панели OnButtonMouseMove, передавая текущую кнопку
   if Assigned(Father.fButtonMouseMove) then Father.fButtonMouseMove(Father, Self);
-  inherited MouseMove(Shift, X, Y);
 end;
 
 //--Метод генерируется при перетягивании на кнопку другого объекта
@@ -736,78 +696,49 @@ procedure TFLButton.DragDrop(Source: TObject; X, Y: Integer);
 var
   TempDataItem: TFLDataItem;
 begin
+  inherited DragDrop(Source, X, Y);
   {*--Меняем местами две ячейки памяти--*}
   {**} TempDataItem := Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber];
   {**} Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber] := Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber];
   {**} Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber] := TempDataItem;
-  {*--Перерисовываем кнопку-источник и кнопку-приемник--*}
-  {**} Repaint;
-  {**} (Source as TFLButton).Repaint;
   {*----------------------------------------------------*}
-  inherited DragDrop(Source, X, Y);
 end;
 
 //--Метод генерируется при прекращении перетягивания объекта
 procedure TFLButton.DoEndDrag(Target: TObject; X, Y: Integer);
 begin
+  inherited;
   Father.fDragNow := false;
-  Repaint;
+  FState := bsUp;
+  Invalidate;
   fCanClick := true;
 end;
 
 //--Метод генерируется при вызове контекстного меню
 procedure TFLButton.DoContextPopup(MousePos: TPoint; var Handled: Boolean);
 begin
-  MouseDown(mbRight, [], 0, 0);
-  Father.fLastUsedButton := Self;
   inherited DoContextPopup(MousePos, Handled);
+  Father.fLastUsedButton := Self;
 end;
 
 //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
 procedure TFLButton.Paint;
 begin
   inherited;
-  //--Если кнопка нажата в данный момент
-  if fPushed then
-    begin
-      {*--То рисуем тени для нажатой кнопки--*}
-      {**} Canvas.Brush.Color := Father.fPanelColor;
-      {**} Canvas.FillRect(Canvas.ClipRect);
-      {**} Canvas.Pen.Color := Father.fDColor2;
-      {**} Canvas.PenPos := Point(Width - 2, 0);
-      {**} Canvas.LineTo(0, 0);
-      {**} Canvas.LineTo(0, Height - 1);
-      {**} Canvas.Pen.Color := Father.fDColor1;
-      {**} Canvas.PenPos := Point(Width - 2, 1);
-      {**} Canvas.LineTo(Width - 2, Height - 2);
-      {**} Canvas.LineTo(0, Height - 2);
-      {**} Canvas.Pen.Color := Father.fPanelColor;
-      {*-------------------------------------*}
-      //--Если кнопка активна, рисуем ее иконку
-      if (IsActive and HasIcon) then
-        Canvas.Draw(3, 3, Data.PushedIconBmp);
-    end
-  else
-    begin
-      {*--Иначе рисуем обычные тени--*}
-      {**} Canvas.Brush.Color := Father.fPanelColor;
-      {**} Canvas.FillRect(Canvas.ClipRect);
-      {**} Canvas.Pen.Color := Father.fLColor;
-      {**} Canvas.PenPos := Point(Width - 1, 0);
-      {**} Canvas.LineTo(0, 0);
-      {**} Canvas.LineTo(0, Height - 1);
-      {**} Canvas.Pen.Color := Father.fDColor1;
-      {**} Canvas.PenPos := Point(Width - 1, 0);
-      {**} Canvas.LineTo(Width - 1, Height - 1);
-      {**} Canvas.LineTo(-1, Height - 1);
-      {**} Canvas.Pen.Color := Father.fPanelColor;
-      {*-----------------------------*}
-      //--Если кнопка активна, рисуем ее иконку
-      if (IsActive and HasIcon) then
-        Canvas.Draw(2, 2, Data.IconBmp);
-    end;
-  //--Рисуем полупрозрачную рамку (если установлена)
-  DrawFrame;
+  //--Если кнопка активна, рисуем ее иконку
+  if (IsActive and HasIcon) then
+  begin
+    if fPushed then
+      Canvas.Draw(3, 3, Data.PushedIconBmp)
+    else
+      Canvas.Draw(2, 2, Data.IconBmp);
+  end;
+end;
+
+procedure TFLButton.RemoveHighlight;
+begin
+  FState := bsUp;
+  Invalidate;
 end;
 
 {*********************************}
@@ -1689,6 +1620,19 @@ begin
 
   if Assigned(fFocusedButton) then
     fFocusedButton.KeyUp(Key, Shift);
+end;
+
+{ THighlightRemover }
+
+constructor THighlightRemover.Create(AButton: TFLButton);
+begin
+  FButton := AButton;
+end;
+
+destructor THighlightRemover.Destroy;
+begin
+  FButton.RemoveHighlight;
+  inherited;
 end;
 
 end.
