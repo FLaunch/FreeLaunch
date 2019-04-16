@@ -1,4 +1,4 @@
-{
+п»ї{
   ##########################################################################
   #  FreeLaunch 2.5 - free links manager for Windows                       #
   #  ====================================================================  #
@@ -59,7 +59,7 @@ type
     IsAdmin: Boolean;
   end;
 
-  //--Структура информации о ярлыке
+  //--РЎС‚СЂСѓРєС‚СѓСЂР° РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЏСЂР»С‹РєРµ
   TShellLinkInfoStruct = record
     FullPathAndNameOfLinkFile: array[0..MAX_PATH] of Char;
     FullPathAndNameOfFileToExecute: array[0..MAX_PATH] of Char;
@@ -74,61 +74,61 @@ type
   end;
   PShellLinkInfoStruct = ^TShellLinkInfoStruct;
 
-//--Функция не позволяет уйти значению за пределы допустимых
+//--Р¤СѓРЅРєС†РёСЏ РЅРµ РїРѕР·РІРѕР»СЏРµС‚ СѓР№С‚Рё Р·РЅР°С‡РµРЅРёСЋ Р·Р° РїСЂРµРґРµР»С‹ РґРѕРїСѓСЃС‚РёРјС‹С…
 function InRange(Value, FromV, ToV: byte): byte;
-//--Функция определяет количество иконок в файле
+//--Р¤СѓРЅРєС†РёСЏ РѕРїСЂРµРґРµР»СЏРµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РёРєРѕРЅРѕРє РІ С„Р°Р№Р»Рµ
 function GetIconCount(FileName: string): integer;
-//--Функция извлекает иконку из файла по индексу
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РёРєРѕРЅРєСѓ РёР· С„Р°Р№Р»Р° РїРѕ РёРЅРґРµРєСЃСѓ
 function GetFileIcon(FileName: string; Index: integer; Size: Cardinal = 32): HIcon;
-//--Функция возвращает путь к специальным папкам в Windows
+//--Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РїСѓС‚СЊ Рє СЃРїРµС†РёР°Р»СЊРЅС‹Рј РїР°РїРєР°Рј РІ Windows
 function GetSpecialDir(const CSIDL: byte): string;
 function GetAbsolutePath(s: string): string;
-//--Функция бреобразует строку вида 0xXXXXXX в цвет
+//--Р¤СѓРЅРєС†РёСЏ Р±СЂРµРѕР±СЂР°Р·СѓРµС‚ СЃС‚СЂРѕРєСѓ РІРёРґР° 0xXXXXXX РІ С†РІРµС‚
 function ColorStrToColor(ColorStr: string): TColor;
-/// <summary> Преобразование битмапа в PNG с сохранением альфы </summary>
+/// <summary> РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р±РёС‚РјР°РїР° РІ PNG СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј Р°Р»СЊС„С‹ </summary>
 procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
-//--Функция делает ресайз изображения
+//--Р¤СѓРЅРєС†РёСЏ РґРµР»Р°РµС‚ СЂРµСЃР°Р№Р· РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 procedure SmoothResize(Src, Dst: TBitmap);
-//--Нахождение микса двух цветов
+//--РќР°С…РѕР¶РґРµРЅРёРµ РјРёРєСЃР° РґРІСѓС… С†РІРµС‚РѕРІ
 function GetColorBetween(StartColor, EndColor: TColor; Pointvalue, Von, Bis: Extended): TColor;
-//--Функция извлекает описание исполняемого файла
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РѕРїРёСЃР°РЅРёРµ РёСЃРїРѕР»РЅСЏРµРјРѕРіРѕ С„Р°Р№Р»Р°
 function GetFileDescription(FileName: string): string;
-//--Функция извлекает имя файла без разширения
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° Р±РµР· СЂР°Р·С€РёСЂРµРЅРёСЏ
 function ExtractFileNameNoExt(FileName: string): string;
-//--Функция извлекает информацию из ярлыка (*.lnk)
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РёР· СЏСЂР»С‹РєР° (*.lnk)
 procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
-//--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
+//--РћР±СЂРµР·Р°РµС‚ СЃС‚СЂРѕРєСѓ Str РґРѕ РґР»РёРЅС‹ Len СЃ РґРѕР±Р°РІР»РµРЅРёРµРј С‚СЂРѕРµС‚РѕС‡РёСЏ РІ РєРѕРЅРµС† (РµСЃР»Рё СЃС‚СЂРѕРєР° РґР»РёРЅРµРµ Len)
 function MyCutting(Str: string; Len: byte): string;
-/// <summary> Простая обертка над MessageBox </summary>
+/// <summary> РџСЂРѕСЃС‚Р°СЏ РѕР±РµСЂС‚РєР° РЅР°Рґ MessageBox </summary>
 procedure WarningMessage(AHandle: HWND; AText: string);
-/// <summary> Определение типа файла </summary>
+/// <summary> РћРїСЂРµРґРµР»РµРЅРёРµ С‚РёРїР° С„Р°Р№Р»Р° </summary>
 function IsExecutable(Ext: string): Boolean;
-/// <summary> Обертка над CreateProcess </summary>
+/// <summary> РћР±РµСЂС‚РєР° РЅР°Рґ CreateProcess </summary>
 function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
-/// <summary> Запуск процесса внутри потока </summary>
+/// <summary> Р—Р°РїСѓСЃРє РїСЂРѕС†РµСЃСЃР° РІРЅСѓС‚СЂРё РїРѕС‚РѕРєР° </summary>
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
-//--Процедура для запуска процесса в потоке (при клике по кнопке)
+//--РџСЂРѕС†РµРґСѓСЂР° РґР»СЏ Р·Р°РїСѓСЃРєР° РїСЂРѕС†РµСЃСЃР° РІ РїРѕС‚РѕРєРµ (РїСЂРё РєР»РёРєРµ РїРѕ РєРЅРѕРїРєРµ)
 procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
   ADroppedFile: string);
-/// <summary> Замена всех переменных окружения их значениями </summary>
+/// <summary> Р—Р°РјРµРЅР° РІСЃРµС… РїРµСЂРµРјРµРЅРЅС‹С… РѕРєСЂСѓР¶РµРЅРёСЏ РёС… Р·РЅР°С‡РµРЅРёСЏРјРё </summary>
 function ExpandEnvironmentVariables(const AFileName: string): string;
-/// <summary> Добавление новой переменной окружения </summary>
+/// <summary> Р”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№ РѕРєСЂСѓР¶РµРЅРёСЏ </summary>
 procedure AddEnvironmentVariable(const AName, AValue: string);
-/// <summary> Конвертация линка в набор строк </summary>
+/// <summary> РљРѕРЅРІРµСЂС‚Р°С†РёСЏ Р»РёРЅРєР° РІ РЅР°Р±РѕСЂ СЃС‚СЂРѕРє </summary>
 procedure LinkToStrings(ALink: TLink; AStrings: TStrings);
-/// <summary> Конвертация набора строк в линк </summary>
+/// <summary> РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РЅР°Р±РѕСЂР° СЃС‚СЂРѕРє РІ Р»РёРЅРє </summary>
 function StringsToLink(AStrings: TStrings): TLink;
-/// <summary> Рисует иконку Щит UAC на канве </summary>
+/// <summary> Р РёСЃСѓРµС‚ РёРєРѕРЅРєСѓ Р©РёС‚ UAC РЅР° РєР°РЅРІРµ </summary>
 procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
-/// <summary> Инициализация путей </summary>
+/// <summary> РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїСѓС‚РµР№ </summary>
 procedure InitEnvironment;
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
-  SettingsMode: integer; //Режим работы (0 - инсталляция, настройки хранятся в APPDATA;
-  //1 - инсталляция, настройки хранятся в папке программы;
-  //2 - портабельный режим, инсталляция, настройки хранятся в папке программы)
+  SettingsMode: integer; //Р РµР¶РёРј СЂР°Р±РѕС‚С‹ (0 - РёРЅСЃС‚Р°Р»Р»СЏС†РёСЏ, РЅР°СЃС‚СЂРѕР№РєРё С…СЂР°РЅСЏС‚СЃСЏ РІ APPDATA;
+  //1 - РёРЅСЃС‚Р°Р»Р»СЏС†РёСЏ, РЅР°СЃС‚СЂРѕР№РєРё С…СЂР°РЅСЏС‚СЃСЏ РІ РїР°РїРєРµ РїСЂРѕРіСЂР°РјРјС‹;
+  //2 - РїРѕСЂС‚Р°Р±РµР»СЊРЅС‹Р№ СЂРµР¶РёРј, РёРЅСЃС‚Р°Р»Р»СЏС†РёСЏ, РЅР°СЃС‚СЂРѕР№РєРё С…СЂР°РЅСЏС‚СЃСЏ РІ РїР°РїРєРµ РїСЂРѕРіСЂР°РјРјС‹)
 
 implementation
 
@@ -136,8 +136,8 @@ uses
   ShellApi, ShFolder, SysUtils, ActiveX, ComObj, ShlObj, FLLanguage,
   System.IniFiles, Winapi.CommCtrl, jclGraphics;
 
-//--Функция не позволяет уйти значению за пределы допустимых
-//--Входные параметры: значение, минимальное значение, максимальное значение
+//--Р¤СѓРЅРєС†РёСЏ РЅРµ РїРѕР·РІРѕР»СЏРµС‚ СѓР№С‚Рё Р·РЅР°С‡РµРЅРёСЋ Р·Р° РїСЂРµРґРµР»С‹ РґРѕРїСѓСЃС‚РёРјС‹С…
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: Р·РЅР°С‡РµРЅРёРµ, РјРёРЅРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ, РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
 function InRange(Value, FromV, ToV: byte): byte;
 begin
   Result := Value;
@@ -145,13 +145,13 @@ begin
   if Value > ToV then Result := ToV;
 end;
 
-//--Функция определяет количество иконок в файле
+//--Р¤СѓРЅРєС†РёСЏ РѕРїСЂРµРґРµР»СЏРµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РёРєРѕРЅРѕРє РІ С„Р°Р№Р»Рµ
 function GetIconCount(FileName: string): integer;
 begin
   Result := ExtractIcon(HInstance, PChar(FileName), MAXDWORD);
 end;
 
-//--Функция извлекает иконку из файла по индексу
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РёРєРѕРЅРєСѓ РёР· С„Р°Р№Р»Р° РїРѕ РёРЅРґРµРєСЃСѓ
 function GetFileIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
 
   function VistaGetIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
@@ -229,17 +229,17 @@ begin
   end;
 end;
 
-//--Функция возвращает путь к специальным папкам в Windows
-//--Входной параметр: идентификатор пути
+//--Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РїСѓС‚СЊ Рє СЃРїРµС†РёР°Р»СЊРЅС‹Рј РїР°РїРєР°Рј РІ Windows
+//--Р’С…РѕРґРЅРѕР№ РїР°СЂР°РјРµС‚СЂ: РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїСѓС‚Рё
 //--  CSIDL_APPDATA - Application Data
-//--  CSIDL_BITBUCKET - Корзина
-//--  CSIDL_CONTROLS - Панель управления
+//--  CSIDL_BITBUCKET - РљРѕСЂР·РёРЅР°
+//--  CSIDL_CONTROLS - РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ
 //--  CSIDL_COOKIES - Cookies
-//--  CSIDL_DESKTOP - Рабочий стол
-//--  CSIDL_DESKTOPDIRECTORY - папка Рабочего стола
-//--  CSIDL_DRIVES - Мой компьютер
-//--  CSIDL_FAVORITES - Избранное
-//--  CSIDL_FONTS - Шрифты
+//--  CSIDL_DESKTOP - Р Р°Р±РѕС‡РёР№ СЃС‚РѕР»
+//--  CSIDL_DESKTOPDIRECTORY - РїР°РїРєР° Р Р°Р±РѕС‡РµРіРѕ СЃС‚РѕР»Р°
+//--  CSIDL_DRIVES - РњРѕР№ РєРѕРјРїСЊСЋС‚РµСЂ
+//--  CSIDL_FAVORITES - РР·Р±СЂР°РЅРЅРѕРµ
+//--  CSIDL_FONTS - РЁСЂРёС„С‚С‹
 function GetSpecialDir(const CSIDL: byte): string;
 var
   Buf: array[0..MAX_PATH] of Char;
@@ -257,16 +257,16 @@ begin
   result := ExpandEnvironmentVariables(s);
 end;
 
-//--Функция бреобразует строку вида 0xXXXXXX в цвет
+//--Р¤СѓРЅРєС†РёСЏ Р±СЂРµРѕР±СЂР°Р·СѓРµС‚ СЃС‚СЂРѕРєСѓ РІРёРґР° 0xXXXXXX РІ С†РІРµС‚
 function ColorStrToColor(ColorStr: string): TColor;
 var
   e: integer;
 begin
-  //--Удаляем из строки 0x
+  //--РЈРґР°Р»СЏРµРј РёР· СЃС‚СЂРѕРєРё 0x
   delete(ColorStr, 1, 2);
-  //--Пытаемся перевести в десятичный вид
+  //--РџС‹С‚Р°РµРјСЃСЏ РїРµСЂРµРІРµСЃС‚Рё РІ РґРµСЃСЏС‚РёС‡РЅС‹Р№ РІРёРґ
   val('$' + ColorStr, Result, e);
-  //--Если не получилось, используем стандартный цвет
+  //--Р•СЃР»Рё РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ, РёСЃРїРѕР»СЊР·СѓРµРј СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ С†РІРµС‚
   if e <> 0 then
     Result := clBtnFace;
 end;
@@ -281,7 +281,7 @@ var
   LineS:  PRGBQuadArray;
   ALineD: VCL.Imaging.PNGImage.PByteArray;
 begin
-  Src.PixelFormat := pf32bit; //На всякий случай
+  Src.PixelFormat := pf32bit; //РќР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№
   Src.AlphaFormat := afIgnored;
   Dest.Assign(Src);
   Dest.CreateAlpha;
@@ -299,7 +299,7 @@ begin
   Dest.Modified := True;
 end;
 
-//--Функция делает ресайз изображения
+//--Р¤СѓРЅРєС†РёСЏ РґРµР»Р°РµС‚ СЂРµСЃР°Р№Р· РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 procedure SmoothResize(Src, Dst: TBitmap);
 begin
   Dst.PixelFormat := pf32bit;
@@ -307,7 +307,7 @@ begin
   Dst.AlphaFormat := afDefined;
 end;
 
-//--Нахождение микса двух цветов
+//--РќР°С…РѕР¶РґРµРЅРёРµ РјРёРєСЃР° РґРІСѓС… С†РІРµС‚РѕРІ
 function GetColorBetween(StartColor, EndColor: TColor; Pointvalue, Von, Bis: Extended): TColor;
 var
   F: Extended;
@@ -378,7 +378,7 @@ begin
   end;
 end;
 
-//--Функция извлекает описание исполняемого файла
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РѕРїРёСЃР°РЅРёРµ РёСЃРїРѕР»РЅСЏРµРјРѕРіРѕ С„Р°Р№Р»Р°
 function GetFileDescription(FileName: string): string;
 var
   P: Pointer;
@@ -421,7 +421,7 @@ begin
   end;
 end;
 
-//--Функция извлекает имя файла без разширения
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° Р±РµР· СЂР°Р·С€РёСЂРµРЅРёСЏ
 function ExtractFileNameNoExt(FileName: string): string;
 var
   TempStr: string;
@@ -430,7 +430,7 @@ begin
   Result := Copy(TempStr, 1, Length(TempStr) - Length(ExtractFileExt(FileName)));
 end;
 
-//--Функция извлекает информацию из ярлыка (*.lnk)
+//--Р¤СѓРЅРєС†РёСЏ РёР·РІР»РµРєР°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РёР· СЏСЂР»С‹РєР° (*.lnk)
 procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 var
   ShellLink: IShellLink;
@@ -453,7 +453,7 @@ begin
     end;
  end;
 
-//--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
+//--РћР±СЂРµР·Р°РµС‚ СЃС‚СЂРѕРєСѓ Str РґРѕ РґР»РёРЅС‹ Len СЃ РґРѕР±Р°РІР»РµРЅРёРµРј С‚СЂРѕРµС‚РѕС‡РёСЏ РІ РєРѕРЅРµС† (РµСЃР»Рё СЃС‚СЂРѕРєР° РґР»РёРЅРµРµ Len)
 function MyCutting(Str: string; Len: byte): string;
 begin
   if Length(Str) <= Len then
@@ -492,10 +492,10 @@ begin
     ExecInfo.lpParameters := Pointer(AParameters);
     ExecInfo.lpDirectory := Pointer(ADirectory);
     ExecInfo.nShow := AShowCmd;
-    ExecInfo.fMask := SEE_MASK_NOASYNC { = SEE_MASK_FLAG_DDEWAIT для старых версий Delphi }
+    ExecInfo.fMask := SEE_MASK_NOASYNC { = SEE_MASK_FLAG_DDEWAIT РґР»СЏ СЃС‚Р°СЂС‹С… РІРµСЂСЃРёР№ Delphi }
                    or SEE_MASK_FLAG_NO_UI;
     {$IFDEF UNICODE}
-    // Необязательно, см. http://www.transl-gunsmoker.ru/2015/01/what-does-SEEMASKUNICODE-flag-in-ShellExecuteEx-actually-do.html
+    // РќРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ, СЃРј. http://www.transl-gunsmoker.ru/2015/01/what-does-SEEMASKUNICODE-flag-in-ShellExecuteEx-actually-do.html
     ExecInfo.fMask := ExecInfo.fMask or SEE_MASK_UNICODE;
     {$ENDIF}
 
@@ -828,7 +828,7 @@ begin
   fl_dir := ExtractFilePath(ParamStr(0));
   fl_root := IncludeTrailingPathDelimiter(ExtractFileDrive(fl_dir));
 
-  sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //Считываем файл первичных настроек для определения режима работы программы и места хранения настроек
+  sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //РЎС‡РёС‚С‹РІР°РµРј С„Р°Р№Р» РїРµСЂРІРёС‡РЅС‹С… РЅР°СЃС‚СЂРѕРµРє РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ СЂРµР¶РёРјР° СЂР°Р±РѕС‚С‹ РїСЂРѕРіСЂР°РјРјС‹ Рё РјРµСЃС‚Р° С…СЂР°РЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє
   try
     SettingsMode := sini.ReadInteger('general', 'settingsmode', 0);
     if SettingsMode > 2 then SettingsMode := 0;
@@ -844,7 +844,7 @@ begin
     sini.Free;
   end;
 
-  {*--Заполняем переменные FL_*--*}
+  {*--Р—Р°РїРѕР»РЅСЏРµРј РїРµСЂРµРјРµРЅРЅС‹Рµ FL_*--*}
   AddEnvironmentVariable('FL_DIR', FL_DIR);
   AddEnvironmentVariable('FL_ROOT', FL_ROOT);
   AddEnvironmentVariable('FL_CONFIG', fl_WorkDir);

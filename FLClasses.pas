@@ -1,4 +1,4 @@
-{
+п»ї{
   ##########################################################################
   #  FreeLaunch 2.5 - free links manager for Windows                       #
   #  ====================================================================  #
@@ -31,103 +31,103 @@ uses
   FLFunctions, System.Generics.Collections, VCL.Buttons;
 
 const
-  //--Цвет полупрозрачной рамки у кнопки с фокусом
+  //--Р¦РІРµС‚ РїРѕР»СѓРїСЂРѕР·СЂР°С‡РЅРѕР№ СЂР°РјРєРё Сѓ РєРЅРѕРїРєРё СЃ С„РѕРєСѓСЃРѕРј
   FocusColor = clRed;
   DraggedColor = clBlue;
   IconCacheDir = 'IconCache';
 
 type
 
-  {*--Описание этих классов находится ниже--*}
+  {*--РћРїРёСЃР°РЅРёРµ СЌС‚РёС… РєР»Р°СЃСЃРѕРІ РЅР°С…РѕРґРёС‚СЃСЏ РЅРёР¶Рµ--*}
   {**} TFLPanel = class;
   {**} TFLDataItem = class;
   {*----------------------------------------*}
 
-  //--Класс кнопки на компоненте
+  //--РљР»Р°СЃСЃ РєРЅРѕРїРєРё РЅР° РєРѕРјРїРѕРЅРµРЅС‚Рµ
   TFLButton = class(TSpeedButton)
     private
-      //--Если 255, то используется текущая страница, иначе этот номер страницы
+      //--Р•СЃР»Рё 255, С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РµРєСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р°, РёРЅР°С‡Рµ СЌС‚РѕС‚ РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹
       fCurPage: Integer;
-      //--Флаг, определяющий нажата ли в данный момент кнопка
+      //--Р¤Р»Р°Рі, РѕРїСЂРµРґРµР»СЏСЋС‰РёР№ РЅР°Р¶Р°С‚Р° Р»Рё РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РєРЅРѕРїРєР°
       fPushed: boolean;
-      //--Флаг, необходимый для предотвращения нажатия на кнопку при перетаскивании
+      //--Р¤Р»Р°Рі, РЅРµРѕР±С…РѕРґРёРјС‹Р№ РґР»СЏ РїСЂРµРґРѕС‚РІСЂР°С‰РµРЅРёСЏ РЅР°Р¶Р°С‚РёСЏ РЅР° РєРЅРѕРїРєСѓ РїСЂРё РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРё
       fCanClick: boolean;
-      //--Номер строки и колонки данной кнопки
+      //--РќРѕРјРµСЂ СЃС‚СЂРѕРєРё Рё РєРѕР»РѕРЅРєРё РґР°РЅРЅРѕР№ РєРЅРѕРїРєРё
       fRowNumber, fColNumber: Integer;
       FFocused: Boolean;
-      //--Возвращает ссылку на родительскую панель (read для свойства Father)
+      //--Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєСѓСЋ РїР°РЅРµР»СЊ (read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Father)
       function GetFather: TFLPanel;
-      //--Возвращает данные (объект, рабочая папка и т.д.) для текущей кнопки текущей страницы (read для свойства Data)
+      //--Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ (РѕР±СЉРµРєС‚, СЂР°Р±РѕС‡Р°СЏ РїР°РїРєР° Рё С‚.Рґ.) РґР»СЏ С‚РµРєСѓС‰РµР№ РєРЅРѕРїРєРё С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹ (read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Data)
       function GetDataItem: TFLDataItem;
-      //--Является ли текущая кнопка текущей страницы активной (read для свойства IsActive)
+      //--РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РµРєСѓС‰Р°СЏ РєРЅРѕРїРєР° С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹ Р°РєС‚РёРІРЅРѕР№ (read РґР»СЏ СЃРІРѕР№СЃС‚РІР° IsActive)
       function GetIsActive: boolean;
-      //--Установлена ли иконка на кнопке (read для свойства HasIcon)
+      //--РЈСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РёРєРѕРЅРєР° РЅР° РєРЅРѕРїРєРµ (read РґР»СЏ СЃРІРѕР№СЃС‚РІР° HasIcon)
       function GetHasIcon: boolean;
-      //--Установлена ли иконка на кнопке (write для свойства HasIcon)
+      //--РЈСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РёРєРѕРЅРєР° РЅР° РєРЅРѕРїРєРµ (write РґР»СЏ СЃРІРѕР№СЃС‚РІР° HasIcon)
       procedure SetHasIcon(NewHasIcon: boolean);
-      //--Метод генерируется при покидании курсора мыши кнопки
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕРєРёРґР°РЅРёРё РєСѓСЂСЃРѕСЂР° РјС‹С€Рё РєРЅРѕРїРєРё
       procedure CMMouseLeave(var Msg: TMessage); message CM_MOUSELEAVE;
       procedure SetFocused(const Value: Boolean);
     protected
-      //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РєРЅРѕРїРєРѕР№ СЃРѕРѕР±С‰РµРЅРёРё Рѕ РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РїРµСЂРµСЂРёСЃРѕРІРєРё
       procedure Paint; override;
       procedure RemoveHighlight;
     public
-      //--Конструктор
+      //--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
       constructor Create(AOwner: TComponent; RowNumber, ColNumber: Integer); reintroduce;
-      //--Деструктор
+      //--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
       destructor Destroy; override;
-      //--Инициализация ячейки данных текущей кнопки текущей страницы
+      //--РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЏС‡РµР№РєРё РґР°РЅРЅС‹С… С‚РµРєСѓС‰РµР№ РєРЅРѕРїРєРё С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
       function InitializeData: TFLDataItem;
-      //--Освобождение ячейки данных текущей кнопки текущей страницы
+      //--РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ СЏС‡РµР№РєРё РґР°РЅРЅС‹С… С‚РµРєСѓС‰РµР№ РєРЅРѕРїРєРё С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
       procedure FreeData;
-      //--Ссылка на родительскую панель
+      //--РЎСЃС‹Р»РєР° РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєСѓСЋ РїР°РЅРµР»СЊ
       property Father: TFLPanel read GetFather;
-      //--Номер строки и колонки данной кнопки
+      //--РќРѕРјРµСЂ СЃС‚СЂРѕРєРё Рё РєРѕР»РѕРЅРєРё РґР°РЅРЅРѕР№ РєРЅРѕРїРєРё
       property RowNumber: integer read fRowNumber;
       property ColNumber: integer read fColNumber;
-      //--Ячейка данных (объект, рабочая папка и т.д.) текущей кнопки текущей страницы
+      //--РЇС‡РµР№РєР° РґР°РЅРЅС‹С… (РѕР±СЉРµРєС‚, СЂР°Р±РѕС‡Р°СЏ РїР°РїРєР° Рё С‚.Рґ.) С‚РµРєСѓС‰РµР№ РєРЅРѕРїРєРё С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
       property Data: TFLDataItem read GetDataItem;
-      //--Является ли кнопка активной (занятой чем-либо)
+      //--РЇРІР»СЏРµС‚СЃСЏ Р»Рё РєРЅРѕРїРєР° Р°РєС‚РёРІРЅРѕР№ (Р·Р°РЅСЏС‚РѕР№ С‡РµРј-Р»РёР±Рѕ)
       property IsActive: boolean read GetIsActive;
       property Focused: Boolean read FFocused write SetFocused;
-      //--Установлена ли иконка на кнопке
+      //--РЈСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РёРєРѕРЅРєР° РЅР° РєРЅРѕРїРєРµ
       property HasIcon: boolean read GetHasIcon write SetHasIcon;
-      //--Метод генерируется при нажатии кнопки на клавиатуре
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
       procedure KeyDown(var Key: Word; Shift: TShiftState);
-      //--Метод генерируется при "отжатии" кнопки на клавиатуре
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё "РѕС‚Р¶Р°С‚РёРё" РєРЅРѕРїРєРё РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
       procedure KeyUp(var Key: Word; Shift: TShiftState);
-      //--Метод генерируется при клике мышью
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РєР»РёРєРµ РјС‹С€СЊСЋ
       procedure Click; override;
-      //--Метод генерируется при нажатии кнопки мыши
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РјС‹С€Рё
       procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
-      //--Метод генерируется при "отжатии" кнопки мыши
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё "РѕС‚Р¶Р°С‚РёРё" РєРЅРѕРїРєРё РјС‹С€Рё
       procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
-      //--Метод генерируется при движении мыши по кнопке
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РґРІРёР¶РµРЅРёРё РјС‹С€Рё РїРѕ РєРЅРѕРїРєРµ
       procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
-      //--Метод генерируется при перетягивании на кнопку другого объекта
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРµСЂРµС‚СЏРіРёРІР°РЅРёРё РЅР° РєРЅРѕРїРєСѓ РґСЂСѓРіРѕРіРѕ РѕР±СЉРµРєС‚Р°
       procedure DragOver(Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean); override;
-      //--Метод генерируется при отпускании перетягиваемого объекта
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РїРµСЂРµС‚СЏРіРёРІР°РµРјРѕРіРѕ РѕР±СЉРµРєС‚Р°
       procedure DragDrop(Source: TObject; X, Y: Integer); override;
-      //--Метод генерируется при прекращении перетягивания объекта
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїСЂРµРєСЂР°С‰РµРЅРёРё РїРµСЂРµС‚СЏРіРёРІР°РЅРёСЏ РѕР±СЉРµРєС‚Р°
       procedure DoEndDrag(Target: TObject; X, Y: Integer); override;
-      //--Метод генерируется при вызове контекстного меню
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РІС‹Р·РѕРІРµ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
       procedure DoContextPopup(MousePos: TPoint; var Handled: Boolean); override;
-      /// <summary> Конвертация TFLDataItem в TLink </summary>
+      /// <summary> РљРѕРЅРІРµСЂС‚Р°С†РёСЏ TFLDataItem РІ TLink </summary>
       function DataToLink: TLink;
-      /// <summary> Конвертация TLink в TFLDataItem </summary>
+      /// <summary> РљРѕРЅРІРµСЂС‚Р°С†РёСЏ TLink РІ TFLDataItem </summary>
       procedure LinkToData(const ALink: TLink);
       function Highlight: IInterface;
     published
 
   end;
 
-  //--Класс описывает ячейку памяти, содержащую информацию о кнопке
+  //--РљР»Р°СЃСЃ РѕРїРёСЃС‹РІР°РµС‚ СЏС‡РµР№РєСѓ РїР°РјСЏС‚Рё, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РєРЅРѕРїРєРµ
   TFLDataItem = class
     private
-      //--Ссылка на родительскую панель
+      //--РЎСЃС‹Р»РєР° РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєСѓСЋ РїР°РЅРµР»СЊ
       fFather: TFLPanel;
-      {*--Поля свойств--*}
+      {*--РџРѕР»СЏ СЃРІРѕР№СЃС‚РІ--*}
       fLType: integer;
       fExec: string;
       fWorkDir: string;
@@ -144,84 +144,84 @@ type
       fWSt: integer;
       FIsAdmin: Boolean;
       {*----------------*}
-      //--Цвет кнопок
+      //--Р¦РІРµС‚ РєРЅРѕРїРѕРє
       fPanelColor: TColor;
-      //--Флаг, определяюший, установлена ли иконка
+      //--Р¤Р»Р°Рі, РѕРїСЂРµРґРµР»СЏСЋС€РёР№, СѓСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РёРєРѕРЅРєР°
       fHasIcon: boolean;
       FHeight: Integer;
       FWidth: Integer;
-      //--read для свойства Exec
+      //--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Exec
       function GetExec: string;
-      //--read для свойства WorkDir
+      //--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° WorkDir
       function GetWorkDir: string;
-      //--read для свойства Icon
+      //--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Icon
       function GetIcon: string;
       function GetIconCache: string;
-      //--read для свойства Params
+      //--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Params
       function GetParams: string;
-      //--read для свойства DropParams
+      //--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° DropParams
       function GetDropParams: string;
       procedure SetHeight(const Value: Integer);
       procedure SetWidth(const Value: Integer);
       procedure SetColor(const Value: TColor);
     public
-      //--Изображение иконки
+      //--РР·РѕР±СЂР°Р¶РµРЅРёРµ РёРєРѕРЅРєРё
       IconBmp: TBitMap;
-      //--Изображение нажатой иконки
+      //--РР·РѕР±СЂР°Р¶РµРЅРёРµ РЅР°Р¶Р°С‚РѕР№ РёРєРѕРЅРєРё
       PushedIconBmp: TBitMap;
-      //--Конструктор
+      //--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
       constructor Create(ButtonWidth, ButtonHeight: integer; PanelColor: TColor);
-      //--Деструктор
+      //--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
       destructor Destroy; override;
-      //--Ссылка на родительскую панель
+      //--РЎСЃС‹Р»РєР° РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєСѓСЋ РїР°РЅРµР»СЊ
       property Father: TFLPanel read fFather write fFather;
-      //--Функция генерирует иконки (обычную и "нажатую" для ячейки памяти)
+      //--Р¤СѓРЅРєС†РёСЏ РіРµРЅРµСЂРёСЂСѓРµС‚ РёРєРѕРЅРєРё (РѕР±С‹С‡РЅСѓСЋ Рё "РЅР°Р¶Р°С‚СѓСЋ" РґР»СЏ СЏС‡РµР№РєРё РїР°РјСЏС‚Рё)
       procedure AssignIcons;
-      //--Тип кнопки (0 - исполняемый файл, 1 - файл, папка)
+      //--РўРёРї РєРЅРѕРїРєРё (0 - РёСЃРїРѕР»РЅСЏРµРјС‹Р№ С„Р°Р№Р», 1 - С„Р°Р№Р», РїР°РїРєР°)
       property LType: integer read fLType write fLType;
-      //--Путь к объекту
+      //--РџСѓС‚СЊ Рє РѕР±СЉРµРєС‚Сѓ
       property Exec: string read GetExec write fExec;
-      //--Рабочая папка
+      //--Р Р°Р±РѕС‡Р°СЏ РїР°РїРєР°
       property WorkDir: string read GetWorkDir write fWorkDir;
-      //--Путь к иконке
+      //--РџСѓС‚СЊ Рє РёРєРѕРЅРєРµ
       property Icon: string read GetIcon write fIcon;
-      //--Индекс иконки
+      //--РРЅРґРµРєСЃ РёРєРѕРЅРєРё
       property IconIndex: integer read fIconIndex write fIconIndex;
       property IconCache: string read GetIconCache write fIconCache;
-      //--Параметры
+      //--РџР°СЂР°РјРµС‚СЂС‹
       property Params: string read GetParams write fParams;
-      //--Принимать ли перетягиваемые файлы
+      //--РџСЂРёРЅРёРјР°С‚СЊ Р»Рё РїРµСЂРµС‚СЏРіРёРІР°РµРјС‹Рµ С„Р°Р№Р»С‹
       property DropFiles: boolean read fDropFiles write fDropFiles;
-      //--Параметры (при перетягивании файла)
+      //--РџР°СЂР°РјРµС‚СЂС‹ (РїСЂРё РїРµСЂРµС‚СЏРіРёРІР°РЅРёРё С„Р°Р№Р»Р°)
       property DropParams: string read GetDropParams write fDropParams;
-      //--Описание
+      //--РћРїРёСЃР°РЅРёРµ
       property Descr: string read fDescr write fDescr;
-      //--Спрашивать ли подтверждение при запуске
+      //--РЎРїСЂР°С€РёРІР°С‚СЊ Р»Рё РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂРё Р·Р°РїСѓСЃРєРµ
       property Ques: boolean read fQues write fQues;
-      //--Скрывать ли окно FL при запуске
+      //--РЎРєСЂС‹РІР°С‚СЊ Р»Рё РѕРєРЅРѕ FL РїСЂРё Р·Р°РїСѓСЃРєРµ
       property Hide: boolean read fHide write fHide;
-      //--Приоритет запущенного процесса
+      //--РџСЂРёРѕСЂРёС‚РµС‚ Р·Р°РїСѓС‰РµРЅРЅРѕРіРѕ РїСЂРѕС†РµСЃСЃР°
       property Pr: integer read fPr write fPr;
       property IsAdmin: Boolean read FIsAdmin write FIsAdmin;
-      //--Состояние окна
+      //--РЎРѕСЃС‚РѕСЏРЅРёРµ РѕРєРЅР°
       property WSt: integer read fWSt write fWSt;
       property Height: Integer read FHeight write SetHeight;
       property Width: Integer read FWidth write SetWidth;
       property Color: TColor read fPanelColor write SetColor;
   end;
 
-  //--Класс описывает страницу данных (матрица данных для кнопок одной вкладки)
+  //--РљР»Р°СЃСЃ РѕРїРёСЃС‹РІР°РµС‚ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С… (РјР°С‚СЂРёС†Р° РґР°РЅРЅС‹С… РґР»СЏ РєРЅРѕРїРѕРє РѕРґРЅРѕР№ РІРєР»Р°РґРєРё)
   TFLDataTable = class
     private
-      //--Размеры таблицы (кол-во колонок и строк)
+      //--Р Р°Р·РјРµСЂС‹ С‚Р°Р±Р»РёС†С‹ (РєРѕР»-РІРѕ РєРѕР»РѕРЅРѕРє Рё СЃС‚СЂРѕРє)
       fColsCount, fRowsCount: integer;
-      //--Номер страницы
+      //--РќРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹
       fPageNumber: integer;
-      //--Ячейки данных
+      //--РЇС‡РµР№РєРё РґР°РЅРЅС‹С…
       fItems: array of array of TFLDataItem;
-      //--Возвращает ячейку по индексам (read для Items)
+      //--Р’РѕР·РІСЂР°С‰Р°РµС‚ СЏС‡РµР№РєСѓ РїРѕ РёРЅРґРµРєСЃР°Рј (read РґР»СЏ Items)
       function GetItem(RowNumber, ColNumber: integer): TFLDataItem;
-      //--Определяет, является ли ячейка активной (read для IsActive)
+      //--РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё СЏС‡РµР№РєР° Р°РєС‚РёРІРЅРѕР№ (read РґР»СЏ IsActive)
       function GetIsActive(RowNumber, ColNumber: integer): boolean;
       procedure SetColsCount(const Value: Integer);
       procedure SetRowsCount(const Value: Integer);
@@ -232,15 +232,15 @@ type
       procedure SetImagesHeight(const Value: Integer);
       procedure SetImagesWidth(const Value: Integer);
     public
-      //--Конструктор
+      //--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
       constructor Create(PageNumber, ColsCount, RowsCount: integer);
-      //--Деструктор
+      //--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
       destructor Destroy; override;
-      //--Очищение всей страницы данных
+      //--РћС‡РёС‰РµРЅРёРµ РІСЃРµР№ СЃС‚СЂР°РЅРёС†С‹ РґР°РЅРЅС‹С…
       procedure Clear;
-      //--Ячейка данных по ее индексам
+      //--РЇС‡РµР№РєР° РґР°РЅРЅС‹С… РїРѕ РµРµ РёРЅРґРµРєСЃР°Рј
       property Items[RowNumber, ColNumber: integer]: TFLDataItem read GetItem;
-      //--Является ли ячейка активной
+      //--РЇРІР»СЏРµС‚СЃСЏ Р»Рё СЏС‡РµР№РєР° Р°РєС‚РёРІРЅРѕР№
       property IsActive[RowNumber, ColNumber: integer]: boolean read GetIsActive;
       property ColsCount: Integer read FColsCount write SetColsCount;
       property RowsCount: Integer read FRowsCount write SetRowsCount;
@@ -249,10 +249,10 @@ type
       property ImagesHeight: Integer read GetImagesHeight write SetImagesHeight;
   end;
 
-  //--Коллекция данных - двусвязный список страниц данных ;)
+  //--РљРѕР»Р»РµРєС†РёСЏ РґР°РЅРЅС‹С… - РґРІСѓСЃРІСЏР·РЅС‹Р№ СЃРїРёСЃРѕРє СЃС‚СЂР°РЅРёС† РґР°РЅРЅС‹С… ;)
   TFLDataCollection = TObjectList<TFLDataTable>;
 
-  {*--Типы для создания событий--*}
+  {*--РўРёРїС‹ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРѕР±С‹С‚РёР№--*}
   {**} TButtonClickEvent = procedure(Sender: TObject; Button: TFLButton) of object;
   {**} TButtonMouseDownEvent = procedure(Sender: TObject; MouseButton: TMouseButton; Button: TFLButton) of object;
   {**} TButtonMouseMoveEvent = procedure(Sender: TObject; Button: TFLButton) of object;
@@ -260,69 +260,69 @@ type
   {**} TDropFileEvent = procedure(Sender: TObject; Button: TFLButton; FileName: string) of object;
   {*-----------------------------*}
 
-  //--Главный класс. Описывает компонент - таблицу кнопок
+  //--Р“Р»Р°РІРЅС‹Р№ РєР»Р°СЃСЃ. РћРїРёСЃС‹РІР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ - С‚Р°Р±Р»РёС†Сѓ РєРЅРѕРїРѕРє
   TFLPanel = class(TCustomControl)
     private
-      //--Общий цвет панели и кнопок
+      //--РћР±С‰РёР№ С†РІРµС‚ РїР°РЅРµР»Рё Рё РєРЅРѕРїРѕРє
       fPanelColor: TColor;
-      //--Светлый и два темных цвета панели (тени)
+      //--РЎРІРµС‚Р»С‹Р№ Рё РґРІР° С‚РµРјРЅС‹С… С†РІРµС‚Р° РїР°РЅРµР»Рё (С‚РµРЅРё)
       fLColor, fDColor1, fDColor2: TColor;
-      //--Кол-во страниц, колонок и строк
+      //--РљРѕР»-РІРѕ СЃС‚СЂР°РЅРёС†, РєРѕР»РѕРЅРѕРє Рё СЃС‚СЂРѕРє
       fPagesCount, fColsCount, fRowsCount: Integer;
-      //--Ширина и высота кнопок
+      //--РЁРёСЂРёРЅР° Рё РІС‹СЃРѕС‚Р° РєРЅРѕРїРѕРє
       fButtonWidth, fButtonHeight: integer;
-      //--Зазор между кнопками
+      //--Р—Р°Р·РѕСЂ РјРµР¶РґСѓ РєРЅРѕРїРєР°РјРё
       fPadding: integer;
-      //--Массив кнопок
+      //--РњР°СЃСЃРёРІ РєРЅРѕРїРѕРє
       fButtons: array of array of TFLButton;
-      //--Указатель на коллекцию данных
+      //--РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РєРѕР»Р»РµРєС†РёСЋ РґР°РЅРЅС‹С…
       fDataCollection: TFLDataCollection;
-      //--Номер текущей страницы данных (активная страница)
+      //--РќРѕРјРµСЂ С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹ РґР°РЅРЅС‹С… (Р°РєС‚РёРІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°)
       fCurrentDataIndex: Integer;
-      //--Заменять ли в строковых параметрах в ячейках данных переменные FL_*
+      //--Р—Р°РјРµРЅСЏС‚СЊ Р»Рё РІ СЃС‚СЂРѕРєРѕРІС‹С… РїР°СЂР°РјРµС‚СЂР°С… РІ СЏС‡РµР№РєР°С… РґР°РЅРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹Рµ FL_*
       fExpandStrings: boolean;
       {*-------------------*}
-      //--Выполняется ли сейчас перетягивание кнопки
+      //--Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ Р»Рё СЃРµР№С‡Р°СЃ РїРµСЂРµС‚СЏРіРёРІР°РЅРёРµ РєРЅРѕРїРєРё
       fDragNow: boolean;
-      //--Ссылка на кнопку с фокусом
+      //--РЎСЃС‹Р»РєР° РЅР° РєРЅРѕРїРєСѓ СЃ С„РѕРєСѓСЃРѕРј
       fFocusedButton: TFLButton;
-      //--Ссылка на последнюю задействованную кнопку
+      //--РЎСЃС‹Р»РєР° РЅР° РїРѕСЃР»РµРґРЅСЋСЋ Р·Р°РґРµР№СЃС‚РІРѕРІР°РЅРЅСѓСЋ РєРЅРѕРїРєСѓ
       fLastUsedButton: TFLButton;
-      //--Событие при клике по кнопке
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РєР»РёРєРµ РїРѕ РєРЅРѕРїРєРµ
       fButtonClick: TButtonClickEvent;
-      //--Событие при нажатии кнопки мыши на кнопке
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РјС‹С€Рё РЅР° РєРЅРѕРїРєРµ
       fButtonMouseDown: TButtonMouseDownEvent;
-      //--Событие при движении мыши
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РґРІРёР¶РµРЅРёРё РјС‹С€Рё
       fButtonMouseMove: TButtonMouseMoveEvent;
-      //--Событие при покидании курсора мыши кнопки
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРѕРєРёРґР°РЅРёРё РєСѓСЂСЃРѕСЂР° РјС‹С€Рё РєРЅРѕРїРєРё
       fButtonMouseLeave: TButtonMouseLeaveEvent;
-      //--Событие при перетаскивании файла на кнопку
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРё С„Р°Р№Р»Р° РЅР° РєРЅРѕРїРєСѓ
       fDropFile: TDropFileEvent;
-      //--Контекстное меню для кнопок
+      //--РљРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ РґР»СЏ РєРЅРѕРїРѕРє
       fButtonsPopup: TPopupMenu;
-      //--Номер страницы, на которой начали перетаскивать кнопку
+      //--РќРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹, РЅР° РєРѕС‚РѕСЂРѕР№ РЅР°С‡Р°Р»Рё РїРµСЂРµС‚Р°СЃРєРёРІР°С‚СЊ РєРЅРѕРїРєСѓ
       fDraggedButtonPageNumber: integer;
-      //--Возвращает ссылку на последнюю перетаскиваемую кнопку (read для LastDraggedButton)
+      //--Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РїРѕСЃР»РµРґРЅСЋСЋ РїРµСЂРµС‚Р°СЃРєРёРІР°РµРјСѓСЋ РєРЅРѕРїРєСѓ (read РґР»СЏ LastDraggedButton)
       function GetLastDraggedButton: TFLButton;
-      //--Возвращает кнопку по индексам (текущая активная страница) (read для CurButtons)
+      //--Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРЅРѕРїРєСѓ РїРѕ РёРЅРґРµРєСЃР°Рј (С‚РµРєСѓС‰Р°СЏ Р°РєС‚РёРІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°) (read РґР»СЏ CurButtons)
       function GetCurButton(RowNumber, ColNumber: integer): TFLButton;
-      //--Возвращает кнопку по индексам (произвольная страница) (read для Buttons)
+      //--Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРЅРѕРїРєСѓ РїРѕ РёРЅРґРµРєСЃР°Рј (РїСЂРѕРёР·РІРѕР»СЊРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°) (read РґР»СЏ Buttons)
       function GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButton;
-      //--Установка контекстного меню для кнопок (write для ButtonsPopup)
+      //--РЈСЃС‚Р°РЅРѕРІРєР° РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ РґР»СЏ РєРЅРѕРїРѕРє (write РґР»СЏ ButtonsPopup)
       procedure SetButtonsPopup(ButtonsPopup: TPopupMenu);
-      //--Установка номера текущей страницы (write для PageNumber)
+      //--РЈСЃС‚Р°РЅРѕРІРєР° РЅРѕРјРµСЂР° С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹ (write РґР»СЏ PageNumber)
       procedure SetPageNumber(PageNumber: Integer);
-      //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РєРЅРѕРїРєРѕР№ СЃРѕРѕР±С‰РµРЅРёРё Рѕ РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РїРµСЂРµСЂРёСЃРѕРІРєРё
       procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
-      //--Метод генерируется при перетаскивании файла на кнопку
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРё С„Р°Р№Р»Р° РЅР° РєРЅРѕРїРєСѓ
       procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
-      //--Метод генерируется при потере кнопкой фокуса
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕС‚РµСЂРµ РєРЅРѕРїРєРѕР№ С„РѕРєСѓСЃР°
       procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
-      //--Определение актуального размера компонента (согласно количеству строк и колонок кнопок, а также их размера. write для ActualSize)
+      //--РћРїСЂРµРґРµР»РµРЅРёРµ Р°РєС‚СѓР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° РєРѕРјРїРѕРЅРµРЅС‚Р° (СЃРѕРіР»Р°СЃРЅРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ СЃС‚СЂРѕРє Рё РєРѕР»РѕРЅРѕРє РєРЅРѕРїРѕРє, Р° С‚Р°РєР¶Рµ РёС… СЂР°Р·РјРµСЂР°. write РґР»СЏ ActualSize)
       function GetActualSize: TSize;
-      //--Метод возвращает указатель на страницу данных по номеру страницы
+      //--РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С… РїРѕ РЅРѕРјРµСЂСѓ СЃС‚СЂР°РЅРёС†С‹
       function GetDataPageByPageNumber(PageNumber: integer): TFLDataTable;
-      //--Метод возвращает указатель на текущую страницу данных
+      //--РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…
       function GetCurrentDataPage: TFLDataTable;
       procedure SetColsCount(const Value: Integer);
       procedure SetPagesCount(const Value: Integer);
@@ -337,31 +337,31 @@ type
     protected
 
     public
-      //--Конструктор
+      //--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
       constructor Create(AOwner: TComponent; PagesCount: integer = 3; ColsCount: integer = 10;
         RowsCount: integer = 2; Padding: integer = 1; ButtonsWidth: integer = 32; ButtonsHeight: integer = 32;
         Color: TColor = clBtnFace); reintroduce;
-      //--Деструктор
+      //--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
       destructor Destroy; override;
-      //--Инициализация ячейки данных
+      //--РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЏС‡РµР№РєРё РґР°РЅРЅС‹С…
       procedure InitializeDataItem(PageNumber, RowNumber, ColNumber: integer);
-      //--Меняет местами две страницы данных
+      //--РњРµРЅСЏРµС‚ РјРµСЃС‚Р°РјРё РґРІРµ СЃС‚СЂР°РЅРёС†С‹ РґР°РЅРЅС‹С…
       procedure SwapData(PageNumber1, PageNumber2: integer);
-      //--Очищает страницу данных
+      //--РћС‡РёС‰Р°РµС‚ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…
       procedure ClearPage(PageNumber: integer);
-      //--Удаляет страницу данных
+      //--РЈРґР°Р»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…
       function DeletePage(PageNumber: integer): integer;
-      //--Создает страницу данных
+      //--РЎРѕР·РґР°РµС‚ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…
       function AddPage: integer;
-      //--Перерисовка всех кнопок
+      //--РџРµСЂРµСЂРёСЃРѕРІРєР° РІСЃРµС… РєРЅРѕРїРѕРє
       procedure FullRepaint;
-      //--Заменять ли в строковых параметрах в ячейках данных переменные FL_*
+      //--Р—Р°РјРµРЅСЏС‚СЊ Р»Рё РІ СЃС‚СЂРѕРєРѕРІС‹С… РїР°СЂР°РјРµС‚СЂР°С… РІ СЏС‡РµР№РєР°С… РґР°РЅРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹Рµ FL_*
       property ExpandStrings: boolean read fExpandStrings write fExpandStrings;
-      //--Ссылка на кнопку с фокусом
+      //--РЎСЃС‹Р»РєР° РЅР° РєРЅРѕРїРєСѓ СЃ С„РѕРєСѓСЃРѕРј
       property FocusedButton: TFLButton read fFocusedButton write SetFocusedButton;
-      //--Ссылка на последнюю задействованную кнопку
+      //--РЎСЃС‹Р»РєР° РЅР° РїРѕСЃР»РµРґРЅСЋСЋ Р·Р°РґРµР№СЃС‚РІРѕРІР°РЅРЅСѓСЋ РєРЅРѕРїРєСѓ
       property LastUsedButton: TFLButton read fLastUsedButton;
-      //--Кол-во страниц, колонок и строк
+      //--РљРѕР»-РІРѕ СЃС‚СЂР°РЅРёС†, РєРѕР»РѕРЅРѕРє Рё СЃС‚СЂРѕРє
       property PagesCount: Integer read fPagesCount write SetPagesCount;
       property ColsCount: Integer read fColsCount write SetColsCount;
       property RowsCount: Integer read fRowsCount write SetRowsCount;
@@ -369,45 +369,45 @@ type
       property ButtonHeight: Integer read GetButtonHeight write SetButtonHeight;
       property ButtonColor: TColor read fPanelColor write SetButtonColor;
       property Padding: Integer read FPadding write SetPadding;
-      //--Кнопка по ее индексам (текущая активная страница)
+      //--РљРЅРѕРїРєР° РїРѕ РµРµ РёРЅРґРµРєСЃР°Рј (С‚РµРєСѓС‰Р°СЏ Р°РєС‚РёРІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°)
       property CurButtons[RowNumber, ColNumber: integer]: TFLButton read GetCurButton;
-      //--Кнопка по ее индексам (произвольная страница)
-      //--После доступа сразу НЕОБХОДИМО выполнить один из следующих свойств/методов:
+      //--РљРЅРѕРїРєР° РїРѕ РµРµ РёРЅРґРµРєСЃР°Рј (РїСЂРѕРёР·РІРѕР»СЊРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°)
+      //--РџРѕСЃР»Рµ РґРѕСЃС‚СѓРїР° СЃСЂР°Р·Сѓ РќР•РћР‘РҐРћР”РРњРћ РІС‹РїРѕР»РЅРёС‚СЊ РѕРґРёРЅ РёР· СЃР»РµРґСѓСЋС‰РёС… СЃРІРѕР№СЃС‚РІ/РјРµС‚РѕРґРѕРІ:
       //--Data (GetDataItem)
       //--IsActive (GetIsActive)
       //--HasIcon (GetHasIcon)
       //--InitializeData
-      //--Проще говоря, только доступ/операции с данными
-      //--Например: Buttons[0, 0, 0].IsActive
+      //--РџСЂРѕС‰Рµ РіРѕРІРѕСЂСЏ, С‚РѕР»СЊРєРѕ РґРѕСЃС‚СѓРї/РѕРїРµСЂР°С†РёРё СЃ РґР°РЅРЅС‹РјРё
+      //--РќР°РїСЂРёРјРµСЂ: Buttons[0, 0, 0].IsActive
       property Buttons[PageNumber, RowNumber, ColNumber: integer]: TFLButton read GetButton;
-      //--Последняя перетаскиваемая кнопка
-      //--После доступа сразу НЕОБХОДИМО выполнить один из следующих свойств/методов:
+      //--РџРѕСЃР»РµРґРЅСЏСЏ РїРµСЂРµС‚Р°СЃРєРёРІР°РµРјР°СЏ РєРЅРѕРїРєР°
+      //--РџРѕСЃР»Рµ РґРѕСЃС‚СѓРїР° СЃСЂР°Р·Сѓ РќР•РћР‘РҐРћР”РРњРћ РІС‹РїРѕР»РЅРёС‚СЊ РѕРґРёРЅ РёР· СЃР»РµРґСѓСЋС‰РёС… СЃРІРѕР№СЃС‚РІ/РјРµС‚РѕРґРѕРІ:
       //--Data (GetDataItem)
       //--IsActive (GetIsActive)
       //--HasIcon (GetHasIcon)
       //--InitializeData
-      //--Проще говоря, только доступ/операции с данными
-      //--Например: Buttons[0, 0, 0].IsActive
+      //--РџСЂРѕС‰Рµ РіРѕРІРѕСЂСЏ, С‚РѕР»СЊРєРѕ РґРѕСЃС‚СѓРї/РѕРїРµСЂР°С†РёРё СЃ РґР°РЅРЅС‹РјРё
+      //--РќР°РїСЂРёРјРµСЂ: Buttons[0, 0, 0].IsActive
       property LastDraggedButton: TFLButton read GetLastDraggedButton;
-      //--Номер текущей страницы
+      //--РќРѕРјРµСЂ С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
       property PageNumber: Integer read fCurrentDataIndex write SetPageNumber;
-      //--Актуальный размер компонента
+      //--РђРєС‚СѓР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РєРѕРјРїРѕРЅРµРЅС‚Р°
       property ActualSize: TSize read GetActualSize;
-      //--Контекстное меню для кнопок
+      //--РљРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ РґР»СЏ РєРЅРѕРїРѕРє
       property ButtonsPopup: TPopupMenu read fButtonsPopup write SetButtonsPopup;
-      //--Метод генерируется при "отжатии" кнопки на клавиатуре
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё "РѕС‚Р¶Р°С‚РёРё" РєРЅРѕРїРєРё РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
       procedure KeyUp(var Key: Word; Shift: TShiftState); override;
-      //--Метод генерируется при нажатии кнопки на клавиатуре
+      //--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
       procedure KeyDown(var Key: Word; Shift: TShiftState); override;
-      //--Событие при клике по кнопке
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РєР»РёРєРµ РїРѕ РєРЅРѕРїРєРµ
       property OnButtonClick: TButtonClickEvent read fButtonClick write fButtonClick;
-      //--Событие при нажатии кнопки мыши на кнопке
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РјС‹С€Рё РЅР° РєРЅРѕРїРєРµ
       property OnButtonMouseDown: TButtonMouseDownEvent read fButtonMouseDown write fButtonMouseDown;
-      //--Событие при движении мыши
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РґРІРёР¶РµРЅРёРё РјС‹С€Рё
       property OnButtonMouseMove: TButtonMouseMoveEvent read fButtonMouseMove write fButtonMouseMove;
-      //--Событие при покидании курсора мыши кнопки
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРѕРєРёРґР°РЅРёРё РєСѓСЂСЃРѕСЂР° РјС‹С€Рё РєРЅРѕРїРєРё
       property OnButtonMouseLeave: TButtonMouseLeaveEvent read fButtonMouseLeave write fButtonMouseLeave;
-      //--Событие при перетаскивании файла на кнопку
+      //--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРё С„Р°Р№Р»Р° РЅР° РєРЅРѕРїРєСѓ
       property OnDropFile: TDropFileEvent read fDropFile write fDropFile;
     published
 
@@ -419,11 +419,11 @@ uses
   IOUtils;
 
 {*******************************}
-{*****-- Класс TFLButton --*****}
+{*****-- РљР»Р°СЃСЃ TFLButton --*****}
 {*******************************}
 
-//--Конструктор класса
-//--Входные параметры: родительский компонент, номер ряда, номер колонки
+//--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ РєРѕРјРїРѕРЅРµРЅС‚, РЅРѕРјРµСЂ СЂСЏРґР°, РЅРѕРјРµСЂ РєРѕР»РѕРЅРєРё
 constructor TFLButton.Create(AOwner: TComponent; RowNumber, ColNumber: integer);
 begin
   inherited Create(AOwner);
@@ -468,13 +468,13 @@ begin
   end;
 end;
 
-//--Деструктор класса
+//--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°
 destructor TFLButton.Destroy;
 begin
   inherited Destroy;
 end;
 
-//--Инициализация ячейки данных текущей кнопки текущей страницы
+//--РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЏС‡РµР№РєРё РґР°РЅРЅС‹С… С‚РµРєСѓС‰РµР№ РєРЅРѕРїРєРё С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
 function TFLButton.InitializeData: TFLDataItem;
 begin
   if not Assigned(Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber]) then
@@ -485,14 +485,14 @@ begin
   Result := Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber];
 end;
 
-//--Освобождение ячейки данных текущей кнопки текущей страницы
+//--РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ СЏС‡РµР№РєРё РґР°РЅРЅС‹С… С‚РµРєСѓС‰РµР№ РєРЅРѕРїРєРё С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
 procedure TFLButton.FreeData;
 begin
   FreeAndNil(Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber]);
   Invalidate;
 end;
 
-//--Возвращает ссылку на родительскую панель
+//--Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєСѓСЋ РїР°РЅРµР»СЊ
 function TFLButton.GetFather: TFLPanel;
 begin
   Result := Parent as TFLPanel;
@@ -503,23 +503,23 @@ begin
   FFocused := Value;
 
   if FFocused then
-    //--Иммитируем движение мыши по кнопке
+    //--РРјРјРёС‚РёСЂСѓРµРј РґРІРёР¶РµРЅРёРµ РјС‹С€Рё РїРѕ РєРЅРѕРїРєРµ
     Perform(CM_MOUSEENTER, 0, 0)
   else
     Perform(CM_MOUSELEAVE, 0, 0);
 end;
 
-//--Возвращает данные (объект, рабочая папка и т.д.) для текущей кнопки текущей страницы
+//--Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ (РѕР±СЉРµРєС‚, СЂР°Р±РѕС‡Р°СЏ РїР°РїРєР° Рё С‚.Рґ.) РґР»СЏ С‚РµРєСѓС‰РµР№ РєРЅРѕРїРєРё С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
 function TFLButton.GetDataItem: TFLDataItem;
 begin
-  //--Родительская панель -> Текущая страница данных (или по индексу) -> Данные ячейки [fRowNumber, fColNumber] (совпадающие с координатами кнопки)
+  //--Р РѕРґРёС‚РµР»СЊСЃРєР°СЏ РїР°РЅРµР»СЊ -> РўРµРєСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р° РґР°РЅРЅС‹С… (РёР»Рё РїРѕ РёРЅРґРµРєСЃСѓ) -> Р”Р°РЅРЅС‹Рµ СЏС‡РµР№РєРё [fRowNumber, fColNumber] (СЃРѕРІРїР°РґР°СЋС‰РёРµ СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё РєРЅРѕРїРєРё)
   Result := Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber];
 end;
 
-//--Является ли текущая кнопка текущей страницы активной
+//--РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РµРєСѓС‰Р°СЏ РєРЅРѕРїРєР° С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹ Р°РєС‚РёРІРЅРѕР№
 function TFLButton.GetIsActive: boolean;
 begin
-  //--Родительская панель -> Текущая страница данных (или по индексу) -> Является ли ячейка активной
+  //--Р РѕРґРёС‚РµР»СЊСЃРєР°СЏ РїР°РЅРµР»СЊ -> РўРµРєСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р° РґР°РЅРЅС‹С… (РёР»Рё РїРѕ РёРЅРґРµРєСЃСѓ) -> РЇРІР»СЏРµС‚СЃСЏ Р»Рё СЏС‡РµР№РєР° Р°РєС‚РёРІРЅРѕР№
   Result := Father.GetDataPageByPageNumber(fCurPage).IsActive[fRowNumber, fColNumber];
 end;
 
@@ -537,38 +537,38 @@ begin
   Result := THighlightRemover.Create(Self);
 end;
 
-//--Установлена ли иконка на кнопке
+//--РЈСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РёРєРѕРЅРєР° РЅР° РєРЅРѕРїРєРµ
 function TFLButton.GetHasIcon: boolean;
 begin
-  //--Родительская панель -> Текущая страница данных (или по индексу) -> Ячейка данных с координатами [fRowNumber, fColNumber] -> Имеет ли иконку
+  //--Р РѕРґРёС‚РµР»СЊСЃРєР°СЏ РїР°РЅРµР»СЊ -> РўРµРєСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р° РґР°РЅРЅС‹С… (РёР»Рё РїРѕ РёРЅРґРµРєСЃСѓ) -> РЇС‡РµР№РєР° РґР°РЅРЅС‹С… СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё [fRowNumber, fColNumber] -> РРјРµРµС‚ Р»Рё РёРєРѕРЅРєСѓ
   Result := Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber].fHasIcon;
 end;
 
-//--Установлена ли иконка на кнопке
+//--РЈСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РёРєРѕРЅРєР° РЅР° РєРЅРѕРїРєРµ
 procedure TFLButton.SetHasIcon(NewHasIcon: boolean);
 begin
-  //--Родительская панель -> Текущая страница данных (или по индексу) -> Ячейка данных с координатами [fRowNumber, fColNumber] -> Имеет ли иконку
+  //--Р РѕРґРёС‚РµР»СЊСЃРєР°СЏ РїР°РЅРµР»СЊ -> РўРµРєСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р° РґР°РЅРЅС‹С… (РёР»Рё РїРѕ РёРЅРґРµРєСЃСѓ) -> РЇС‡РµР№РєР° РґР°РЅРЅС‹С… СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё [fRowNumber, fColNumber] -> РРјРµРµС‚ Р»Рё РёРєРѕРЅРєСѓ
   Father.GetDataPageByPageNumber(fCurPage).Items[fRowNumber, fColNumber].fHasIcon := NewHasIcon;
 end;
 
-//--Метод генерируется при покидании курсора мыши кнопки
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕРєРёРґР°РЅРёРё РєСѓСЂСЃРѕСЂР° РјС‹С€Рё РєРЅРѕРїРєРё
 procedure TFLButton.CMMouseLeave(var Msg: TMessage);
 begin
   inherited;
-  //--Генерируем событие родительской панели OnButtonMouseLeave, передавая текущую кнопку
+  //--Р“РµРЅРµСЂРёСЂСѓРµРј СЃРѕР±С‹С‚РёРµ СЂРѕРґРёС‚РµР»СЊСЃРєРѕР№ РїР°РЅРµР»Рё OnButtonMouseLeave, РїРµСЂРµРґР°РІР°СЏ С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ
   if Assigned(Father.fButtonMouseLeave) then Father.fButtonMouseLeave(Father, Self);
 end;
 
-//--Метод генерируется при нажатии кнопки на клавиатуре
-//--Обрабатываем нажатие здесь клавиши Enter
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
+//--РћР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°Р¶Р°С‚РёРµ Р·РґРµСЃСЊ РєР»Р°РІРёС€Рё Enter
 procedure TFLButton.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_RETURN then
     MouseDown(mbLeft, [], 0, 0);
 end;
 
-//--Метод генерируется при "отжатии" кнопки на клавиатуре
-//--См. описание к KeyDown
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё "РѕС‚Р¶Р°С‚РёРё" РєРЅРѕРїРєРё РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
+//--РЎРј. РѕРїРёСЃР°РЅРёРµ Рє KeyDown
 procedure TFLButton.KeyUp(var Key: Word; Shift: TShiftState);
 begin
   if Key = VK_RETURN then
@@ -606,105 +606,105 @@ begin
     FreeData;
 end;
 
-//--Метод генерируется при клике мышью
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РєР»РёРєРµ РјС‹С€СЊСЋ
 procedure TFLButton.Click;
 begin
-  //--Если клик в данный момент возможен
-  //--А невозможен он тогда, когда мы хотим перетащить кнопку с зажатым Ctrl
-  //--Иначе при отпускании кнопки мыши негерировался бы клик
+  //--Р•СЃР»Рё РєР»РёРє РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РІРѕР·РјРѕР¶РµРЅ
+  //--Рђ РЅРµРІРѕР·РјРѕР¶РµРЅ РѕРЅ С‚РѕРіРґР°, РєРѕРіРґР° РјС‹ С…РѕС‚РёРј РїРµСЂРµС‚Р°С‰РёС‚СЊ РєРЅРѕРїРєСѓ СЃ Р·Р°Р¶Р°С‚С‹Рј Ctrl
+  //--РРЅР°С‡Рµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РєРЅРѕРїРєРё РјС‹С€Рё РЅРµРіРµСЂРёСЂРѕРІР°Р»СЃСЏ Р±С‹ РєР»РёРє
   if fCanClick then
     begin
-      //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
+      //--РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃСЃС‹Р»РєСѓ РЅР° РїРѕСЃР»РµРґРЅСЋСЋ РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅСѓСЋ РєРЅРѕРїРєСѓ <- С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ
       Father.fLastUsedButton := Self;
-      //--Генерируем событие родительской панели OnButtonClick, передавая ссылку на текущую кнопку
+      //--Р“РµРЅРµСЂРёСЂСѓРµРј СЃРѕР±С‹С‚РёРµ СЂРѕРґРёС‚РµР»СЊСЃРєРѕР№ РїР°РЅРµР»Рё OnButtonClick, РїРµСЂРµРґР°РІР°СЏ СЃСЃС‹Р»РєСѓ РЅР° С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ
       if Assigned(Father.fButtonClick) then Father.fButtonClick(Father, Self);
       inherited Click;
     end;
 end;
 
-//--Метод генерируется при нажатии кнопки мыши
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РјС‹С€Рё
 procedure TFLButton.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   inherited MouseDown(Button, Shift, X, Y);
-  //--Если кнопка мыши - левая
+  //--Р•СЃР»Рё РєРЅРѕРїРєР° РјС‹С€Рё - Р»РµРІР°СЏ
   if button = mbLeft then
-    //--Если зажат Ctrl
+    //--Р•СЃР»Рё Р·Р°Р¶Р°С‚ Ctrl
     if ssCtrl in Shift then
       begin
-        //--Запрещаем генерацию клика по этой кнопке
+        //--Р—Р°РїСЂРµС‰Р°РµРј РіРµРЅРµСЂР°С†РёСЋ РєР»РёРєР° РїРѕ СЌС‚РѕР№ РєРЅРѕРїРєРµ
         fCanClick := false;
-        //--Начинаем перетаскивать кнопку
+        //--РќР°С‡РёРЅР°РµРј РїРµСЂРµС‚Р°СЃРєРёРІР°С‚СЊ РєРЅРѕРїРєСѓ
         BeginDrag(false);
         Father.fDragNow := true;
-        //--Запоминаем номер страницы, на которой начали перетаскивать кнопку
+        //--Р—Р°РїРѕРјРёРЅР°РµРј РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹, РЅР° РєРѕС‚РѕСЂРѕР№ РЅР°С‡Р°Р»Рё РїРµСЂРµС‚Р°СЃРєРёРІР°С‚СЊ РєРЅРѕРїРєСѓ
         Father.fDraggedButtonPageNumber := Father.fCurrentDataIndex;
-        //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
+        //--РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃСЃС‹Р»РєСѓ РЅР° РїРѕСЃР»РµРґРЅСЋСЋ РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅСѓСЋ РєРЅРѕРїРєСѓ <- С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ
         Father.fLastUsedButton := Self;
-        //--Перерисовываем (чтобы появилась рамка)
+        //--РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµРј (С‡С‚РѕР±С‹ РїРѕСЏРІРёР»Р°СЃСЊ СЂР°РјРєР°)
         FState := bsDown;
         Invalidate;
       end
     else
       begin
-        //--Если Ctrl зажат не был, делаем кноку нажатой
+        //--Р•СЃР»Рё Ctrl Р·Р°Р¶Р°С‚ РЅРµ Р±С‹Р», РґРµР»Р°РµРј РєРЅРѕРєСѓ РЅР°Р¶Р°С‚РѕР№
         fPushed := true;
-        //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
+        //--РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃСЃС‹Р»РєСѓ РЅР° РїРѕСЃР»РµРґРЅСЋСЋ РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅСѓСЋ РєРЅРѕРїРєСѓ <- С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ
         Father.fLastUsedButton := Self;
       end;
-  //--Генерируем событие родительской панели OnButtonMouseDown, передавая ссылку на текущую кнопку
+  //--Р“РµРЅРµСЂРёСЂСѓРµРј СЃРѕР±С‹С‚РёРµ СЂРѕРґРёС‚РµР»СЊСЃРєРѕР№ РїР°РЅРµР»Рё OnButtonMouseDown, РїРµСЂРµРґР°РІР°СЏ СЃСЃС‹Р»РєСѓ РЅР° С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ
   if Assigned(Father.fButtonMouseDown) then Father.fButtonMouseDown(Father, Button, Self);
 end;
 
-//--Метод генерируется при "отжатии" кнопки мыши
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё "РѕС‚Р¶Р°С‚РёРё" РєРЅРѕРїРєРё РјС‹С€Рё
 procedure TFLButton.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   inherited MouseUp(Button, Shift, X, Y);
-  //--Если кнопка мыши - левая
+  //--Р•СЃР»Рё РєРЅРѕРїРєР° РјС‹С€Рё - Р»РµРІР°СЏ
   if button = mbleft then
     begin
-      //--Делаем кнопку отжатой
+      //--Р”РµР»Р°РµРј РєРЅРѕРїРєСѓ РѕС‚Р¶Р°С‚РѕР№
       fPushed := false;
     end;
 
   Father.FocusedButton := nil;
 end;
 
-//--Метод генерируется при движении мыши по кнопке
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РґРІРёР¶РµРЅРёРё РјС‹С€Рё РїРѕ РєРЅРѕРїРєРµ
 procedure TFLButton.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited MouseMove(Shift, X, Y);
-  //--Генерируем событие родительской панели OnButtonMouseMove, передавая текущую кнопку
+  //--Р“РµРЅРµСЂРёСЂСѓРµРј СЃРѕР±С‹С‚РёРµ СЂРѕРґРёС‚РµР»СЊСЃРєРѕР№ РїР°РЅРµР»Рё OnButtonMouseMove, РїРµСЂРµРґР°РІР°СЏ С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ
   if Assigned(Father.fButtonMouseMove) then Father.fButtonMouseMove(Father, Self);
 end;
 
-//--Метод генерируется при перетягивании на кнопку другого объекта
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРµСЂРµС‚СЏРіРёРІР°РЅРёРё РЅР° РєРЅРѕРїРєСѓ РґСЂСѓРіРѕРіРѕ РѕР±СЉРµРєС‚Р°
 procedure TFLButton.DragOver(Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
 begin
   inherited DragOver(Source, X, Y, State, Accept);
-  //--Если перетягиваемый объект - не другая кнопка, то дропать нельзя
+  //--Р•СЃР»Рё РїРµСЂРµС‚СЏРіРёРІР°РµРјС‹Р№ РѕР±СЉРµРєС‚ - РЅРµ РґСЂСѓРіР°СЏ РєРЅРѕРїРєР°, С‚Рѕ РґСЂРѕРїР°С‚СЊ РЅРµР»СЊР·СЏ
   if not (Source is TFLButton) then Exit;
   (Source as TFLButton).fCurPage := Father.fDraggedButtonPageNumber;
-  //--Если перетягиваемый объект - другая активная кнопка, то дропать можно
+  //--Р•СЃР»Рё РїРµСЂРµС‚СЏРіРёРІР°РµРјС‹Р№ РѕР±СЉРµРєС‚ - РґСЂСѓРіР°СЏ Р°РєС‚РёРІРЅР°СЏ РєРЅРѕРїРєР°, С‚Рѕ РґСЂРѕРїР°С‚СЊ РјРѕР¶РЅРѕ
   if ((Source as TFLButton).IsActive) and
     ((Father.fCurrentDataIndex <> Father.fDraggedButtonPageNumber) or (Source <> Self))
   then
     Accept := true;
 end;
 
-//--Метод генерируется при отпускании перетягиваемого объекта
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РїРµСЂРµС‚СЏРіРёРІР°РµРјРѕРіРѕ РѕР±СЉРµРєС‚Р°
 procedure TFLButton.DragDrop(Source: TObject; X, Y: Integer);
 var
   TempDataItem: TFLDataItem;
 begin
   inherited DragDrop(Source, X, Y);
-  {*--Меняем местами две ячейки памяти--*}
+  {*--РњРµРЅСЏРµРј РјРµСЃС‚Р°РјРё РґРІРµ СЏС‡РµР№РєРё РїР°РјСЏС‚Рё--*}
   {**} TempDataItem := Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber];
   {**} Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber] := Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber];
   {**} Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber] := TempDataItem;
   {*----------------------------------------------------*}
 end;
 
-//--Метод генерируется при прекращении перетягивания объекта
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїСЂРµРєСЂР°С‰РµРЅРёРё РїРµСЂРµС‚СЏРіРёРІР°РЅРёСЏ РѕР±СЉРµРєС‚Р°
 procedure TFLButton.DoEndDrag(Target: TObject; X, Y: Integer);
 begin
   inherited;
@@ -714,18 +714,18 @@ begin
   fCanClick := true;
 end;
 
-//--Метод генерируется при вызове контекстного меню
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РІС‹Р·РѕРІРµ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
 procedure TFLButton.DoContextPopup(MousePos: TPoint; var Handled: Boolean);
 begin
   inherited DoContextPopup(MousePos, Handled);
   Father.fLastUsedButton := Self;
 end;
 
-//--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РєРЅРѕРїРєРѕР№ СЃРѕРѕР±С‰РµРЅРёРё Рѕ РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РїРµСЂРµСЂРёСЃРѕРІРєРё
 procedure TFLButton.Paint;
 begin
   inherited;
-  //--Если кнопка активна, рисуем ее иконку
+  //--Р•СЃР»Рё РєРЅРѕРїРєР° Р°РєС‚РёРІРЅР°, СЂРёСЃСѓРµРј РµРµ РёРєРѕРЅРєСѓ
   if (IsActive and HasIcon) then
   begin
     if fPushed then
@@ -742,11 +742,11 @@ begin
 end;
 
 {*********************************}
-{*****-- Класс TFLDataItem --*****}
+{*****-- РљР»Р°СЃСЃ TFLDataItem --*****}
 {*********************************}
 
-//--Конструктор
-//--Входные параметры: ширина кнопки, высота кнопки
+//--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: С€РёСЂРёРЅР° РєРЅРѕРїРєРё, РІС‹СЃРѕС‚Р° РєРЅРѕРїРєРё
 constructor TFLDataItem.Create(ButtonWidth, ButtonHeight: integer; PanelColor: TColor);
 begin
   fPanelColor := PanelColor;
@@ -761,7 +761,7 @@ begin
   PushedIconBmp.Height := ButtonHeight - 7;
 end;
 
-//--Деструктор
+//--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
 destructor TFLDataItem.Destroy;
 begin
   if TFile.Exists(IconCache) then
@@ -770,7 +770,7 @@ begin
   PushedIconBmp.Free;
 end;
 
-//--read для свойства Exec
+//--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Exec
 function TFLDataItem.GetExec: string;
 begin
   Result := fExec;
@@ -778,7 +778,7 @@ begin
   Result := ExpandEnvironmentVariables(Result);
 end;
 
-//--read для свойства WorkDir
+//--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° WorkDir
 function TFLDataItem.GetWorkDir: string;
 begin
   Result := fWorkDir;
@@ -808,7 +808,7 @@ begin
   PushedIconBmp.Width := FWidth - 7;
 end;
 
-//--read для свойства Icon
+//--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Icon
 function TFLDataItem.GetIcon: string;
 begin
   Result := fIcon;
@@ -823,7 +823,7 @@ begin
   Result := ExpandEnvironmentVariables(Result);
 end;
 
-//--read для свойства Params
+//--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° Params
 function TFLDataItem.GetParams: string;
 begin
   Result := fParams;
@@ -831,7 +831,7 @@ begin
   Result := ExpandEnvironmentVariables(Result);
 end;
 
-//--read для свойства DropParams
+//--read РґР»СЏ СЃРІРѕР№СЃС‚РІР° DropParams
 function TFLDataItem.GetDropParams: string;
 begin
   Result := fDropParams;
@@ -839,7 +839,7 @@ begin
   Result := ExpandEnvironmentVariables(Result);
 end;
 
-//--Функция генерирует иконки (обычную и "нажатую" для ячейки памяти)
+//--Р¤СѓРЅРєС†РёСЏ РіРµРЅРµСЂРёСЂСѓРµС‚ РёРєРѕРЅРєРё (РѕР±С‹С‡РЅСѓСЋ Рё "РЅР°Р¶Р°С‚СѓСЋ" РґР»СЏ СЏС‡РµР№РєРё РїР°РјСЏС‚Рё)
 procedure TFLDataItem.AssignIcons;
 var
   TempIcon: TIcon;
@@ -861,24 +861,24 @@ begin
   TempIcon := TIcon.Create;
   // AbsolutePath fIcon
 
-  //--Если объекта не существует
+  //--Р•СЃР»Рё РѕР±СЉРµРєС‚Р° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
   if (not FileExists(GetIcon)) and (not DirectoryExists(GetIcon)) then
-    //--Загружаем стандартную иконку "белый лист"
+    //--Р—Р°РіСЂСѓР¶Р°РµРј СЃС‚Р°РЅРґР°СЂС‚РЅСѓСЋ РёРєРѕРЅРєСѓ "Р±РµР»С‹Р№ Р»РёСЃС‚"
     TempIcon.Handle := LoadIcon(HInstance, 'RBLANKICON')
   else
-    //--Иначе загружаем иконку из файла
+    //--РРЅР°С‡Рµ Р·Р°РіСЂСѓР¶Р°РµРј РёРєРѕРЅРєСѓ РёР· С„Р°Р№Р»Р°
     TempIcon.Handle := GetFileIcon(GetIcon, fIconIndex, IconBmp.Height);
   if TempIcon.Handle = 0 then
     TempIcon.Handle := LoadIcon(hinstance, 'RBLANKICON');
-  {*--Рисуем иконку на битмапе с заданным фоном, сохраняя альфа канал--*}
+  {*--Р РёСЃСѓРµРј РёРєРѕРЅРєСѓ РЅР° Р±РёС‚РјР°РїРµ СЃ Р·Р°РґР°РЅРЅС‹Рј С„РѕРЅРѕРј, СЃРѕС…СЂР°РЅСЏСЏ Р°Р»СЊС„Р° РєР°РЅР°Р»--*}
   {**} TempBmp := TBitMap.Create;
   {**} TempBmp.Assign(TempIcon);
-  {*--Изменяем размер иконки, если это требуется--*}
+  {*--РР·РјРµРЅСЏРµРј СЂР°Р·РјРµСЂ РёРєРѕРЅРєРё, РµСЃР»Рё СЌС‚Рѕ С‚СЂРµР±СѓРµС‚СЃСЏ--*}
   {**} if (TempBmp.Width = IconBmp.Width) and (TempBmp.Height = IconBmp.Height) then
   {**}   IconBmp.Assign(TempBmp)
   {**} else
   {**}   SmoothResize(TempBmp, IconBmp);
-  {*--Таким же образом создаем "нажатую" кнопку--*}
+  {*--РўР°РєРёРј Р¶Рµ РѕР±СЂР°Р·РѕРј СЃРѕР·РґР°РµРј "РЅР°Р¶Р°С‚СѓСЋ" РєРЅРѕРїРєСѓ--*}
   {**} if (TempBmp.Width = PushedIconBmp.Width) and (TempBmp.Height = PushedIconBmp.Height) then
   {**}   PushedIconBmp.Assign(TempBmp)
   {**} else
@@ -902,39 +902,39 @@ begin
 end;
 
 {**********************************}
-{*****-- Класс TFLDataTable --*****}
+{*****-- РљР»Р°СЃСЃ TFLDataTable --*****}
 {**********************************}
 
-//--Конструктор
-//--Входные параметры: номер страницы, кол-во колонок и рядов
+//--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹, РєРѕР»-РІРѕ РєРѕР»РѕРЅРѕРє Рё СЂСЏРґРѕРІ
 constructor TFLDataTable.Create(PageNumber, ColsCount, RowsCount: integer);
 begin
   fPageNumber := PageNumber;
   fColsCount := ColsCount;
   fRowsCount := RowsCount;
-  //--Отводим память под ячейки данных
+  //--РћС‚РІРѕРґРёРј РїР°РјСЏС‚СЊ РїРѕРґ СЏС‡РµР№РєРё РґР°РЅРЅС‹С…
   SetLength(fItems, fRowsCount, fColsCount);
 end;
 
-//--Деструктор
+//--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
 destructor TFLDataTable.Destroy;
 var
   i, j: integer;
 begin
-  //--Уничтожаем созданные ячейки
+  //--РЈРЅРёС‡С‚РѕР¶Р°РµРј СЃРѕР·РґР°РЅРЅС‹Рµ СЏС‡РµР№РєРё
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
       if Assigned(fItems[i][j]) then fItems[i][j].Destroy;
-  //--Освобождаем ячейки данных
+  //--РћСЃРІРѕР±РѕР¶РґР°РµРј СЏС‡РµР№РєРё РґР°РЅРЅС‹С…
   SetLength(fItems, 0);
 end;
 
-//--Очищение всей страницы данных
+//--РћС‡РёС‰РµРЅРёРµ РІСЃРµР№ СЃС‚СЂР°РЅРёС†С‹ РґР°РЅРЅС‹С…
 procedure TFLDataTable.Clear;
 var
   i, j: integer;
 begin
-  //--Уничтожаем созданные ячейки
+  //--РЈРЅРёС‡С‚РѕР¶Р°РµРј СЃРѕР·РґР°РЅРЅС‹Рµ СЏС‡РµР№РєРё
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
       if Assigned(fItems[i][j]) then
@@ -944,8 +944,8 @@ begin
         end;
 end;
 
-//--Возвращает ячейку по индексам
-//--Входные параметры: номер ряда и колонки
+//--Р’РѕР·РІСЂР°С‰Р°РµС‚ СЏС‡РµР№РєСѓ РїРѕ РёРЅРґРµРєСЃР°Рј
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: РЅРѕРјРµСЂ СЂСЏРґР° Рё РєРѕР»РѕРЅРєРё
 function TFLDataTable.GetItem(RowNumber, ColNumber: integer): TFLDataItem;
 begin
   Result := fItems[RowNumber][ColNumber];
@@ -1046,8 +1046,8 @@ begin
       end;
 end;
 
-//--Определяет, является ли ячейка активной
-//--Входные параметры: номер ряда и колонки
+//--РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё СЏС‡РµР№РєР° Р°РєС‚РёРІРЅРѕР№
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: РЅРѕРјРµСЂ СЂСЏРґР° Рё РєРѕР»РѕРЅРєРё
 function TFLDataTable.GetImagesHeight: Integer;
 var
   i, j: Integer;
@@ -1080,24 +1080,24 @@ end;
 
 function TFLDataTable.GetIsActive(RowNumber, ColNumber: integer): boolean;
 begin
-  //--Ячейка активна, если класс, ее описывающий, создан
+  //--РЇС‡РµР№РєР° Р°РєС‚РёРІРЅР°, РµСЃР»Рё РєР»Р°СЃСЃ, РµРµ РѕРїРёСЃС‹РІР°СЋС‰РёР№, СЃРѕР·РґР°РЅ
   Result := Assigned(fItems[RowNumber][ColNumber]);
 end;
 
 {******************************}
-{*****-- Класс TFLPanel --*****}
+{*****-- РљР»Р°СЃСЃ TFLPanel --*****}
 {******************************}
 
-//--Определение актуального размера компонента (согласно количеству строк и колонок кнопок, а также их размера. write для ActualSize)
-//--Позволяет подогнать форму под размер компонента
+//--РћРїСЂРµРґРµР»РµРЅРёРµ Р°РєС‚СѓР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° РєРѕРјРїРѕРЅРµРЅС‚Р° (СЃРѕРіР»Р°СЃРЅРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ СЃС‚СЂРѕРє Рё РєРѕР»РѕРЅРѕРє РєРЅРѕРїРѕРє, Р° С‚Р°РєР¶Рµ РёС… СЂР°Р·РјРµСЂР°. write РґР»СЏ ActualSize)
+//--РџРѕР·РІРѕР»СЏРµС‚ РїРѕРґРѕРіРЅР°С‚СЊ С„РѕСЂРјСѓ РїРѕРґ СЂР°Р·РјРµСЂ РєРѕРјРїРѕРЅРµРЅС‚Р°
 function TFLPanel.GetActualSize: TSize;
 begin
   Result.Width := fPadding * (fColsCount + 1) + (fButtonWidth * fColsCount) + 2;
   Result.Height := fPadding * (fRowsCount + 1) + (fButtonHeight * fRowsCount) + 2;
 end;
 
-//--Метод возвращает указатель на страницу данных по номеру страницы
-//--Входной параметр: номер страницы
+//--РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С… РїРѕ РЅРѕРјРµСЂСѓ СЃС‚СЂР°РЅРёС†С‹
+//--Р’С…РѕРґРЅРѕР№ РїР°СЂР°РјРµС‚СЂ: РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹
 function TFLPanel.GetDataPageByPageNumber(PageNumber: integer): TFLDataTable;
 begin
   Result := GetCurrentDataPage;
@@ -1106,9 +1106,9 @@ begin
   Result := fDataCollection[PageNumber];
 end;
 
-//--Конструктор
-//--Входные параметры: родительский компонент, кол-во страниц, кол-во колонок,
-//--кол-во рядов, зазор между кнопками, шиирна кнопок, высота кнопок, цвет панели
+//--РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ РєРѕРјРїРѕРЅРµРЅС‚, РєРѕР»-РІРѕ СЃС‚СЂР°РЅРёС†, РєРѕР»-РІРѕ РєРѕР»РѕРЅРѕРє,
+//--РєРѕР»-РІРѕ СЂСЏРґРѕРІ, Р·Р°Р·РѕСЂ РјРµР¶РґСѓ РєРЅРѕРїРєР°РјРё, С€РёРёСЂРЅР° РєРЅРѕРїРѕРє, РІС‹СЃРѕС‚Р° РєРЅРѕРїРѕРє, С†РІРµС‚ РїР°РЅРµР»Рё
 constructor TFLPanel.Create(AOwner: TComponent; PagesCount: integer = 3;
   ColsCount: integer = 10; RowsCount: integer = 2; Padding: integer = 1;
   ButtonsWidth: integer = 32; ButtonsHeight: integer = 32; Color: TColor = clBtnFace);
@@ -1139,27 +1139,27 @@ begin
   fFocusedButton := nil;
   fLastUsedButton := nil;
   fExpandStrings := true;
-  {*--Инициализируем коллекцию данных--*}
+  {*--РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РєРѕР»Р»РµРєС†РёСЋ РґР°РЅРЅС‹С…--*}
   fDataCollection := TFLDataCollection.Create;
   {**} for i := 0 to fPagesCount - 1 do
   {**}   fDataCollection.Add(TFLDataTable.Create(i, fColsCount, fRowsCount));
   {**} fCurrentDataIndex := 0;
   {*-----------------------------------*}
-  //--Отводим память под кнопки
+  //--РћС‚РІРѕРґРёРј РїР°РјСЏС‚СЊ РїРѕРґ РєРЅРѕРїРєРё
   SetLength(fButtons, fRowsCount, fColsCount);
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
       begin
-        //--Создаем кнопку
+        //--РЎРѕР·РґР°РµРј РєРЅРѕРїРєСѓ
         fButtons[i, j] := TFLButton.Create(Self, i, j);
-        {*--Устанавливаем кнопку в нужную позицию--*}
+        {*--РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РєРЅРѕРїРєСѓ РІ РЅСѓР¶РЅСѓСЋ РїРѕР·РёС†РёСЋ--*}
         {**} fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
         {**} fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
         {*-----------------------------------------*}
       end;
-  //--Позволяем перетягивать файлы на кнопку
+  //--РџРѕР·РІРѕР»СЏРµРј РїРµСЂРµС‚СЏРіРёРІР°С‚СЊ С„Р°Р№Р»С‹ РЅР° РєРЅРѕРїРєСѓ
   DragAcceptFiles(Handle, True);
-  //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
+  //--Р Р°Р·СЂРµС€РµРЅРѕ РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРµ С„Р°Р№Р»РѕРІ РІ РѕРєРЅРѕ FreeLaunch, РєРѕРіРґР° РѕРЅ Р·Р°РїСѓС‰РµРЅ СЃ РїСЂР°РІР°РјРё РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
   if TOSVersion.Check(6) then
   begin
     ChangeWindowMessageFilter (WM_DROPFILES, MSGFLT_ADD);
@@ -1168,24 +1168,24 @@ begin
   end;
 end;
 
-//--Деструктор
+//--Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
 destructor TFLPanel.Destroy;
 var
   i, j: integer;
 begin
-  {*--Уничтожаем все кнопки--*}
+  {*--РЈРЅРёС‡С‚РѕР¶Р°РµРј РІСЃРµ РєРЅРѕРїРєРё--*}
   {**} for i := 0 to fRowsCount - 1 do
   {**}   for j := 0 to fColsCount - 1 do
   {**}     fButtons[i, j].Free;
   {**} SetLength(fButtons, 0, 0);
-  {*--Освобождаем коллекцию данных--*}
+  {*--РћСЃРІРѕР±РѕР¶РґР°РµРј РєРѕР»Р»РµРєС†РёСЋ РґР°РЅРЅС‹С…--*}
   {**} fDataCollection.Free;
   {*--------------------------------*}
   inherited Destroy;
 end;
 
-//--Инициализация ячейки данных
-//--Входные параметры: номер страницы, номер строки, номер колонки
+//--РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЏС‡РµР№РєРё РґР°РЅРЅС‹С…
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹, РЅРѕРјРµСЂ СЃС‚СЂРѕРєРё, РЅРѕРјРµСЂ РєРѕР»РѕРЅРєРё
 procedure TFLPanel.InitializeDataItem(PageNumber, RowNumber, ColNumber: integer);
 begin
   if PageNumber = fCurrentDataIndex then
@@ -1194,17 +1194,17 @@ begin
     GetDataPageByPageNumber(PageNumber).fItems[RowNumber, ColNumber] := TFLDataItem.Create(fButtonWidth, fButtonHeight, fPanelColor);
 end;
 
-//--Меняет местами две страницы данных
+//--РњРµРЅСЏРµС‚ РјРµСЃС‚Р°РјРё РґРІРµ СЃС‚СЂР°РЅРёС†С‹ РґР°РЅРЅС‹С…
 procedure TFLPanel.SwapData(PageNumber1, PageNumber2: integer);
 var
   Page1, Page2: TFLDataTable;
   TempPageNumber: Integer;
 begin
-  //--Ищем страницу данных 1
+  //--РС‰РµРј СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С… 1
   Page1 := GetDataPageByPageNumber(PageNumber1);
-  //--Ищем страницу данных 2
+  //--РС‰РµРј СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С… 2
   Page2 := GetDataPageByPageNumber(PageNumber2);
-  {*--Делаем обмен индексов--*}
+  {*--Р”РµР»Р°РµРј РѕР±РјРµРЅ РёРЅРґРµРєСЃРѕРІ--*}
   {**} TempPageNumber := Page1.fPageNumber;
   {**} Page1.fPageNumber := Page2.fPageNumber;
   {**} Page2.fPageNumber := TempPageNumber;
@@ -1212,28 +1212,28 @@ begin
   Repaint;
 end;
 
-//--Очищает страницу данных
+//--РћС‡РёС‰Р°РµС‚ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…
 procedure TFLPanel.ClearPage(PageNumber: integer);
 begin
   GetDataPageByPageNumber(PageNumber).Clear;
   Repaint;
 end;
 
-//--Удаляет страницу данных
-//--Возвращает номер страницы, которая должна стать активной после удаления
+//--РЈРґР°Р»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…
+//--Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹, РєРѕС‚РѕСЂР°СЏ РґРѕР»Р¶РЅР° СЃС‚Р°С‚СЊ Р°РєС‚РёРІРЅРѕР№ РїРѕСЃР»Рµ СѓРґР°Р»РµРЅРёСЏ
 function TFLPanel.DeletePage(PageNumber: integer): integer;
 begin
   Result := PageNumber;
   if PageNumber = fPagesCount - 1 then
     Result := PageNumber - 1;
-  {*--Удаляем из памяти страницу данных--*}
+  {*--РЈРґР°Р»СЏРµРј РёР· РїР°РјСЏС‚Рё СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…--*}
   fDataCollection.Delete(PageNumber);
   {*----------------------------------------------------------------------------------------------*}
   Dec(fPagesCount);
   SetPageNumber(Result);
 end;
 
-//--Создает страницу данных
+//--РЎРѕР·РґР°РµС‚ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С…
 function TFLPanel.AddPage: integer;
 begin
   Result := fPagesCount;
@@ -1243,7 +1243,7 @@ begin
   SetPageNumber(Result);
 end;
 
-//--Перерисовка всех кнопок
+//--РџРµСЂРµСЂРёСЃРѕРІРєР° РІСЃРµС… РєРЅРѕРїРѕРє
 procedure TFLPanel.FullRepaint;
 var
   i, j: integer;
@@ -1253,18 +1253,18 @@ begin
       fButtons[i, j].Repaint;
 end;
 
-//--Возвращает ссылку на последнюю перетаскиваемую кнопку
+//--Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РїРѕСЃР»РµРґРЅСЋСЋ РїРµСЂРµС‚Р°СЃРєРёРІР°РµРјСѓСЋ РєРЅРѕРїРєСѓ
 function TFLPanel.GetLastDraggedButton: TFLButton;
 begin
-  //--Берем LastUsedButton с номером страницы, откуда начали перетаскивать
-  //--Используем только для доступа к ячейке данных
+  //--Р‘РµСЂРµРј LastUsedButton СЃ РЅРѕРјРµСЂРѕРј СЃС‚СЂР°РЅРёС†С‹, РѕС‚РєСѓРґР° РЅР°С‡Р°Р»Рё РїРµСЂРµС‚Р°СЃРєРёРІР°С‚СЊ
+  //--РСЃРїРѕР»СЊР·СѓРµРј С‚РѕР»СЊРєРѕ РґР»СЏ РґРѕСЃС‚СѓРїР° Рє СЏС‡РµР№РєРµ РґР°РЅРЅС‹С…
   Result := LastUsedButton;
   if LastUsedButton = nil then Exit;
   LastUsedButton.fCurPage := fDraggedButtonPageNumber;
 end;
 
-//--Возвращает кнопку по индексам (текущая активная страница)
-//--Входные параметры: номер ряда и колонки
+//--Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРЅРѕРїРєСѓ РїРѕ РёРЅРґРµРєСЃР°Рј (С‚РµРєСѓС‰Р°СЏ Р°РєС‚РёРІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°)
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: РЅРѕРјРµСЂ СЂСЏРґР° Рё РєРѕР»РѕРЅРєРё
 function TFLPanel.GetCurButton(RowNumber, ColNumber: integer): TFLButton;
 begin
   Result := fButtons[RowNumber][ColNumber];
@@ -1275,8 +1275,8 @@ begin
   Result := fDataCollection[fCurrentDataIndex];
 end;
 
-//--Возвращает кнопку по индексам (произвольная страница)
-//--Входные параметры: номер страницы, ряда и колонки
+//--Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРЅРѕРїРєСѓ РїРѕ РёРЅРґРµРєСЃР°Рј (РїСЂРѕРёР·РІРѕР»СЊРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°)
+//--Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹, СЂСЏРґР° Рё РєРѕР»РѕРЅРєРё
 function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButton;
 begin
   fCurrentDataIndex := PageNumber;
@@ -1343,8 +1343,8 @@ begin
     end;
 end;
 
-//--Установка контекстного меню для кнопок
-//--Входной параметр: ссылка на меню
+//--РЈСЃС‚Р°РЅРѕРІРєР° РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ РґР»СЏ РєРЅРѕРїРѕРє
+//--Р’С…РѕРґРЅРѕР№ РїР°СЂР°РјРµС‚СЂ: СЃСЃС‹Р»РєР° РЅР° РјРµРЅСЋ
 procedure TFLPanel.SetButtonsPopup(ButtonsPopup: TPopupMenu);
 var
   i, j: integer;
@@ -1438,8 +1438,8 @@ begin
     end;
 end;
 
-//--Установка номера текущей страницы
-//--Входной параметр: номер страницы
+//--РЈСЃС‚Р°РЅРѕРІРєР° РЅРѕРјРµСЂР° С‚РµРєСѓС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
+//--Р’С…РѕРґРЅРѕР№ РїР°СЂР°РјРµС‚СЂ: РЅРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹
 procedure TFLPanel.SetPageNumber(PageNumber: Integer);
 var
   i, j: integer;
@@ -1447,7 +1447,7 @@ begin
   if fCurrentDataIndex = PageNumber then
     Exit;
 
-  //--Устанавливаем указатель на текущую страницу данных <- указатель на страницу с выбранным номером
+  //--РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С… <- СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂР°РЅРёС†Сѓ СЃ РІС‹Р±СЂР°РЅРЅС‹Рј РЅРѕРјРµСЂРѕРј
   fCurrentDataIndex := PageNumber;
   if fCurrentDataIndex < 0 then
     fCurrentDataIndex := 0;
@@ -1513,7 +1513,7 @@ begin
   fRowsCount := Value;
 end;
 
-//--Метод генерируется при перетаскивании файла на кнопку
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРё С„Р°Р№Р»Р° РЅР° РєРЅРѕРїРєСѓ
 procedure TFLPanel.WMDropFiles(var Msg: TWMDropFiles);
 var
   buf: array[0..MAX_PATH] of char;
@@ -1523,7 +1523,7 @@ begin
   begin
     DragQueryFile(Msg.Drop, 0, buf, SizeOf(buf));
     Button := ControlAtPos(ScreenToClient(Mouse.CursorPos), False) as TFLButton;
-    //--Генерируем событие родительской панели OnDropFile, передавая текущую кнопку и путь к файлу
+    //--Р“РµРЅРµСЂРёСЂСѓРµРј СЃРѕР±С‹С‚РёРµ СЂРѕРґРёС‚РµР»СЊСЃРєРѕР№ РїР°РЅРµР»Рё OnDropFile, РїРµСЂРµРґР°РІР°СЏ С‚РµРєСѓС‰СѓСЋ РєРЅРѕРїРєСѓ Рё РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ
     fDropFile(Self, Button, buf);
     DragFinish(Msg.Drop);
   end;
@@ -1535,11 +1535,11 @@ begin
   inherited;
 end;
 
-//--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РєРЅРѕРїРєРѕР№ СЃРѕРѕР±С‰РµРЅРёРё Рѕ РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РїРµСЂРµСЂРёСЃРѕРІРєРё
 procedure TFLPanel.WMPaint(var Msg: TWMPaint);
 begin
   inherited;
-  {*--Рисуем тени панели--*}
+  {*--Р РёСЃСѓРµРј С‚РµРЅРё РїР°РЅРµР»Рё--*}
   {**} Canvas.Brush.Color := fPanelColor;
 //  {**} Canvas.FillRect(Canvas.ClipRect);
   {**} Canvas.Pen.Color := fDColor1;
@@ -1554,9 +1554,9 @@ begin
   {*----------------------*}
 end;
 
-//--Метод генерируется при нажатии кнопки на клавиатуре
-//--Здесь происходит обработка нажатия клавиш со стрелками, для навигации фокуса по кнопкам
-//--Чтобы работало, форме необходимо разрешить отлавливать нажатия:
+//--РњРµС‚РѕРґ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
+//--Р—РґРµСЃСЊ РїСЂРѕРёСЃС…РѕРґРёС‚ РѕР±СЂР°Р±РѕС‚РєР° РЅР°Р¶Р°С‚РёСЏ РєР»Р°РІРёС€ СЃРѕ СЃС‚СЂРµР»РєР°РјРё, РґР»СЏ РЅР°РІРёРіР°С†РёРё С„РѕРєСѓСЃР° РїРѕ РєРЅРѕРїРєР°Рј
+//--Р§С‚РѕР±С‹ СЂР°Р±РѕС‚Р°Р»Рѕ, С„РѕСЂРјРµ РЅРµРѕР±С…РѕРґРёРјРѕ СЂР°Р·СЂРµС€РёС‚СЊ РѕС‚Р»Р°РІР»РёРІР°С‚СЊ РЅР°Р¶Р°С‚РёСЏ:
 //--
 //--private
 //--  procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
@@ -1573,38 +1573,38 @@ procedure TFLPanel.KeyDown(var Key: Word; Shift: TShiftState);
 var
   d: integer;
 begin
-  //--Если нету кнопки с фокусом, то начинаем с первой
+  //--Р•СЃР»Рё РЅРµС‚Сѓ РєРЅРѕРїРєРё СЃ С„РѕРєСѓСЃРѕРј, С‚Рѕ РЅР°С‡РёРЅР°РµРј СЃ РїРµСЂРІРѕР№
   if not Assigned(fFocusedButton) then
   begin
     FocusedButton := fButtons[0, 0];
   end
   else
   begin
-    //--Если нажата стрелка "вниз"
+    //--Р•СЃР»Рё РЅР°Р¶Р°С‚Р° СЃС‚СЂРµР»РєР° "РІРЅРёР·"
     if Key = vk_down then
-      //--Отдаем фокус кнопке, находяшейся снизу (циклически)
+      //--РћС‚РґР°РµРј С„РѕРєСѓСЃ РєРЅРѕРїРєРµ, РЅР°С…РѕРґСЏС€РµР№СЃСЏ СЃРЅРёР·Сѓ (С†РёРєР»РёС‡РµСЃРєРё)
       FocusedButton :=
         fButtons[(fFocusedButton.RowNumber + 1) mod fRowsCount][fFocusedButton.ColNumber];
-    //--Если нажата стрелка "вверх"
+    //--Р•СЃР»Рё РЅР°Р¶Р°С‚Р° СЃС‚СЂРµР»РєР° "РІРІРµСЂС…"
     if Key = vk_up then
       begin
         d := fFocusedButton.RowNumber - 1;
         if d < 0 then d := fRowsCount - 1;
-        //--Отдаем фокус кнопке, находяшейся сверху (циклически)
+        //--РћС‚РґР°РµРј С„РѕРєСѓСЃ РєРЅРѕРїРєРµ, РЅР°С…РѕРґСЏС€РµР№СЃСЏ СЃРІРµСЂС…Сѓ (С†РёРєР»РёС‡РµСЃРєРё)
         FocusedButton := fButtons[d mod fRowsCount][fFocusedButton.ColNumber];
       end;
-    //--Если нажата стрелка "влево"
+    //--Р•СЃР»Рё РЅР°Р¶Р°С‚Р° СЃС‚СЂРµР»РєР° "РІР»РµРІРѕ"
     if Key = vk_left then
       begin
         d := fFocusedButton.ColNumber - 1;
         if d < 0 then
         d := ColsCount - 1;
-        //--Отдаем фокус кнопке, находяшейся слева (циклически)
+        //--РћС‚РґР°РµРј С„РѕРєСѓСЃ РєРЅРѕРїРєРµ, РЅР°С…РѕРґСЏС€РµР№СЃСЏ СЃР»РµРІР° (С†РёРєР»РёС‡РµСЃРєРё)
         FocusedButton := fButtons[fFocusedButton.RowNumber][d mod fColsCount];
       end;
-    //--Если нажата стрелка "вправо"
+    //--Р•СЃР»Рё РЅР°Р¶Р°С‚Р° СЃС‚СЂРµР»РєР° "РІРїСЂР°РІРѕ"
     if Key = vk_right then
-      //--Отдаем фокус кнопке, находяшейся справа (циклически)
+      //--РћС‚РґР°РµРј С„РѕРєСѓСЃ РєРЅРѕРїРєРµ, РЅР°С…РѕРґСЏС€РµР№СЃСЏ СЃРїСЂР°РІР° (С†РёРєР»РёС‡РµСЃРєРё)
       FocusedButton :=
         fButtons[fFocusedButton.RowNumber][(fFocusedButton.ColNumber + 1) mod fColsCount];
   end;

@@ -1,4 +1,4 @@
-{
+п»ї{
   ##########################################################################
   #  FreeLaunch 2.5 - free links manager for Windows                       #
   #  ====================================================================  #
@@ -117,7 +117,7 @@ type
     procedure ButtonPopupItem_ImportClick(Sender: TObject);
     procedure ButtonPopupItem_ClearClick(Sender: TObject);
     procedure ButtonPopupItem_PropsClick(Sender: TObject);
-    //--Событие при переключении вкладки
+    //--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРµСЂРµРєР»СЋС‡РµРЅРёРё РІРєР»Р°РґРєРё
     procedure MainTabsNewChange(Sender: TObject);
     procedure MainTabsNewDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure MainTabsNewDragOver(Sender, Source: TObject; X, Y: Integer;
@@ -129,9 +129,9 @@ type
     procedure TabPopupItem_ClearClick(Sender: TObject);
     procedure MainTabsNewMouseLeave(Sender: TObject);
   private
-    //--Список имен вкладок
+    //--РЎРїРёСЃРѕРє РёРјРµРЅ РІРєР»Р°РґРѕРє
     TabNames: TStringList;
-    /// <summary> Список кнопок в процессе запуска </summary>
+    /// <summary> РЎРїРёСЃРѕРє РєРЅРѕРїРѕРє РІ РїСЂРѕС†РµСЃСЃРµ Р·Р°РїСѓСЃРєР° </summary>
     LaunchingButtons: TDictionary<Integer, TFLButton>;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging); message WM_WINDOWPOSCHANGING;
@@ -149,40 +149,40 @@ type
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
     function ConfirmDialog(Msg, Title: string): Boolean;
-    //--Событие генерируется при клике по кнопке на панели
+    //--РЎРѕР±С‹С‚РёРµ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РєР»РёРєРµ РїРѕ РєРЅРѕРїРєРµ РЅР° РїР°РЅРµР»Рё
     procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
-    //--Событие генерируется при нажатии кнопки мыши на кнопке панели
+    //--РЎРѕР±С‹С‚РёРµ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РјС‹С€Рё РЅР° РєРЅРѕРїРєРµ РїР°РЅРµР»Рё
     procedure FLPanelButtonMouseDown(Sender: TObject; MouseButton: TMouseButton; Button: TFLButton);
-    //--Событие генерируется при движении мыши по панели
+    //--РЎРѕР±С‹С‚РёРµ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РґРІРёР¶РµРЅРёРё РјС‹С€Рё РїРѕ РїР°РЅРµР»Рё
     procedure FLPanelButtonMouseMove(Sender: TObject; Button: TFLButton);
-    //--Событие генерируется при покидании курсора мыши кнопки
+    //--РЎРѕР±С‹С‚РёРµ РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕРєРёРґР°РЅРёРё РєСѓСЂСЃРѕСЂР° РјС‹С€Рё РєРЅРѕРїРєРё
     procedure FLPanelButtonMouseLeave(Sender: TObject; Button: TFLButton);
-    //--Событие при перетаскивании файла на кнопку панели
+    //--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРµСЂРµС‚Р°СЃРєРёРІР°РЅРёРё С„Р°Р№Р»Р° РЅР° РєРЅРѕРїРєСѓ РїР°РЅРµР»Рё
     procedure FLPanelDropFile(Sender: TObject; Button: TFLButton; FileName: string);
-    //--Установка имени определенной вкладки
+    //--РЈСЃС‚Р°РЅРѕРІРєР° РёРјРµРЅРё РѕРїСЂРµРґРµР»РµРЅРЅРѕР№ РІРєР»Р°РґРєРё
     procedure SetTabName(i: integer);
-    //--Вызов диалога переименовывания вкладки
+    //--Р’С‹Р·РѕРІ РґРёР°Р»РѕРіР° РїРµСЂРµРёРјРµРЅРѕРІС‹РІР°РЅРёСЏ РІРєР»Р°РґРєРё
     procedure RenameTab(i: integer);
-    //--Удаление вкладки
+    //--РЈРґР°Р»РµРЅРёРµ РІРєР»Р°РґРєРё
     procedure DeleteTab(i: integer);
-    /// <summary> Считывание настроек кнопок из xml-файла </summary>
+    /// <summary> РЎС‡РёС‚С‹РІР°РЅРёРµ РЅР°СЃС‚СЂРѕРµРє РєРЅРѕРїРѕРє РёР· xml-С„Р°Р№Р»Р° </summary>
     procedure LoadLinksSettings;
-    /// <summary> Функция определяет, находятся ли координаты t,r,c в пределах
-    /// текущего размера панели </summary>
+    /// <summary> Р¤СѓРЅРєС†РёСЏ РѕРїСЂРµРґРµР»СЏРµС‚, РЅР°С…РѕРґСЏС‚СЃСЏ Р»Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ t,r,c РІ РїСЂРµРґРµР»Р°С…
+    /// С‚РµРєСѓС‰РµРіРѕ СЂР°Р·РјРµСЂР° РїР°РЅРµР»Рё </summary>
     function IsTRCInRange(t, r, c: integer): boolean;
-    /// <summary> Сохранение настроек в xml-файл </summary>
+    /// <summary> РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml-С„Р°Р№Р» </summary>
     procedure SaveLinksSettings;
-    /// <summary> Считывание иконок кнопок из кэша </summary>
+    /// <summary> РЎС‡РёС‚С‹РІР°РЅРёРµ РёРєРѕРЅРѕРє РєРЅРѕРїРѕРє РёР· РєСЌС€Р° </summary>
     procedure LoadLinksIconsFromCache;
-    /// <summary> Сохранение иконок кнопок в кэш </summary>
+    /// <summary> РЎРѕС…СЂР°РЅРµРЅРёРµ РёРєРѕРЅРѕРє РєРЅРѕРїРѕРє РІ РєСЌС€ </summary>
     procedure SaveLinksIconsToCache;
   public
     FLPanel: TFLPanel;
-    //--Количество вкладок
+    //--РљРѕР»РёС‡РµСЃС‚РІРѕ РІРєР»Р°РґРѕРє
     TabsCount: integer;
-    //--Ширина и высота кнопок
+    //--РЁРёСЂРёРЅР° Рё РІС‹СЃРѕС‚Р° РєРЅРѕРїРѕРє
     ButtonWidth, ButtonHeight: integer;
-    //--Цвет кнопок
+    //--Р¦РІРµС‚ РєРЅРѕРїРѕРє
     ButtonsColor: TColor;
     procedure EndWork;
     procedure ChangeWndSize;
@@ -197,13 +197,13 @@ type
     procedure ChWinView(b: boolean);
     procedure ReloadIcons;
     procedure GrowTabNames(ACount: Integer);
-    //--Установка имен всех вкладок
+    //--РЈСЃС‚Р°РЅРѕРІРєР° РёРјРµРЅ РІСЃРµС… РІРєР»Р°РґРѕРє
     procedure SetTabNames;
   end;
 
 var
   FlaunchMainForm: TFlaunchMainForm;
-  PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
+  PropertiesMode: integer; //РџРµСЂРµРјРµРЅРЅР°СЏ СЃРѕРґРµСЂР¶РёС‚ С‚РёРї РєРЅРѕРїРєРё, СЃРІРѕР№СЃС‚РІР° РєРѕС‚РѕСЂРѕР№ СЂРµРґР°РєС‚РёСЂСѓСЋС‚СЃСЏ РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚
   rowscount, colscount, lpadding, tabind,
     LeftPer, TopPer: integer;
   templinks: link;
@@ -253,7 +253,7 @@ begin
   FLPanel.PageNumber := MainTabsNew.TabIndex;
 end;
 
-//--Вызов диалога переименовывания вкладки
+//--Р’С‹Р·РѕРІ РґРёР°Р»РѕРіР° РїРµСЂРµРёРјРµРЅРѕРІС‹РІР°РЅРёСЏ РІРєР»Р°РґРєРё
 procedure TFlaunchMainForm.RenameTab(i: integer);
 begin
   MainTabsNew.Tabs.Strings[i] :=
@@ -318,38 +318,38 @@ begin
   end;
 end;
 
-//--Установка имени определенной вкладки
+//--РЈСЃС‚Р°РЅРѕРІРєР° РёРјРµРЅРё РѕРїСЂРµРґРµР»РµРЅРЅРѕР№ РІРєР»Р°РґРєРё
 procedure TFlaunchMainForm.SetTabName(i: integer);
 var
   TabName: string;
 begin
-  //--Определение имени вкладки
+  //--РћРїСЂРµРґРµР»РµРЅРёРµ РёРјРµРЅРё РІРєР»Р°РґРєРё
   if TabNames.Strings[i] = '' then
-    //--Имя по-умолчанию
+    //--РРјСЏ РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ
     TabName := Format(Language.Main.TabName, [i + 1])
   else
-    //--Имя, заданное пользователем
+    //--РРјСЏ, Р·Р°РґР°РЅРЅРѕРµ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
     TabName := TabNames.Strings[i];
-  //--Если вкладка существует
+  //--Р•СЃР»Рё РІРєР»Р°РґРєР° СЃСѓС‰РµСЃС‚РІСѓРµС‚
   if MainTabsNew.Tabs[i] <> '' then
   begin
-    //--Задаем ей актуальное имя
+    //--Р—Р°РґР°РµРј РµР№ Р°РєС‚СѓР°Р»СЊРЅРѕРµ РёРјСЏ
     MainTabsNew.Tabs.Strings[i] := TabName;
     TabNames.Strings[i] := TabName;
   end
   else
-    //--Иначе создаем и задаем актуальное имя
+    //--РРЅР°С‡Рµ СЃРѕР·РґР°РµРј Рё Р·Р°РґР°РµРј Р°РєС‚СѓР°Р»СЊРЅРѕРµ РёРјСЏ
     MainTabsNew.Tabs[i] := TabName;
 end;
 
-//--Установка имен всех вкладок
+//--РЈСЃС‚Р°РЅРѕРІРєР° РёРјРµРЅ РІСЃРµС… РІРєР»Р°РґРѕРє
 procedure TFlaunchMainForm.SetTabNames;
 var
   i: Integer;
 begin
   if TabsCount > 1 then
   begin
-    {*--Задаем имена вкладок--*}
+    {*--Р—Р°РґР°РµРј РёРјРµРЅР° РІРєР»Р°РґРѕРє--*}
     for i := 0 to TabsCount - 1 do
       SetTabName(i);
   end
@@ -368,7 +368,7 @@ begin
   result := false;
 end;
 
-//--Удаление вкладки
+//--РЈРґР°Р»РµРЅРёРµ РІРєР»Р°РґРєРё
 procedure TFlaunchMainForm.DeleteTab(i: integer);
 begin
   if TabsCount = 1 then
@@ -377,19 +377,19 @@ begin
     Language.Messages.Confirmation)
   then
     exit;
-  //--Удаляем имя этой вкладки
+  //--РЈРґР°Р»СЏРµРј РёРјСЏ СЌС‚РѕР№ РІРєР»Р°РґРєРё
   TabNames.Delete(i);
-  //--Удаляем вкладку
+  //--РЈРґР°Р»СЏРµРј РІРєР»Р°РґРєСѓ
   MainTabsNew.Tabs.Delete(i);
-  //--Уменьшаем счетчик вкладок на 1
+  //--РЈРјРµРЅСЊС€Р°РµРј СЃС‡РµС‚С‡РёРє РІРєР»Р°РґРѕРє РЅР° 1
   Dec(TabsCount);
-  //--Если осталась единственная вкладка, скрываем ее
+  //--Р•СЃР»Рё РѕСЃС‚Р°Р»Р°СЃСЊ РµРґРёРЅСЃС‚РІРµРЅРЅР°СЏ РІРєР»Р°РґРєР°, СЃРєСЂС‹РІР°РµРј РµРµ
   if TabsCount = 1 then
     MainTabsNew.Tabs.Clear;
   SetTabNames;
-  //--Удаляем страницу данных и делаем активной нужную вкладку
+  //--РЈРґР°Р»СЏРµРј СЃС‚СЂР°РЅРёС†Сѓ РґР°РЅРЅС‹С… Рё РґРµР»Р°РµРј Р°РєС‚РёРІРЅРѕР№ РЅСѓР¶РЅСѓСЋ РІРєР»Р°РґРєСѓ
   MainTabsNew.TabIndex := FLPanel.DeletePage(i);
-  //--Подгоняем размер окна под актуальный размер панели
+  //--РџРѕРґРіРѕРЅСЏРµРј СЂР°Р·РјРµСЂ РѕРєРЅР° РїРѕРґ Р°РєС‚СѓР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РїР°РЅРµР»Рё
   ChangeWndSize;
 end;
 
@@ -519,7 +519,7 @@ begin
   Application.Terminate;
 end;
 
-{*--Обработка пунктов контекстного меню вкладок--*}
+{*--РћР±СЂР°Р±РѕС‚РєР° РїСѓРЅРєС‚РѕРІ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ РІРєР»Р°РґРѕРє--*}
 procedure TFlaunchMainForm.TabPopupItem_ClearClick(Sender: TObject);
 begin
   if not ConfirmDialog(format(Language.Messages.ClearTab, [MainTabsNew.Tabs[MainTabsNew.TabIndex]]),
@@ -760,10 +760,10 @@ begin
     for t := 0 to TabsCount - 1 do
       for r := 0 to RowsCount - 1 do
         for c := 0 to ColsCount - 1 do
-          //--Если кнопка активна и у нее есть иконка
+          //--Р•СЃР»Рё РєРЅРѕРїРєР° Р°РєС‚РёРІРЅР° Рё Сѓ РЅРµРµ РµСЃС‚СЊ РёРєРѕРЅРєР°
           if (FLPanel.Buttons[t,r,c].IsActive) and (FLPanel.Buttons[t,r,c].HasIcon) then
           begin
-            {*--Сохраняем обычную иконку в файл--*}
+            {*--РЎРѕС…СЂР°РЅСЏРµРј РѕР±С‹С‡РЅСѓСЋ РёРєРѕРЅРєСѓ РІ С„Р°Р№Р»--*}
             AlphaToPng(FLPanel.Buttons[t,r,c].Data.IconBmp, PngImg);
             PngImg.SaveToFile(FLPanel.Buttons[t,r,c].Data.IconCache);
             FLPanel.Buttons[t,r,c].Data.IconCache := '';
@@ -876,7 +876,7 @@ var
 begin
   PngImg := TPngImage.Create;
   try
-    //--Пробегаем по всем кнопкам
+    //--РџСЂРѕР±РµРіР°РµРј РїРѕ РІСЃРµРј РєРЅРѕРїРєР°Рј
     for t := 0 to TabsCount - 1 do
       for r := 0 to RowsCount - 1 do
         for c := 0 to ColsCount - 1 do
@@ -1153,13 +1153,13 @@ begin
   unregisterhotkey(Handle, HotKeyID);
   DeleteFile(fl_WorkDir + '.session');
 
-  //--Сохраняем настройки кнопок
+  //--РЎРѕС…СЂР°РЅСЏРµРј РЅР°СЃС‚СЂРѕР№РєРё РєРЅРѕРїРѕРє
   SaveLinksSettings;
-  //--Сохраняем иконки кнопок в кэш
+  //--РЎРѕС…СЂР°РЅСЏРµРј РёРєРѕРЅРєРё РєРЅРѕРїРѕРє РІ РєСЌС€
   SaveLinksIconsToCache;
 
   LaunchingButtons.Free;
-  //--Удаляем список имен вкладок
+  //--РЈРґР°Р»СЏРµРј СЃРїРёСЃРѕРє РёРјРµРЅ РІРєР»Р°РґРѕРє
   TabNames.Free;
 end;
 
@@ -1198,9 +1198,9 @@ begin
     NI_SettingsClick(NI_Settings);
   if ((Key = ord('Q')) and (ssCtrl in Shift)) then
     Application.Terminate;
-  //--Ctrl + W -> удалить вкладку
+  //--Ctrl + W -> СѓРґР°Р»РёС‚СЊ РІРєР»Р°РґРєСѓ
   if ((Key = ord('W')) and (ssCtrl in Shift)) then DeleteTab(MainTabsNew.TabIndex);
-  //--F2 -> переименовать вкладку
+  //--F2 -> РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РІРєР»Р°РґРєСѓ
   if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
 end;
 
@@ -1307,10 +1307,10 @@ end;
 procedure TFlaunchMainForm.FLPanelButtonMouseDown(Sender: TObject;
   MouseButton: TMouseButton; Button: TFLButton);
 begin
-  //--Если была нажата правая кнопка мыши
+  //--Р•СЃР»Рё Р±С‹Р»Р° РЅР°Р¶Р°С‚Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё
   if MouseButton = mbRight then
   begin
-    {*--Активируем/деактивируем необходимые пункты контекстного меню кнопки--*}
+    {*--РђРєС‚РёРІРёСЂСѓРµРј/РґРµР°РєС‚РёРІРёСЂСѓРµРј РЅРµРѕР±С…РѕРґРёРјС‹Рµ РїСѓРЅРєС‚С‹ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ РєРЅРѕРїРєРё--*}
     if Assigned(Button.Data) then
     begin
       ButtonPopupItem_TypeFile.Checked := Button.Data.LType = 1;
@@ -1361,13 +1361,13 @@ var
   LnkInfo: TShellLinkInfoStruct;
   ext: string;
 begin
-  //--Если кнопка активна и "умеет" принимать перетягиваемые файлы
+  //--Р•СЃР»Рё РєРЅРѕРїРєР° Р°РєС‚РёРІРЅР° Рё "СѓРјРµРµС‚" РїСЂРёРЅРёРјР°С‚СЊ РїРµСЂРµС‚СЏРіРёРІР°РµРјС‹Рµ С„Р°Р№Р»С‹
   if (Button.IsActive) and (Button.Data.DropFiles) then
   begin
     LaunchButton(Button, FileName);
     exit;
   end;
-  {*--Если кнопка активна, просим подтверждение замены--*}
+  {*--Р•СЃР»Рё РєРЅРѕРїРєР° Р°РєС‚РёРІРЅР°, РїСЂРѕСЃРёРј РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ Р·Р°РјРµРЅС‹--*}
   if Button.IsActive then
   begin
     Button.Highlight;
@@ -1377,7 +1377,7 @@ begin
       Exit;
   end;
   Ext := ExtractFileExt(FileName).ToLower;
-  //--Если был перетянут файл кнопки
+  //--Р•СЃР»Рё Р±С‹Р» РїРµСЂРµС‚СЏРЅСѓС‚ С„Р°Р№Р» РєРЅРѕРїРєРё
   if Ext = '.flb' then
   begin
     Button.Highlight;
@@ -1385,16 +1385,16 @@ begin
       ImportButton(Button, FileName);
     exit;
   end;
-  //--Инициализируем ячейку данных
+  //--РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј СЏС‡РµР№РєСѓ РґР°РЅРЅС‹С…
   if not Button.IsActive then
     Button.InitializeData;
-  //--Если был перетянут ярлык
+  //--Р•СЃР»Рё Р±С‹Р» РїРµСЂРµС‚СЏРЅСѓС‚ СЏСЂР»С‹Рє
   if Ext = '.lnk' then
   begin
     StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, MAX_PATH - 1);
-    //--Извлекаем информацию о ярлыке
+    //--РР·РІР»РµРєР°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЏСЂР»С‹РєРµ
     GetLinkInfo(@lnkinfo);
-    {*--Заполняем информацию в поля кнопки--*}
+    {*--Р—Р°РїРѕР»РЅСЏРµРј РёРЅС„РѕСЂРјР°С†РёСЋ РІ РїРѕР»СЏ РєРЅРѕРїРєРё--*}
     Button.Data.Exec := LnkInfo.FullPathAndNameOfFileToExecute;
     Button.Data.IconIndex := LnkInfo.IconIndex;
     Button.Data.Icon := LnkInfo.FullPathAndNameOfFileContiningIcon;
@@ -1423,7 +1423,7 @@ begin
     Button.Data.Params := '';
     Button.Data.Descr := '';
   end;
-  //--Если исполняемый файл
+  //--Р•СЃР»Рё РёСЃРїРѕР»РЅСЏРµРјС‹Р№ С„Р°Р№Р»
   if IsExecutable(Ext) then
   begin
     Button.Data.LType := 0;
@@ -1438,9 +1438,9 @@ begin
     if Button.Data.Descr = '' then
       Button.Data.Descr := ExtractFileName(FileName);
   end;
-  //--Рисуем иконки на кнопке
+  //--Р РёСЃСѓРµРј РёРєРѕРЅРєРё РЅР° РєРЅРѕРїРєРµ
   Button.Data.AssignIcons;
-  //--Перерисовываем кнопку
+  //--РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµРј РєРЅРѕРїРєСѓ
   Button.Repaint;
 end;
 
@@ -1464,9 +1464,9 @@ begin
     FLVersion := version;
   {$ENDIF}
 
-  //--Создаем список имен вкладок
+  //--РЎРѕР·РґР°РµРј СЃРїРёСЃРѕРє РёРјРµРЅ РІРєР»Р°РґРѕРє
   TabNames := TStringList.Create;
-  //--Создаем экземпляр панели с кнопками
+  //--РЎРѕР·РґР°РµРј СЌРєР·РµРјРїР»СЏСЂ РїР°РЅРµР»Рё СЃ РєРЅРѕРїРєР°РјРё
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   ChPos := true;
@@ -1479,9 +1479,9 @@ begin
 
   if FileExists(fl_WorkDir + 'FLaunch.xml') then
   begin
-    //--Читаем настройки кнопок
+    //--Р§РёС‚Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё РєРЅРѕРїРѕРє
     LoadLinksSettings;
-    //--Читаем иконки кнопок из кэша
+    //--Р§РёС‚Р°РµРј РёРєРѕРЅРєРё РєРЅРѕРїРѕРє РёР· РєСЌС€Р°
     LoadLinksIconsFromCache;
   end
   else
@@ -1505,9 +1505,9 @@ begin
 
   Language.AddNotifier(LoadLanguage);
   Language.Load(lngfilename);
-  //--Разрешаем/запрешаем автозагрузку
+  //--Р Р°Р·СЂРµС€Р°РµРј/Р·Р°РїСЂРµС€Р°РµРј Р°РІС‚РѕР·Р°РіСЂСѓР·РєСѓ
   SetAutorun(Autorun);
-  {*--Связываем события панели--*}
+  {*--РЎРІСЏР·С‹РІР°РµРј СЃРѕР±С‹С‚РёСЏ РїР°РЅРµР»Рё--*}
   FLPanel.OnButtonMouseDown := FLPanelButtonMouseDown;
   FLPanel.OnButtonClick := FLPanelButtonClick;
   FLPanel.OnButtonMouseMove := FLPanelButtonMouseMove;
@@ -1520,7 +1520,7 @@ begin
 
   if not fileexists(fl_WorkDir + '.session') then
   begin
-    //--Создаем файл, который будет идентифицировать сессию. При корректном завершении программы файл будет удален
+    //--РЎРѕР·РґР°РµРј С„Р°Р№Р», РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РёРґРµРЅС‚РёС„РёС†РёСЂРѕРІР°С‚СЊ СЃРµСЃСЃРёСЋ. РџСЂРё РєРѕСЂСЂРµРєС‚РЅРѕРј Р·Р°РІРµСЂС€РµРЅРёРё РїСЂРѕРіСЂР°РјРјС‹ С„Р°Р№Р» Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ
     FileClose(FileCreate(fl_WorkDir + '.session'));
     SetFileAttributes(PChar(fl_WorkDir + '.session'), FILE_ATTRIBUTE_HIDDEN);
   end;
@@ -1533,16 +1533,16 @@ begin
   ChPos := false;
 end;
 
-//--Событие при переключении вкладки
+//--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРµСЂРµРєР»СЋС‡РµРЅРёРё РІРєР»Р°РґРєРё
 procedure TFlaunchMainForm.MainTabsNewChange(Sender: TObject);
 begin
-  //--Устанавливаем текущую страницу <- индекс вкладки
+  //--РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСѓС‰СѓСЋ СЃС‚СЂР°РЅРёС†Сѓ <- РёРЅРґРµРєСЃ РІРєР»Р°РґРєРё
   FLPanel.PageNumber := MainTabsNew.TabIndex;
   MainTabsNew.SetFocus;
 end;
 
-//--Событие при отпускании перетягиваемого над вкладкой объекта
-//--Изменение порядка вкладок с помощью Drag'N'Drop
+//--РЎРѕР±С‹С‚РёРµ РїСЂРё РѕС‚РїСѓСЃРєР°РЅРёРё РїРµСЂРµС‚СЏРіРёРІР°РµРјРѕРіРѕ РЅР°Рґ РІРєР»Р°РґРєРѕР№ РѕР±СЉРµРєС‚Р°
+//--РР·РјРµРЅРµРЅРёРµ РїРѕСЂСЏРґРєР° РІРєР»Р°РґРѕРє СЃ РїРѕРјРѕС‰СЊСЋ Drag'N'Drop
 procedure TFlaunchMainForm.MainTabsNewDragDrop(Sender, Source: TObject; X,
   Y: Integer);
 var
@@ -1550,15 +1550,15 @@ var
   Rect: TRect;
   TempStr: string;
 begin
-  //--Если перетягиваемый объект - вкладка
+  //--Р•СЃР»Рё РїРµСЂРµС‚СЏРіРёРІР°РµРјС‹Р№ РѕР±СЉРµРєС‚ - РІРєР»Р°РґРєР°
   if (Source is TTabControl) then
   begin
-    //--Перебираем все вкладки
+    //--РџРµСЂРµР±РёСЂР°РµРј РІСЃРµ РІРєР»Р°РґРєРё
     for i := 0 to TabsCount - 1 do
     begin
-      //--Определяем регион вкладки
+      //--РћРїСЂРµРґРµР»СЏРµРј СЂРµРіРёРѕРЅ РІРєР»Р°РґРєРё
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
-      //--Если найдена вкладка, над которой находится курсор
+      //--Р•СЃР»Рё РЅР°Р№РґРµРЅР° РІРєР»Р°РґРєР°, РЅР°Рґ РєРѕС‚РѕСЂРѕР№ РЅР°С…РѕРґРёС‚СЃСЏ РєСѓСЂСЃРѕСЂ
       if (PtInRect(Rect, Point(X, Y))) and (MainTabsNew.TabIndex <> i) then
       begin
         TempStr := TabNames.Strings[MainTabsNew.TabIndex];
@@ -1573,26 +1573,26 @@ begin
   end;
 end;
 
-//--Событие при перетягивании над вкладкой объекта
+//--РЎРѕР±С‹С‚РёРµ РїСЂРё РїРµСЂРµС‚СЏРіРёРІР°РЅРёРё РЅР°Рґ РІРєР»Р°РґРєРѕР№ РѕР±СЉРµРєС‚Р°
 procedure TFlaunchMainForm.MainTabsNewDragOver(Sender, Source: TObject; X,
   Y: Integer; State: TDragState; var Accept: Boolean);
 var
   i: integer;
   Rect: TRect;
 begin
-  //--Если перетягиваемый объект - кнопка
+  //--Р•СЃР»Рё РїРµСЂРµС‚СЏРіРёРІР°РµРјС‹Р№ РѕР±СЉРµРєС‚ - РєРЅРѕРїРєР°
   if (Source is TFLButton) then
   begin
-    //--Если перетягиваемая кнопка активна, разрешаем Drop
+    //--Р•СЃР»Рё РїРµСЂРµС‚СЏРіРёРІР°РµРјР°СЏ РєРЅРѕРїРєР° Р°РєС‚РёРІРЅР°, СЂР°Р·СЂРµС€Р°РµРј Drop
     Accept := FLPanel.LastDraggedButton.IsActive;
     if not Accept then
       Exit;
-    //--Перебираем все вкладки
+    //--РџРµСЂРµР±РёСЂР°РµРј РІСЃРµ РІРєР»Р°РґРєРё
     for i := 0 to TabsCount - 1 do
     begin
-      //--Определяем регион вкладки
+      //--РћРїСЂРµРґРµР»СЏРµРј СЂРµРіРёРѕРЅ РІРєР»Р°РґРєРё
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
-      //--Если найдена вкладка, над которой находится курсор
+      //--Р•СЃР»Рё РЅР°Р№РґРµРЅР° РІРєР»Р°РґРєР°, РЅР°Рґ РєРѕС‚РѕСЂРѕР№ РЅР°С…РѕРґРёС‚СЃСЏ РєСѓСЂСЃРѕСЂ
       if (PtInRect(Rect, Point(X, Y))) and (MainTabsNew.TabIndex <> i) then
       begin
         MainTabsNew.TabIndex := i;
@@ -1604,7 +1604,7 @@ begin
     Accept := true;
 end;
 
-//--Событие при нажатии кнопкой мыши по вкладке
+//--РЎРѕР±С‹С‚РёРµ РїСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРѕР№ РјС‹С€Рё РїРѕ РІРєР»Р°РґРєРµ
 procedure TFlaunchMainForm.MainTabsNewMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
@@ -1617,12 +1617,12 @@ begin
       MainTabsNew.BeginDrag(false);
   if Button = mbRight then
   begin
-    //--Перебираем все вкладки
+    //--РџРµСЂРµР±РёСЂР°РµРј РІСЃРµ РІРєР»Р°РґРєРё
     for i := 0 to TabsCount - 1 do
     begin
-      //--Определяем регион вкладки
+      //--РћРїСЂРµРґРµР»СЏРµРј СЂРµРіРёРѕРЅ РІРєР»Р°РґРєРё
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
-      //--Если найдена вкладка, над которой находится курсор
+      //--Р•СЃР»Рё РЅР°Р№РґРµРЅР° РІРєР»Р°РґРєР°, РЅР°Рґ РєРѕС‚РѕСЂРѕР№ РЅР°С…РѕРґРёС‚СЃСЏ РєСѓСЂСЃРѕСЂ
       if PtInRect(Rect, Point(X, Y)) then
       begin
         if MainTabsNew.TabIndex <> i then
@@ -1647,7 +1647,7 @@ begin
   Application.Terminate;
 end;
 
-//--Экспортирование настроек кнопки в файл
+//--Р­РєСЃРїРѕСЂС‚РёСЂРѕРІР°РЅРёРµ РЅР°СЃС‚СЂРѕРµРє РєРЅРѕРїРєРё РІ С„Р°Р№Р»
 procedure TFlaunchMainForm.ExportButton(Button: TFLButton; FileName: string);
 var
   Strings: TStringList;
@@ -1663,7 +1663,7 @@ begin
   end;
 end;
 
-//--Импортирование настроек кнопки из файла
+//--РРјРїРѕСЂС‚РёСЂРѕРІР°РЅРёРµ РЅР°СЃС‚СЂРѕРµРє РєРЅРѕРїРєРё РёР· С„Р°Р№Р»Р°
 procedure TFlaunchMainForm.ImportButton(Button: TFLButton; FileName: string);
 var
   Strings: TStringList;
