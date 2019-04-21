@@ -261,7 +261,7 @@ type
   {*-----------------------------*}
 
   //--Главный класс. Описывает компонент - таблицу кнопок
-  TFLPanel = class(TCustomControl)
+  TFLPanel = class(TPanel)
     private
       //--Общий цвет панели и кнопок
       fPanelColor: TColor;
@@ -312,8 +312,6 @@ type
       procedure SetButtonsPopup(ButtonsPopup: TPopupMenu);
       //--Установка номера текущей страницы (write для PageNumber)
       procedure SetPageNumber(PageNumber: Integer);
-      //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
-      procedure WMPaint(var Msg: TWMPaint); message WM_PAINT;
       //--Метод генерируется при перетаскивании файла на кнопку
       procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
       //--Метод генерируется при потере кнопкой фокуса
@@ -430,7 +428,8 @@ begin
   Parent := TWinControl(AOwner);
   Width := Father.fButtonWidth;
   Height := Father.fButtonHeight;
-  Color := Father.fPanelColor;
+//  Color := Father.fPanelColor;
+  Flat := True;
   fRowNumber := RowNumber;
   fColNumber := ColNumber;
   fPushed := false;
@@ -1119,10 +1118,11 @@ var
 begin
   inherited Create(AOwner);
   Parent := TWinControl(AOwner);
-  ParentBackground := false;
   TabStop := True;
   Align := alClient;
-  Self.Color := Color;
+  BevelOuter := bvNone;
+  DoubleBuffered := True;
+//  Self.Color := Color;
   fPanelColor := Color;
   if fPanelColor = clBtnFace then
     TempColor := GetSysColor(COLOR_BTNFACE)
@@ -1534,25 +1534,6 @@ procedure TFLPanel.WMKillFocus(var Msg: TWMKillFocus);
 begin
   FocusedButton := nil;
   inherited;
-end;
-
-//--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
-procedure TFLPanel.WMPaint(var Msg: TWMPaint);
-begin
-  inherited;
-  {*--Рисуем тени панели--*}
-  {**} Canvas.Brush.Color := fPanelColor;
-//  {**} Canvas.FillRect(Canvas.ClipRect);
-  {**} Canvas.Pen.Color := fDColor1;
-  {**} Canvas.PenPos := Point(Width - 1, 0);
-  {**} Canvas.LineTo(0, 0);
-  {**} Canvas.LineTo(0, Height - 1);
-  {**} Canvas.Pen.Color := fLColor;
-  {**} Canvas.PenPos := Point(Width - 1, 0);
-  {**} Canvas.LineTo(Width - 1, Height - 1);
-  {**} Canvas.LineTo(-1, Height - 1);
-  {**} Canvas.Pen.Color := fPanelColor;
-  {*----------------------*}
 end;
 
 //--Метод генерируется при нажатии кнопки на клавиатуре
