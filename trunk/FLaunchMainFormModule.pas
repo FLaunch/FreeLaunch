@@ -296,7 +296,7 @@ procedure TFlaunchMainForm.SetAutorun(b: boolean);
 var
   reg: TRegistry;
 begin
-  if SettingsMode = 2 then
+  if IsPortable then
     Exit;
 
   reg := TRegistry.Create;

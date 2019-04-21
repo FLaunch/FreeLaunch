@@ -245,7 +245,7 @@ begin
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
 
   ScanLanguagesDir;
-  AutorunCheckBox.Checked := (SettingsMode <> 2) and (Autorun);
+  AutorunCheckBox.Checked := (not IsPortable) and (Autorun);
   TopCheckBox.Checked := AlwaysOnTop;
   StartHideBox.Checked := StartHide;
   StatusBarBox.Checked := StatusBarVis;
@@ -260,7 +260,7 @@ begin
   PaddingEdit.Value := lpadding;
   IWEdit.Value := FlaunchMainForm.ButtonWidth;
   IHEdit.Value := FlaunchMainForm.ButtonHeight;
-  AutoRunCheckBox.Enabled := SettingsMode <> 2;
+  AutoRunCheckBox.Enabled := not IsPortable;
   TabsEdit.SetFocus;
 end;
 
