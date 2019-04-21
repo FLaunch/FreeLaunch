@@ -11,6 +11,8 @@ object FlaunchMainForm: TFlaunchMainForm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  GlassFrame.Enabled = True
+  GlassFrame.SheetOfGlass = True
   KeyPreview = True
   OldCreateOrder = False
   ScreenSnap = True
@@ -28,6 +30,7 @@ object FlaunchMainForm: TFlaunchMainForm
     Top = 146
     Width = 325
     Height = 19
+    Align = alNone
     Panels = <
       item
         Width = 100
@@ -42,7 +45,6 @@ object FlaunchMainForm: TFlaunchMainForm
     Top = 0
     Width = 325
     Height = 146
-    Align = alClient
     PopupMenu = TabPopupMenu
     TabOrder = 1
     OnChange = MainTabsNewChange

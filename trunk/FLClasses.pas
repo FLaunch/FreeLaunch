@@ -317,6 +317,7 @@ type
       function GetButtonHeight: Integer;
       function GetButtonWidth: Integer;
       procedure SetFocusedButton(const Value: TFLButton);
+      procedure UpdateSize;
     protected
 
     public
@@ -1068,9 +1069,7 @@ begin
   inherited Create(AOwner);
   Parent := TWinControl(AOwner);
   TabStop := True;
-  Align := alClient;
   BevelOuter := bvNone;
-  DoubleBuffered := True;
   fPagesCount := PagesCount;
   fColsCount := ColsCount;
   fRowsCount := RowsCount;
@@ -1098,6 +1097,7 @@ begin
         {**} fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
         {*-----------------------------------------*}
       end;
+  UpdateSize;
   //--Позволяем перетягивать файлы на кнопку
   DragAcceptFiles(Handle, True);
   //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
@@ -1151,6 +1151,12 @@ begin
   {**} Page2.fPageNumber := TempPageNumber;
   {*-------------------------*}
   Repaint;
+end;
+
+procedure TFLPanel.UpdateSize;
+begin
+  Width := ActualSize.Width;
+  Height := ActualSize.Height;
 end;
 
 //--Очищает страницу данных
@@ -1254,6 +1260,8 @@ begin
       fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
       fButtons[i, j].Height := FButtonHeight;
     end;
+
+  UpdateSize;
 end;
 
 //--Установка контекстного меню для кнопок
@@ -1288,6 +1296,8 @@ begin
       fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
       fButtons[i, j].Width := FButtonWidth;
     end;
+
+  UpdateSize;
 end;
 
 procedure TFLPanel.SetColsCount(const Value: Integer);
@@ -1325,6 +1335,8 @@ begin
     end;
 
   fColsCount := Value;
+
+  UpdateSize;
 end;
 
 procedure TFLPanel.SetFocusedButton(const Value: TFLButton);
@@ -1349,6 +1361,8 @@ begin
       fButtons[i, j].Left := fPadding * (j + 1) + (fButtonWidth * j) + 1;
       fButtons[i, j].Top := fPadding * (i + 1) + (fButtonHeight * i) + 1;
     end;
+
+  UpdateSize;
 end;
 
 //--Установка номера текущей страницы
@@ -1424,6 +1438,8 @@ begin
   end;
 
   fRowsCount := Value;
+
+  UpdateSize;
 end;
 
 //--Метод генерируется при перетаскивании файла на кнопку
