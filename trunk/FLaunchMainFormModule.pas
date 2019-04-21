@@ -182,8 +182,6 @@ type
     TabsCount: integer;
     //--Ширина и высота кнопок
     ButtonWidth, ButtonHeight: integer;
-    //--Цвет кнопок
-    ButtonsColor: TColor;
     procedure EndWork;
     procedure ChangeWndSize;
     procedure GenerateWnd;
@@ -413,7 +411,6 @@ const
 
 var
   i: integer;
-  altlinkscolor: boolean;
 begin
   Ini := TIniFile.Create(fl_WorkDir+'FLaunch.ini');
   lngfilename := ini.ReadString(inisection, 'language', 'English.lng');
@@ -467,12 +464,6 @@ begin
   TopPer := ini.ReadInteger(inisection, 'formtoppos', 0);
   if TopPer < 0 then TopPer := 0;
   if TopPer > 100 then TopPer := 100;
-
-  altlinkscolor := ini.ReadBool(inisection, 'altlinkscolor', false);
-  if altlinkscolor then
-    ButtonsColor := ColorStrToColor(ini.ReadString(inisection, 'linkscolor', 'default'))
-  else
-    ButtonsColor := clBtnFace;
 
   MainTabsNew.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
   MainTabsNew.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
@@ -830,7 +821,6 @@ begin
     IconNode.AddChild('Height').NodeValue := ButtonHeight;
 
     PanelNode.AddChild('Padding').NodeValue := LPadding;
-    PanelNode.AddChild('Color').NodeValue := ColorToString(ButtonsColor);
 
     for r := 0 to RowsCount - 1 do
       for c := 0 to ColsCount - 1 do
@@ -956,16 +946,6 @@ var
       Result := Child.NodeValue;
   end;
 
-  function GetColor(AParent: IXMLNode; AChildName: string): TColor;
-  var
-    Color: string;
-  begin
-    Result := clBtnFace;
-    Color := GetStr(AParent, AChildName);
-    if Color <> '' then
-      Result := StringToColor(Color);
-  end;
-
 begin
   if not FileExists(fl_WorkDir + 'FLaunch.xml') then
     Exit;
@@ -1065,8 +1045,6 @@ begin
 
     LPadding := GetInt(PanelNode, 'Padding');
     FLPanel.Padding := LPadding;
-    ButtonsColor := GetColor(PanelNode, 'Color');
-    FLPanel.ButtonColor := ButtonsColor;
 
     LinkNode := PanelNode.ChildNodes.FindNode('Link');
     while Assigned(LinkNode) and LinkNode.HasChildNodes do
@@ -1479,7 +1457,6 @@ begin
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   ChPos := true;
-  ButtonsColor := clBtnFace;
   randomize;
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
 
@@ -1497,7 +1474,6 @@ begin
   begin
     LoadIni;
 
-    FLPanel.ButtonColor := ButtonsColor;
     FLPanel.Padding := LPadding;
     FLPanel.ButtonWidth := ButtonWidth;
     FLPanel.ButtonHeight := ButtonHeight;
