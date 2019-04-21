@@ -136,11 +136,14 @@ begin
 end;
 
 function TFileOrDirDialog.Execute: Boolean;
+var
+  FilePath: string;
 begin
   if TOSVersion.Check(6) then
   begin
-    if FileExists(FFileName) then
-      FOpenDialog.DefaultFolder := ExtractFilePath(FFileName);
+    FilePath := ExtractFilePath(FFileName);
+    if DirectoryExists(FilePath) then
+      FOpenDialog.DefaultFolder := FilePath;
     FOpenDialog.FileName := 'Select file or directory';
 
     Result := FOpenDialog.Execute;
