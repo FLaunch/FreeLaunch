@@ -140,13 +140,6 @@ object FilePropertiesForm: TFilePropertiesForm
         Height = 17
         TabOrder = 6
       end
-      object WorkFolderEdit: TEdit
-        Left = 78
-        Top = 45
-        Width = 259
-        Height = 21
-        TabOrder = 2
-      end
       object CommandEdit: TButtonedEdit
         Left = 78
         Top = 15
@@ -171,6 +164,18 @@ object FilePropertiesForm: TFilePropertiesForm
         Images = Data.Images
         TabOrder = 1
         OnClick = RefPropsClick
+      end
+      object WorkFolderEdit: TButtonedEdit
+        Left = 78
+        Top = 45
+        Width = 259
+        Height = 21
+        Images = Data.Images
+        RightButton.HotImageIndex = 1
+        RightButton.ImageIndex = 0
+        RightButton.Visible = True
+        TabOrder = 2
+        OnRightButtonClick = WorkFolderClick
       end
     end
   end
