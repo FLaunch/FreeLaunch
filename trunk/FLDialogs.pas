@@ -66,7 +66,12 @@ begin
     end;
 
     if Dialog.Execute then
-      Result := Dialog.FileName
+    begin
+      Result := Dialog.FileName;
+
+      if IsPortable then
+        Result := PathToPortable(Dialog.FileName);
+    end
     else
       Result := AFileName;
   finally
@@ -171,7 +176,12 @@ begin
   FileOrDirDialog := TFileOrDirDialog.Create(GetAbsolutePath(AFileName));
   try
     if FileOrDirDialog.Execute then
-      Result := FileOrDirDialog.FileName
+    begin
+      Result := FileOrDirDialog.FileName;
+
+      if IsPortable then
+        Result := PathToPortable(FileOrDirDialog.FileName);
+    end
     else
       Result := AFileName;
   finally

@@ -866,6 +866,9 @@ var
 begin
   Result := APath;
 
+  if APath = '' then
+    Exit;
+
   FullPath := TPath.GetFullPath(GetAbsolutePath(APath));
   if ContainsText(FullPath, fl_dir) then
     Result := ReplaceText(FullPath, fl_dir, '%FL_DIR%\')

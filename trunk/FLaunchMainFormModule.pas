@@ -1425,6 +1425,13 @@ begin
     if Button.Data.Descr = '' then
       Button.Data.Descr := ExtractFileName(FileName);
   end;
+
+  if IsPortable then
+  begin
+    Button.Data.Exec := PathToPortable(Button.Data.Exec);
+    Button.Data.WorkDir := PathToPortable(Button.Data.WorkDir);
+    Button.Data.Icon := PathToPortable(Button.Data.Icon);
+  end;
   //--Рисуем иконки на кнопке
   Button.Data.AssignIcons;
   //--Перерисовываем кнопку
