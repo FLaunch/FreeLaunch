@@ -753,6 +753,7 @@ begin
   fHasIcon := false;
   FHeight := ButtonHeight;
   FWidth := ButtonWidth;
+  fHide := True;
   IconBmp := TBitMap.Create;
   IconBmp.Width := ButtonWidth - 4;
   IconBmp.Height := ButtonHeight - 4;
