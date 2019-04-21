@@ -123,6 +123,8 @@ function StringsToLink(AStrings: TStrings): TLink;
 procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
 /// <summary> Инициализация путей </summary>
 procedure InitEnvironment;
+/// <summary> Проверка режима работы программы </summary>
+function IsPortable: Boolean;
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
@@ -848,6 +850,11 @@ begin
   AddEnvironmentVariable('FL_DIR', FL_DIR);
   AddEnvironmentVariable('FL_ROOT', FL_ROOT);
   AddEnvironmentVariable('FL_CONFIG', fl_WorkDir);
+end;
+
+function IsPortable: Boolean;
+begin
+  Result := SettingsMode = 2;
 end;
 
 end.
