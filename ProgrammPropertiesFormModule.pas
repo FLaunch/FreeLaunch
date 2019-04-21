@@ -58,11 +58,11 @@ type
     DropParamsEdit: TEdit;
     Label8: TLabel;
     HideCheckBox: TCheckBox;
-    WorkFolderEdit: TEdit;
     Label9: TLabel;
     RefProps: TButton;
     CommandEdit: TButtonedEdit;
     AdminBox: TCheckBox;
+    WorkFolderEdit: TButtonedEdit;
     procedure FormShow(Sender: TObject);
     procedure BrowseExecClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
@@ -71,6 +71,7 @@ type
     procedure DropBoxClick(Sender: TObject);
     procedure RefPropsClick(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
+    procedure WorkFolderClick(Sender: TObject);
   private
     Link: TLink;
   public
@@ -262,6 +263,11 @@ begin
   if DescrEdit.Text = '' then
     DescrEdit.Text := ExtractFileNameNoExt(GetAbsolutePath(CommandEdit.Text));
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+end;
+
+procedure TProgrammPropertiesForm.WorkFolderClick(Sender: TObject);
+begin
+  WorkFolderEdit.Text := ExtractFileDir(FileOrDirSelect(WorkFolderEdit.Text));
 end;
 
 procedure TProgrammPropertiesForm.BrowseExecClick(Sender: TObject);

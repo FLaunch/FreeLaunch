@@ -30,9 +30,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     ActivePage = TabSheet1
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
-    ExplicitHeight = 264
     object TabSheet1: TTabSheet
-      ExplicitHeight = 236
       DesignSize = (
         513
         247)
@@ -195,13 +193,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Height = 17
         TabOrder = 11
       end
-      object WorkFolderEdit: TEdit
-        Left = 78
-        Top = 45
-        Width = 259
-        Height = 21
-        TabOrder = 2
-      end
       object RefProps: TButton
         Left = 316
         Top = 15
@@ -235,6 +226,18 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Caption = 'Run with Admin rights'
         TabOrder = 9
       end
+      object WorkFolderEdit: TButtonedEdit
+        Left = 78
+        Top = 45
+        Width = 259
+        Height = 21
+        Images = Data.Images
+        RightButton.HotImageIndex = 1
+        RightButton.ImageIndex = 0
+        RightButton.Visible = True
+        TabOrder = 2
+        OnRightButtonClick = WorkFolderClick
+      end
     end
   end
   object OKButton: TButton
@@ -246,7 +249,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     ModalResult = 1
     TabOrder = 1
     OnClick = OKButtonClick
-    ExplicitTop = 278
   end
   object CancelButton: TButton
     Left = 454
@@ -256,6 +258,5 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Anchors = [akLeft, akBottom]
     ModalResult = 2
     TabOrder = 2
-    ExplicitTop = 278
   end
 end

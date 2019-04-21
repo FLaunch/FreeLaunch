@@ -51,10 +51,10 @@ type
     OKButton: TButton;
     CancelButton: TButton;
     HideCheckBox: TCheckBox;
-    WorkFolderEdit: TEdit;
     Label9: TLabel;
     CommandEdit: TButtonedEdit;
     RefProps: TButton;
+    WorkFolderEdit: TButtonedEdit;
     procedure FormShow(Sender: TObject);
     procedure BrowseExecClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
@@ -62,6 +62,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure RefPropsClick(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
+    procedure WorkFolderClick(Sender: TObject);
   private
     Link: TLink;
   public
@@ -208,6 +209,11 @@ begin
   if DescrEdit.Text = '' then
     DescrEdit.Text := ExtractFileName(GetAbsolutePath(CommandEdit.Text));
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+end;
+
+procedure TFilePropertiesForm.WorkFolderClick(Sender: TObject);
+begin
+  WorkFolderEdit.Text := ExtractFileDir(FileOrDirSelect(WorkFolderEdit.Text));
 end;
 
 procedure TFilePropertiesForm.BrowseExecClick(Sender: TObject);
