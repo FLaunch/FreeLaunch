@@ -125,6 +125,8 @@ procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
 procedure InitEnvironment;
 /// <summary> Проверка режима работы программы </summary>
 function IsPortable: Boolean;
+/// <summary> Конвертация пути в путь с использованием переменных окружения </summary>
+function PathToPortable(APath: string): string;
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
@@ -136,7 +138,8 @@ implementation
 
 uses
   ShellApi, ShFolder, SysUtils, ActiveX, ComObj, ShlObj, FLLanguage,
-  System.IniFiles, Winapi.CommCtrl, jclGraphics;
+  System.IniFiles, Winapi.CommCtrl, jclGraphics, System.IOUtils,
+  System.StrUtils;
 
 //--Функция не позволяет уйти значению за пределы допустимых
 //--Входные параметры: значение, минимальное значение, максимальное значение
@@ -855,6 +858,20 @@ end;
 function IsPortable: Boolean;
 begin
   Result := SettingsMode = 2;
+end;
+
+function PathToPortable(APath: string): string;
+var
+  FullPath: string;
+begin
+  Result := APath;
+
+  FullPath := TPath.GetFullPath(GetAbsolutePath(APath));
+  if ContainsText(FullPath, fl_dir) then
+    Result := ReplaceText(FullPath, fl_dir, '%FL_DIR%\')
+  else
+    if ContainsText(FullPath, fl_root) then
+      Result := ReplaceText(FullPath, fl_root, '%FL_ROOT%\');
 end;
 
 end.
