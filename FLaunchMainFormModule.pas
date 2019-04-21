@@ -1240,21 +1240,30 @@ end;
 procedure TFlaunchMainForm.ButtonPopupItem_PropsClick(Sender: TObject);
 var
   TempButton: TFLButton;
+  Link: TLink;
 begin
   TempButton := FLPanel.LastUsedButton;
   TempButton.Highlight;
 
   PropertiesMode := 0;
   if Assigned(TempButton.Data) then
-    PropertiesMode := TempButton.Data.LType
+  begin
+    PropertiesMode := TempButton.Data.LType;
+    Link := TempButton.DataToLink;
+  end
   else
+  begin
+    TempButton.InitializeData;
+    Link := TempButton.DataToLink;
+    Link.active := False;
     if ButtonPopupItem_TypeFile.Checked then
       PropertiesMode := 1;
+  end;
 
   if PropertiesMode = 0 then
-    TempButton.LinkToData(TProgrammPropertiesForm.Execute(TempButton.DataToLink));
+    TempButton.LinkToData(TProgrammPropertiesForm.Execute(Link));
   if PropertiesMode = 1 then
-    TempButton.LinkToData(TFilePropertiesForm.Execute(TempButton.DataToLink));
+    TempButton.LinkToData(TFilePropertiesForm.Execute(Link));
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_RunClick(Sender: TObject);
