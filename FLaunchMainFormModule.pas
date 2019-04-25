@@ -1267,8 +1267,11 @@ begin
     FLPanel.Left := TabInternalRect.Left;
     FLPanel.Top := TabInternalRect.Top;
     FLPanel.DoubleBuffered := True;
+    GlassFrame.Enabled := False;
+
     MainTabsNew.Width := MainTabsNew.Width + FLPanel.Width - TabInternalRect.Width;
     MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height - TabInternalRect.Height;
+    MainTabsNew.TabIndex := FLPanel.PageNumber;
 
     MainHeight := MainTabsNew.Height;
     MainWidth := MainTabsNew.Width;
@@ -1280,13 +1283,13 @@ begin
     FLPanel.Left := 0;
     FLPanel.Top := 0;
     FLPanel.DoubleBuffered := False;
+    GlassFrame.Enabled := True;
 
     MainHeight := FLPanel.Height;
     MainWidth := FLPanel.Width;
   end;
 
   StatusBar.Top := MainHeight + 1;
-  StatusBar.Width := MainWidth;
   StatusBar.Panels[0].Width := MainWidth - MulDiv(122, Screen.PixelsPerInch, DesignDPI);
 
   ClientWidth := MainWidth;
