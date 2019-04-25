@@ -11,7 +11,6 @@ object FlaunchMainForm: TFlaunchMainForm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  GlassFrame.Enabled = True
   GlassFrame.SheetOfGlass = True
   KeyPreview = True
   OldCreateOrder = False
@@ -30,7 +29,7 @@ object FlaunchMainForm: TFlaunchMainForm
     Top = 146
     Width = 325
     Height = 19
-    Align = alNone
+    DoubleBuffered = True
     Panels = <
       item
         Width = 100
@@ -39,6 +38,7 @@ object FlaunchMainForm: TFlaunchMainForm
         Alignment = taCenter
         Width = 50
       end>
+    ParentDoubleBuffered = False
   end
   object MainTabsNew: TTabControl
     Left = 0
