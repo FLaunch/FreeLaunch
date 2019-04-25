@@ -1,4 +1,4 @@
-[main]
+﻿[main]
 tabname=Tab %%
 location=Lacation: %%
 parameters=Parameters: %%
