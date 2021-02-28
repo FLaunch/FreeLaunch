@@ -706,6 +706,7 @@ end;
 //--Метод генерируется при получении кнопкой сообщении о необходимости перерисовки
 procedure TFLButton.Paint;
 begin
+  ControlState := ControlState - [csGlassPaint];
   inherited;
   //--Если кнопка активна, рисуем ее иконку
   if (IsActive and HasIcon) then
