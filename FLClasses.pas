@@ -1099,15 +1099,6 @@ begin
         {*-----------------------------------------*}
       end;
   UpdateSize;
-  //--Позволяем перетягивать файлы на кнопку
-  DragAcceptFiles(Handle, True);
-  //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
-  if TOSVersion.Check(6) then
-  begin
-    ChangeWindowMessageFilter (WM_DROPFILES, MSGFLT_ADD);
-    ChangeWindowMessageFilter (WM_COPYDATA, MSGFLT_ADD);
-    ChangeWindowMessageFilter ($0049, MSGFLT_ADD);
-  end;
 end;
 
 //--Деструктор

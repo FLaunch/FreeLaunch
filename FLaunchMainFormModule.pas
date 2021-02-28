@@ -1289,6 +1289,9 @@ begin
     MainWidth := FLPanel.Width;
   end;
 
+  //--Позволяем перетягивать файлы на кнопку
+  DragAcceptFiles(FLPanel.Handle, True);
+
   StatusBar.Top := MainHeight + 1;
   StatusBar.Panels[0].Width := MainWidth - MulDiv(122, Screen.PixelsPerInch, DesignDPI);
 
@@ -1547,6 +1550,14 @@ begin
   SetTabNames;
 
   GenerateWnd;
+
+  //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
+  if TOSVersion.Check(6) then
+  begin
+    ChangeWindowMessageFilter (WM_DROPFILES, MSGFLT_ADD);
+    ChangeWindowMessageFilter (WM_COPYDATA, MSGFLT_ADD);
+    ChangeWindowMessageFilter ($0049, MSGFLT_ADD);
+  end;
 
   if not fileexists(fl_WorkDir + '.session') then
   begin
