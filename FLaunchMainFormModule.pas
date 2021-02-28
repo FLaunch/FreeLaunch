@@ -33,7 +33,7 @@ uses
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, ComObj,
   ActiveX, ShlObj, IniFiles, Registry, Shfolder, ProgrammPropertiesFormModule,
   FilePropertiesFormModule, RenameTabFormModule, SettingsFormModule,
-  AboutFormModule, FLFunctions, FLLanguage, FLClasses,
+  AboutFormModule, FLFunctions, FLLanguage, FLClasses, madExcept,
   System.Generics.Collections;
 
 const
@@ -1506,7 +1506,7 @@ begin
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
 
   InitEnvironment;
-//  CurrentEurekaLogOptions.OutputPath := fl_WorkDir;
+  MESettings().BugReportFile := fl_WorkDir + 'bugReport.mbr';
 
   if FileExists(fl_WorkDir + 'FLaunch.xml') then
   begin
