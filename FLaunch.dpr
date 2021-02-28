@@ -30,19 +30,6 @@ program FLaunch;
 {$R *.dres}
 
 uses
-  {$IFDEF EurekaLog}
-  EMemLeaks,
-  EResLeaks,
-  EDialogWinAPIEurekaLogDetailed,
-  EDialogWinAPIStepsToReproduce,
-  EDebugExports,
-  EDebugMS,
-  EDebugJCL,
-  EFixSafeCallException,
-  EMapWin32,
-  EAppVCL,
-  ExceptionLog7,
-  {$ENDIF EurekaLog}
   Forms,
   Windows,
   FLaunchMainFormModule in 'FLaunchMainFormModule.pas' {FlaunchMainForm},
