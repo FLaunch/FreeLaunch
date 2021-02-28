@@ -31,9 +31,9 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, ComObj,
-  ActiveX, ShlObj, IniFiles, Registry, Shfolder, ExceptionLog7,
-  ProgrammPropertiesFormModule, FilePropertiesFormModule, RenameTabFormModule,
-  SettingsFormModule, AboutFormModule, FLFunctions, FLLanguage, FLClasses,
+  ActiveX, ShlObj, IniFiles, Registry, Shfolder, ProgrammPropertiesFormModule,
+  FilePropertiesFormModule, RenameTabFormModule, SettingsFormModule,
+  AboutFormModule, FLFunctions, FLLanguage, FLClasses,
   System.Generics.Collections;
 
 const
@@ -1506,7 +1506,7 @@ begin
   registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
 
   InitEnvironment;
-  CurrentEurekaLogOptions.OutputPath := fl_WorkDir;
+//  CurrentEurekaLogOptions.OutputPath := fl_WorkDir;
 
   if FileExists(fl_WorkDir + 'FLaunch.xml') then
   begin
