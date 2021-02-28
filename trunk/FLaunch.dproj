@@ -92,6 +92,9 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_DebugInformation>2</DCC_DebugInformation>
         <Manifest_File>Custom.manifest</Manifest_File>
+        <DCC_Define>madExcept;$(DCC_Define)</DCC_Define>
+        <BT_BuildType>Debug</BT_BuildType>
+        <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_RangeChecking>true</DCC_RangeChecking>
@@ -107,6 +110,7 @@
         <BRCC_Verbose>true</BRCC_Verbose>
         <Manifest_File>Custom.manifest</Manifest_File>
         <BT_BuildType>Debug</BT_BuildType>
+        <DCC_Define>madExcept;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
