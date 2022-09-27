@@ -6,9 +6,9 @@ This repository is a mirror of original repository, published on SourceForge by 
 
 [Project page on SourceForge](https://sourceforge.net/projects/freelaunch/)
 
-Original code by: @Joker-jar
+Original code by: [@Joker-jar](https://github.com/Joker-jar)
 
-Last commits by: @Torbins
+Last commits by: [@Torbins](https://github.com/Torbins)
 
 FreeLaunch is a free links manager for Windows. It allows to organize shortcuts to your programs, files and folders. FreeLaunch is easy and fully configurable.
 
