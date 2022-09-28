@@ -20,4 +20,4 @@ This is a fork of the original FreeLaunch project hosted at SourceForge.
 
 The original project is located here: https://sourceforge.net/projects/freelaunch/
 
-FreeLaunch project was started in 2010 by [@Joker-jar](https://github.com/Joker-jar). [@Torbins](https://github.com/Torbins) joined to development in 2016.
+FreeLaunch project was started in 2010 by [@Joker-jar](https://github.com/Joker-jar). A few years later, [@Torbins](https://github.com/Torbins) joined to development in 2016.
