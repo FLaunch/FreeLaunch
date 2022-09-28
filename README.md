@@ -1,18 +1,9 @@
-## Note
-
-This is a fork of the original project, published on SourceForge by project contributors.
-
-[Project page on SourceForge](https://sourceforge.net/projects/freelaunch/)
-
-Original code by @Joker-jar
-
-Last commits by @Torbins
-
 # FreeLaunch
 
-FreeLaunch is a free links manager for Windows. It allows to organize shortcuts to your programs, files and folders. FreeLaunch is easy and fully configurable.
+FreeLaunch is a free links manager for Microsoft Windows. It allows to organize shortcuts to your programs, files and folders. FreeLaunch is easy and fully configurable.
 
 ## Features
+
 - Launch programs, open files and folders
 - Launch programs with specific priority and window state
 - Optional tabs, rows and buttons count
@@ -22,3 +13,11 @@ FreeLaunch is a free links manager for Windows. It allows to organize shortcuts 
 - Drag'n'drop moving buttons and tabs
 - Portable mode supported
 - Relative pathes supported
+
+## Historical Note
+
+This is a fork of the original FreeLaunch project hosted at SourceForge.
+
+The original project is located here: https://sourceforge.net/projects/freelaunch/
+
+FreeLaunch project was started in 2010 by [@Joker-jar](https://github.com/Joker-jar). [@Torbins](https://github.com/Torbins) joined to development in 2016.
