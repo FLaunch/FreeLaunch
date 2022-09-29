@@ -1,10 +1,9 @@
 ﻿{
   ##########################################################################
-  #  FreeLaunch 2.0 - free links manager for Windows                       #
+  #  FreeLaunch 2.7 - free links manager for Windows                       #
   #  ====================================================================  #
-  #  Copyright (C) 2010 Joker-jar                                          #
-  #  E-Mail joker-jar@yandex.ru                                            #
-  #  WEB http://sourceforge.net/projects/freelaunch                        #
+  #  Copyright (C) 2022 FreeLaunch Team                                    #
+  #  WEB https://github.com/Ta2i4/FreeLaunch                               #
   #  ====================================================================  #
   #  This file is part of FreeLaunch.                                      #
   #                                                                        #

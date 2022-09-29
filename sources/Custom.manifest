@@ -3,7 +3,7 @@
   <assemblyIdentity
     name="FreeLaunch"
     processorArchitecture="*"
-    version="2.5.0.0"
+    version="2.7.0.0"
     type="win32"
   />
   <description>FreeLaunch is a free links manager for Windows</description>

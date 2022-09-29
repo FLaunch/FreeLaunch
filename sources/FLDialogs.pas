@@ -1,9 +1,9 @@
 ﻿{
   ##########################################################################
-  #  FreeLaunch 2.5 - free links manager for Windows                       #
+  #  FreeLaunch 2.7 - free links manager for Windows                       #
   #  ====================================================================  #
-  #  Copyright (C) 2017 FreeLaunch Team                                    #
-  #  WEB http://sourceforge.net/projects/freelaunch                        #
+  #  Copyright (C) 2022 FreeLaunch Team                                    #
+  #  WEB https://github.com/Ta2i4/FreeLaunch                               #
   #  ====================================================================  #
   #  This file is part of FreeLaunch.                                      #
   #                                                                        #
