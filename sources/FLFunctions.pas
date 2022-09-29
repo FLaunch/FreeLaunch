@@ -1,9 +1,9 @@
 ﻿{
   ##########################################################################
-  #  FreeLaunch 2.5 - free links manager for Windows                       #
+  #  FreeLaunch 2.7 - free links manager for Windows                       #
   #  ====================================================================  #
-  #  Copyright (C) 2017 FreeLaunch Team                                    #
-  #  WEB http://sourceforge.net/projects/freelaunch                        #
+  #  Copyright (C) 2022 FreeLaunch Team                                    #
+  #  WEB https://github.com/Ta2i4/FreeLaunch                        #
   #  ====================================================================  #
   #  This file is part of FreeLaunch.                                      #
   #                                                                        #
@@ -79,7 +79,7 @@ function InRange(Value, FromV, ToV: byte): byte;
 //--Функция определяет количество иконок в файле
 function GetIconCount(FileName: string): integer;
 //--Функция извлекает иконку из файла по индексу
-function GetFileIcon(FileName: string; Index: integer; Size: Cardinal = 32): HIcon;
+function GetFileIcon(FileName: string; Index: integer; Size: integer = 32): HIcon;
 //--Функция возвращает путь к специальным папкам в Windows
 function GetSpecialDir(const CSIDL: byte): string;
 function GetAbsolutePath(s: string): string;
@@ -157,7 +157,7 @@ begin
 end;
 
 //--Функция извлекает иконку из файла по индексу
-function GetFileIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
+function GetFileIcon(FileName: string; Index, Size: integer): HIcon;
 
   function VistaGetIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
   var
@@ -167,7 +167,7 @@ function GetFileIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
       Result := 0;
   end;
 
-  function GetShellIcon(ILSize, Index: integer; var MinSize: Integer; ReqSize: Cardinal): HIcon;
+  function GetShellIcon(ILSize, Index: integer; var MinSize, ReqSize: Integer): HIcon;
   const
     IID_IImageList: TGUID = '{46EB5926-582E-4017-9FDF-E8998DAA0950}';
   var
