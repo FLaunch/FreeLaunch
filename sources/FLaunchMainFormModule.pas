@@ -53,9 +53,9 @@ const
   MultKey = 13574;
   AddKey = 46287;
 
-  version = '2.5';
-  dev_version = '2.6 Test 4';
-  releasedate = '__BUILDDATE__'; // build date in dd-mm-yyyy format
+  version = '2.7';
+  dev_version = '2.7 Test 1';
+  releasedate = '2022/09/30'; // build date in yyyy/mm/dd format
 
   cr_wmr = 'R273772850462';
   cr_wmz = 'Z234078607788';
