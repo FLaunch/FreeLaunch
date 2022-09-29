@@ -987,6 +987,7 @@ begin
   starthide := GetBool(WindowNode, 'StartHidden');
 
   TabsCount := 0;
+  TabNumber := 0;
   TabNames.Clear;
   TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
   if (not Assigned(TabRootNode)) or (not TabRootNode.HasChildNodes) then
