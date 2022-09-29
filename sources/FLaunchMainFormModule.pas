@@ -57,8 +57,6 @@ const
   dev_version = '2.7 Test 1';
   releasedate = '2022/09/30'; // build date in yyyy/mm/dd format
 
-  cr_wmr = 'R273772850462';
-  cr_wmz = 'Z234078607788';
   cr_author = 'Joker-jar';
   cr_authormail = 'joker-jar@yandex.ru';
   cr_progname = 'FreeLaunch';

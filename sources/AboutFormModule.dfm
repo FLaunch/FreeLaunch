@@ -57,14 +57,6 @@ object AboutForm: TAboutForm
       Alignment = taCenter
       AutoSize = False
     end
-    object Label7: TLabel
-      Left = 18
-      Top = 131
-      Width = 236
-      Height = 13
-      Alignment = taCenter
-      AutoSize = False
-    end
     object Label4: TLabel
       Left = 18
       Top = 98
@@ -72,32 +64,6 @@ object AboutForm: TAboutForm
       Height = 13
       Alignment = taCenter
       AutoSize = False
-    end
-    object Edit1: TEdit
-      Left = 94
-      Top = 150
-      Width = 84
-      Height = 15
-      TabStop = False
-      BorderStyle = bsNone
-      Ctl3D = False
-      ParentColor = True
-      ParentCtl3D = False
-      ReadOnly = True
-      TabOrder = 0
-    end
-    object Edit2: TEdit
-      Left = 94
-      Top = 164
-      Width = 84
-      Height = 15
-      TabStop = False
-      BorderStyle = bsNone
-      Ctl3D = False
-      ParentColor = True
-      ParentCtl3D = False
-      ReadOnly = True
-      TabOrder = 1
     end
   end
 end

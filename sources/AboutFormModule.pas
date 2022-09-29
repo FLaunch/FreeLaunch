@@ -37,9 +37,6 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
-    Label7: TLabel;
-    Edit1: TEdit;
-    Edit2: TEdit;
     Label4: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -71,10 +68,6 @@ begin
   Label2.Caption := format('%s: %s (%s)',[Language.About.Version, FLVersion, releasedate]);
   Label3.Caption := format('%s: %s (%s)',[Language.About.Author, cr_author, cr_authormail]);
   Label4.Caption := format('%s: %s',[Language.About.Translate, Language.Info.Author]);
-  Label7.Caption := Language.About.Donate + ':';
-  Edit1.Text := cr_wmr;
-  Edit2.Text := cr_wmz;
-
   Image1.Picture.Icon.Handle := LoadIcon(hinstance, 'MAINICON');
 end;
 
