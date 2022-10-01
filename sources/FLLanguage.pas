@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko                                     #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -410,7 +411,7 @@ var
   ImageStr: string;
 begin
   Name := Parse(AIni.ReadString(SctInfo, 'name', 'English'));
-  Author := Parse(AIni.ReadString(SctInfo, 'author', ''));
+  Author := Parse(AIni.ReadString(SctInfo, 'author', 'no information'));
   ImageStr := Parse(AIni.ReadString(SctInfo, 'image', 'Qk1GAgAAAAAAADYAAAAoAA' +
     'AAEAAAAAsAAAABABgAAAAAABACAADEDgAAxA4AAAAAAAAAAAAAxJt7aUuYsWVQjisYjisYji' +
     'sY6tXNNxuFNxuF6tXNbRQAbRQAbRQAjisY07aQjisY07aQ//7+fIX53cTCx4Rxx4Rx//7+Tl' +
