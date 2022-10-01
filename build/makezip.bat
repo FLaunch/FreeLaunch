@@ -7,9 +7,10 @@ del /f /q *.zip
 del /f /q "bin\*.drc"
 del /f /q "bin\*.map"
 rd /s /q "bin\help"
-del /f /q "bin\languages\*"
+rd /s /q "bin\languages"
 @echo Copying files
 @echo off
+md bin\languages
 xcopy "..\localizations\*.lng" "bin\languages" /c /q /r /y
 xcopy "..\docs" "bin\help" /s /c /i /q /r /y
 @echo Adding files to archive
