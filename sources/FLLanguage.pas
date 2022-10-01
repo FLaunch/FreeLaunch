@@ -139,7 +139,7 @@ var
   CurrentNotifier: TLngNotifier;
 begin
   FileName := ALanguage;
-  Ini := TMemIniFile.Create(ExtractFilePath(Application.ExeName) + 'Languages\' +
+  Ini := TMemIniFile.Create(ExtractFilePath(Application.ExeName) + 'languages\' +
     FileName);
   try
     Main.TabName :=      Parse(Ini.ReadString(SctMain, 'tabname',
