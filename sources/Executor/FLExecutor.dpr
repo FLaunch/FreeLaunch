@@ -1,10 +1,9 @@
 ﻿{
   ##########################################################################
-  #  FreeLaunch 2.7 - free links manager for Windows                       #
-  #  ====================================================================  #
-  #  Copyright (C) 2022 FreeLaunch Team                                    #
-  #  WEB https://github.com/Ta2i4/FreeLaunch                        #
-  #  ====================================================================  #
+  #  FreeLaunch is a free links manager for Microsoft Windows              #
+  #                                                                        #
+  #  Copyright (C) 2021 Mykola Petrivskiy                                  #
+  #                                                                        #
   #  This file is part of FreeLaunch.                                      #
   #                                                                        #
   #  FreeLaunch is free software: you can redistribute it and/or modify    #
