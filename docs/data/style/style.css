@@ -67,6 +67,13 @@ a:active
 	font-size: 20pt;
 }
 
+#title
+{
+	float: right;
+	margin: 17pt;
+	font-size: 11pt;
+}
+
 .header img
 {
 	float: left;
