@@ -14,12 +14,14 @@ FreeLaunch is a free links manager for Microsoft Windows. It allows to organize 
 - Portable mode supported
 - Relative pathes supported
 
+## Contributors
+
+2022 [@Ta2i4] (https://github.com/Ta2i4)
+2016-2021 [@Torbins](https://github.com/Torbins)
+2008-2010 [@Joker-jar](https://github.com/Joker-jar
+
 ## Historical Note
 
-This is a fork of the original FreeLaunch project hosted at SourceForge.
+Project page was located on SourceForge: https://sourceforge.net/projects/freelaunch/
 
-The original project is located here: https://sourceforge.net/projects/freelaunch/
-
-FreeLaunch project was started in 2008 by [@Joker-jar](https://github.com/Joker-jar). A few years later, [@Torbins](https://github.com/Torbins) joined to development in 2016.
-
-Last revision of original source code you can find in custom branch: [[original_branch]](../../tree/original_branch).
+Last revision of source code from SourceForge you can find in custom branch: [[original_branch]](../../tree/original_branch).
