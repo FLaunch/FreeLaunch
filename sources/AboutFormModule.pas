@@ -41,10 +41,6 @@ type
     Label4: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-  private
-
-  public
-
   end;
 
 implementation
@@ -66,7 +62,10 @@ begin
   //--Loading language
   Caption := Language.About.Caption;
   Label1.Caption := cr_progname;
-  Label2.Caption := format('%s: %s (%s)',[Language.About.Version, FLVersion, releasedate]);
+  if cr_nightly then
+    Label2.Caption := format('%s: %s %s',[Language.About.Version, FLVersion, '(nightly build)'])
+  else
+    Label2.Caption := format('%s: %s',[Language.About.Version, FLVersion]);
   Label3.Caption := format('%s: %s (%s)',[Language.About.Author, cr_author, cr_authormail]);
   Label4.Caption := format('%s: %s',[Language.About.Translate, Language.Info.Author]);
   Image1.Picture.Icon.Handle := LoadIcon(hinstance, 'MAINICON');

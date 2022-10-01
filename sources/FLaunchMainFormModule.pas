@@ -25,7 +25,7 @@
 
 unit FLaunchMainFormModule;
 
-{$DEFINE NIGHTBUILD}
+{$DEFINE NIGHTLYBUILD}
 
 interface
 
@@ -54,13 +54,14 @@ const
   MultKey = 13574;
   AddKey = 46287;
 
-  version = '2.7';
-  dev_version = '2.7 Test 1';
-  releasedate = '2022/09/30'; // build date in yyyy/mm/dd format
-
   cr_author = 'Joker-jar';
   cr_authormail = 'joker-jar@yandex.ru';
   cr_progname = 'FreeLaunch';
+  {$IFDEF NIGHTLYBUILD}
+  cr_nightly = True;
+  {$ELSE}
+  cr_nightly = False;
+  {$ENDIF}
 
   DesignDPI = 96;
 
@@ -188,6 +189,7 @@ type
     function DefNameOfTab(tn: string): boolean;
     procedure SetAutorun(b: boolean);
     procedure LoadIni;
+    function GetAppVersion: string;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
@@ -226,6 +228,31 @@ implementation
 
 uses
   XMLDoc, XMLIntf, PngImage, IOUtils, Math;
+
+function TFlaunchMainForm.GetAppVersion: string;
+var
+  Dummy, VInfoSize, VValueSize: DWORD;
+  VInfo: Pointer;
+  VValue: PVSFixedFileInfo;
+begin
+  Result := '';
+  VInfoSize := GetFileVersionInfoSize(PChar(ParamStr(0)), Dummy);
+  if VInfoSize > 0 then begin
+    GetMem(VInfo, VInfoSize);
+    try
+      if GetFileVersionInfo(PChar(ParamStr(0)), 0, VInfoSize, VInfo) then begin
+        VerQueryValue(VInfo, '\', Pointer(VValue), VValueSize);
+        Result := IntToStr(VValue^.dwFileVersionMS shr 16) + '.' + IntToStr(VValue^.dwFileVersionMS and $FFF)
+          {$IFDEF NIGHTLYBUILD}
+            + '.' + IntToStr(VValue^.dwFileVersionLS shr 16) + '.' + IntToStr(VValue^.dwFileVersionLS and $FFFF)
+          {$ENDIF}
+          ;
+      end;
+    finally
+      FreeMem(VInfo, VInfoSize);
+    end;
+  end;
+end;
 
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 begin
@@ -1493,11 +1520,7 @@ end;
 
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
 begin
-  {$IFDEF NIGHTBUILD}
-    FLVersion := dev_version;
-  {$ELSE}
-    FLVersion := version;
-  {$ENDIF}
+  FLVersion := GetAppVersion;
 
   //--Создаем список имен вкладок
   TabNames := TStringList.Create;
