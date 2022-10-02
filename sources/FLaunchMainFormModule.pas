@@ -48,6 +48,11 @@ const
 
   inisection = 'general';
 
+  //tabs and rows/cols limits
+  mint = 1;
+  minr = 1;
+  minc = 1;
+  minp = 1;
   maxt = 8;
   maxp = 5;
   maxr = 5;
@@ -432,12 +437,6 @@ begin
 end;
 
 procedure TFlaunchMainForm.LoadIni;
-const
-  mint = 1;
-  minr = 1;
-  minc = 1;
-  minp = 1;
-
 var
   i: integer;
 begin
