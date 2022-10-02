@@ -29,18 +29,27 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, FLLanguage;
+  Dialogs, ExtCtrls, FLLanguage, Vcl.StdCtrls;
+
+const
+  fn_authors = 'AUTHORS.txt';
+  fn_license = 'COPYING.txt';
 
 type
   TAboutForm = class(TForm)
-    GroupBox1: TGroupBox;
-    Image1: TImage;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
+    grp1: TGroupBox;
+    LogoImg: TImage;
+    AppName: TLabel;
+    VerInfo: TLabel;
+    Credits: TMemo;
+    Contributors: TLabel;
+    License: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure ContributorsClick(Sender: TObject);
+    procedure LicenseClick(Sender: TObject);
+  private
+    procedure LoadFile(FileName: string);
   end;
 
 implementation
@@ -49,6 +58,28 @@ uses
   FLaunchMainFormModule, FLFunctions;
 
 {$R *.dfm}
+
+//loading file to credits
+procedure TAboutForm.LoadFile(FileName: string);
+begin
+  try
+    Credits.Lines.LoadFromFile(ExtractFilePath(application.Exename) + FileName);
+  finally
+    //do nothing
+  end;
+end;
+
+//click on "Contributors" label
+procedure TAboutForm.ContributorsClick(Sender: TObject);
+begin
+  LoadFile(fn_authors);
+end;
+
+//click on "License" label
+procedure TAboutForm.LicenseClick(Sender: TObject);
+begin
+  LoadFile(fn_license);
+end;
 
 procedure TAboutForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -61,14 +92,16 @@ begin
   aboutshowing := true;
   //--Loading language
   Caption := Language.About.Caption;
-  Label1.Caption := cr_progname;
+  AppName.Caption := cr_progname;
   if cr_nightly then
-    Label2.Caption := format('%s: %s %s',[Language.About.Version, FLVersion, '(nightly build)'])
+    VerInfo.Caption := format('%s: %s %s',[Language.About.Version, FLVersion, '(nightly build)'])
   else
-    Label2.Caption := format('%s: %s',[Language.About.Version, FLVersion]);
-  Label3.Caption := format('%s: %s (%s)',[Language.About.Author, cr_author, cr_authormail]);
-  Label4.Caption := format('%s: %s',[Language.About.Translate, Language.Info.Author]);
-  Image1.Picture.Icon.Handle := LoadIcon(hinstance, 'MAINICON');
+    VerInfo.Caption := format('%s: %s',[Language.About.Version, FLVersion]);
+  Contributors.Caption := Language.About.Contributors;
+  License.Caption := Language.About.License;
+  License.Left := grp1.Width - license.Width - 20;
+  LogoImg.Picture.Icon.Handle := LoadIcon(hinstance, 'MAINICON');
+  LoadFile(fn_authors);
 end;
 
 end.

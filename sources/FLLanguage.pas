@@ -32,7 +32,7 @@ uses
 
 type
   TLngAbout = record
-    Caption, Version, Author, Translate: string;
+    Caption, Version, Contributors, License: string;
   end;
 
   TLngIconSelect = record
@@ -209,8 +209,8 @@ begin
 
     About.Caption :=   Parse(Ini.ReadString(SctAbout, 'about', 'About'));
     About.Version :=   Parse(Ini.ReadString(SctAbout, 'version', 'Version'));
-    About.Author :=    Parse(Ini.ReadString(SctAbout, 'author', 'Author'));
-    About.Translate := Parse(Ini.ReadString(SctAbout, 'translate', 'Translator'));
+    About.Contributors := Parse(Ini.ReadString(SctAbout, 'contributors', 'Contributors'));
+    About.License := Parse(Ini.ReadString(SctAbout, 'license', 'License'));
 
     IconSelect.Caption :=  Parse(Ini.ReadString(SctIconSelect, 'iconselect',
       'Icon select'));
