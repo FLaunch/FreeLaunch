@@ -4,12 +4,15 @@
 @echo Cleaning garbage
 @echo off
 del /f /q *.zip
+del /f /q "bin\*.txt"
 del /f /q "bin\*.drc"
 del /f /q "bin\*.map"
 rd /s /q "bin\help"
 rd /s /q "bin\languages"
 @echo Copying files
 @echo off
+xcopy "..\AUTHORS.txt" "bin" /c /q /r /y
+xcopy "..\COPYING.txt" "bin" /c /q /r /y
 md bin\languages
 xcopy "..\localizations\*.lng" "bin\languages" /c /q /r /y
 xcopy "..\docs" "bin\help" /s /c /i /q /r /y
