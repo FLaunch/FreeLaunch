@@ -49,6 +49,7 @@ const
   inisection = 'general';
 
   maxt = 8;
+  maxp = 5;
   maxr = 5;
   maxc = 15;
 
@@ -436,11 +437,6 @@ const
   minr = 1;
   minc = 1;
   minp = 1;
-
-  maxt = 8;
-  maxr = 5;
-  maxc = 15;
-  maxp = 5;
 
 var
   i: integer;
