@@ -30,12 +30,17 @@ unit FLaunchMainFormModule;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, ComCtrls, StdCtrls, ShellApi, Menus, Types, ComObj,
-  ActiveX, ShlObj, IniFiles, Registry, Shfolder, ProgrammPropertiesFormModule,
+  Winapi.Windows, Winapi.Messages, Winapi.ShellAPI, Winapi.ActiveX,
+  Winapi.ShlObj, Winapi.Shfolder,
+  System.SysUtils, System.Variants, System.Classes, System.Types,
+  System.IniFiles,
+  System.Win.ComObj, System.Win.Registry,
+  System.Generics.Collections,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls,
+  Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Menus,
+  ProgrammPropertiesFormModule,
   FilePropertiesFormModule, RenameTabFormModule, SettingsFormModule,
-  AboutFormModule, FLFunctions, FLLanguage, FLClasses, madExcept,
-  System.Generics.Collections;
+  AboutFormModule, FLFunctions, FLLanguage, FLClasses, madExcept;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -400,7 +405,7 @@ begin
   if not ConfirmDialog(format(Language.Messages.DeleteTab, [MainTabsNew.Tabs[i]]),
     Language.Messages.Confirmation)
   then
-    exit;
+    Exit;
   //--Удаляем имя этой вкладки
   TabNames.Delete(i);
   //--Удаляем вкладку
@@ -413,6 +418,8 @@ begin
   SetTabNames;
   //--Удаляем страницу данных и делаем активной нужную вкладку
   MainTabsNew.TabIndex := FLPanel.DeletePage(i);
+  //--Перерисовываем активную вкладку
+  MainTabsNew.Repaint;
   //--Подгоняем размер окна под актуальный размер панели
   ChangeWndSize;
 end;
