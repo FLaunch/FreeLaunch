@@ -419,8 +419,10 @@ begin
   //--Уменьшаем счетчик вкладок на 1
   Dec(TabsCount);
   //--Если осталась единственная вкладка, скрываем ее
-  if TabsCount = 1 then
+  if TabsCount = 1 then begin
     MainTabsNew.Tabs.Clear;
+    ChPos := True;
+  end;
   SetTabNames;
   //--Удаляем страницу данных и делаем активной нужную вкладку
   MainTabsNew.TabIndex := FLPanel.DeletePage(i);
@@ -428,6 +430,7 @@ begin
   MainTabsNew.Repaint;
   //--Подгоняем размер окна под актуальный размер панели
   ChangeWndSize;
+  if TabsCount = 1 then ChPos := False;
 end;
 
 function TFlaunchMainForm.ConfirmDialog(Msg, Title: string): Boolean;
