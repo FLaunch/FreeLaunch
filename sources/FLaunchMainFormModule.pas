@@ -240,6 +240,7 @@ implementation
 uses
   XMLDoc, XMLIntf, PngImage, IOUtils, Math;
 
+//getting app version from executable file of freelaunch
 function TFlaunchMainForm.GetAppVersion: string;
 var
   Dummy, VInfoSize, VValueSize: DWORD;
@@ -1531,6 +1532,8 @@ begin
   TabNames := TStringList.Create;
   //--Создаем экземпляр панели с кнопками
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
+  //--fix the bug with color, when no tabs
+  FlPanel.ParentBackground := False;
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   ChPos := true;
   randomize;
