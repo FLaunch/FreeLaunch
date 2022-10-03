@@ -4,7 +4,7 @@ object AboutForm: TAboutForm
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   ClientHeight = 321
-  ClientWidth = 394
+  ClientWidth = 414
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,7 +20,7 @@ object AboutForm: TAboutForm
   object grp1: TGroupBox
     Left = 10
     Top = 10
-    Width = 370
+    Width = 390
     Height = 300
     TabOrder = 0
     object LogoImg: TImage
@@ -62,7 +62,7 @@ object AboutForm: TAboutForm
       OnClick = ContributorsClick
     end
     object License: TLabel
-      Left = 258
+      Left = 370
       Top = 70
       Width = 4
       Height = 16
@@ -76,16 +76,32 @@ object AboutForm: TAboutForm
       ParentFont = False
       OnClick = LicenseClick
     end
+    object Thanks: TLabel
+      Left = 190
+      Top = 70
+      Width = 4
+      Height = 16
+      Cursor = crHandPoint
+      Alignment = taCenter
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsUnderline]
+      ParentFont = False
+      OnClick = ThanksClick
+    end
     object Credits: TMemo
       Left = 2
       Top = 98
-      Width = 366
+      Width = 386
       Height = 200
       Align = alBottom
       BorderStyle = bsNone
       ReadOnly = True
       ScrollBars = ssBoth
       TabOrder = 0
+      ExplicitWidth = 366
     end
   end
 end

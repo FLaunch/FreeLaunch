@@ -34,6 +34,7 @@ uses
 const
   fn_authors = 'AUTHORS.txt';
   fn_license = 'COPYING.txt';
+  fn_thanks  = 'THANKS.txt';
 
 type
   TAboutForm = class(TForm)
@@ -44,10 +45,12 @@ type
     Credits: TMemo;
     Contributors: TLabel;
     License: TLabel;
+    Thanks: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure ContributorsClick(Sender: TObject);
     procedure LicenseClick(Sender: TObject);
+    procedure ThanksClick(Sender: TObject);
   private
     procedure LoadFile(FileName: string);
   end;
@@ -63,7 +66,7 @@ uses
 procedure TAboutForm.LoadFile(FileName: string);
 begin
   try
-    Credits.Lines.LoadFromFile(ExtractFilePath(application.Exename) + FileName);
+    Credits.Lines.LoadFromFile(ExtractFilePath(Application.Exename) + FileName);
   finally
     //do nothing
   end;
@@ -73,6 +76,12 @@ end;
 procedure TAboutForm.ContributorsClick(Sender: TObject);
 begin
   LoadFile(fn_authors);
+end;
+
+//click on "Thanks" label
+procedure TAboutForm.ThanksClick(Sender: TObject);
+begin
+  LoadFile(fn_thanks);
 end;
 
 //click on "License" label
@@ -100,6 +109,8 @@ begin
   Contributors.Caption := Language.About.Contributors;
   License.Caption := Language.About.License;
   License.Left := grp1.Width - license.Width - 20;
+  Thanks.Caption := Language.About.Thanks;
+  Thanks.Left := Thanks.Left - Round(Thanks.Width / 2);
   LogoImg.Picture.Icon.Handle := LoadIcon(hinstance, 'MAINICON');
   LoadFile(fn_authors);
 end;
