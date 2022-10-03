@@ -236,7 +236,7 @@ implementation
 {$R *.dfm}
 
 uses
-  XMLDoc, XMLIntf, PngImage, IOUtils, Math;
+  Xml.XMLDoc, Xml.XMLIntf, PngImage, System.IOUtils, System.Math;
 
 //getting app version from executable file of freelaunch
 function TFlaunchMainForm.GetAppVersion: string;
