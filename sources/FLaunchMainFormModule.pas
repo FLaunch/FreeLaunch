@@ -65,8 +65,6 @@ const
   MultKey = 13574;
   AddKey = 46287;
 
-  cr_author = 'Joker-jar';
-  cr_authormail = 'joker-jar@yandex.ru';
   cr_progname = 'FreeLaunch';
   {$IFDEF NIGHTLYBUILD}
   cr_nightly = True;
