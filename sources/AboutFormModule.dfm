@@ -52,6 +52,7 @@ object AboutForm: TAboutForm
       Top = 70
       Width = 4
       Height = 16
+      Cursor = crHandPoint
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = -13
@@ -65,6 +66,7 @@ object AboutForm: TAboutForm
       Top = 70
       Width = 4
       Height = 16
+      Cursor = crHandPoint
       Alignment = taRightJustify
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
@@ -84,7 +86,6 @@ object AboutForm: TAboutForm
       ReadOnly = True
       ScrollBars = ssBoth
       TabOrder = 0
-      ExplicitTop = 148
     end
   end
 end
