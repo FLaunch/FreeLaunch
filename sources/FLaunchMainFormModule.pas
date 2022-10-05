@@ -264,6 +264,7 @@ begin
   end;
 end;
 
+//convert window position from pixels to percent
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 begin
   if iswidth then
@@ -272,6 +273,16 @@ begin
     result := round(p / (Screen.DesktopHeight - Height) * 100);
 end;
 
+//convert window position from percent to pixels
+function TFlaunchMainForm.PercentToPosition(p: integer; iswidth: boolean): integer;
+begin
+  if iswidth then
+    result := round(p * (Screen.DesktopWidth - Width) / 100)
+  else
+    result := round(p * (Screen.DesktopHeight - Height) / 100);
+end;
+
+//reload icons
 procedure TFlaunchMainForm.ReloadIcons;
 var
   t, r, c: Integer;
@@ -287,7 +298,7 @@ begin
   FLPanel.PageNumber := MainTabsNew.TabIndex;
 end;
 
-//--Вызов диалога переименовывания вкладки
+//rename tab window
 procedure TFlaunchMainForm.RenameTab(i: integer);
 begin
   MainTabsNew.Tabs.Strings[i] :=
@@ -295,23 +306,14 @@ begin
   TabNames[i] := MainTabsNew.Tabs.Strings[i];
 end;
 
-function TFlaunchMainForm.PercentToPosition(p: integer; iswidth: boolean): integer;
-begin
-  if iswidth then
-    result := round(p * (Screen.DesktopWidth - Width) / 100)
-  else
-    result := round(p * (Screen.DesktopHeight - Height) / 100);
-end;
-
+//load localization
 procedure TFlaunchMainForm.LoadLanguage;
 begin
   Caption := cr_progname;
-
   NI_Show.Caption := Language.Menu.Show;
   NI_Settings.Caption := Language.Menu.Settings;
   NI_About.Caption := Language.Menu.About;
   NI_Close.Caption := Language.Menu.Close;
-
   ButtonPopupItem_Run.Caption := Language.Menu.Run;
   ButtonPopupItem_TypeProgramm.Caption := Language.Menu.TypeProgramm;
   ButtonPopupItem_TypeFile.Caption := Language.Menu.TypeFile;
@@ -319,22 +321,20 @@ begin
   ButtonPopupItem_Import.Caption := Language.Menu.Import;
   ButtonPopupItem_Clear.Caption := Language.Menu.Clear;
   ButtonPopupItem_Props.Caption := Language.Menu.Prop;
-
   SaveButtonDialog.Filter := Language.FlbFilter + '|*.flb';
   OpenButtonDialog.Filter := Language.FlbFilter + '|*.flb';
-
   TabPopupItem_Rename.Caption := Language.Menu.Rename;
   TabPopupItem_Clear.Caption := Language.Menu.ClearTab;
   TabPopupItem_Delete.Caption := Language.Menu.DeleteTab;
 end;
 
+//autostart with Windows
 procedure TFlaunchMainForm.SetAutorun(b: boolean);
 var
   reg: TRegistry;
 begin
   if IsPortable then
     Exit;
-
   reg := TRegistry.Create;
   try
     reg.RootKey := HKEY_CURRENT_USER;
@@ -438,6 +438,7 @@ begin
     MB_ICONQUESTION or MB_YESNO) = ID_YES;
 end;
 
+//for compatibility with old versions
 procedure TFlaunchMainForm.LoadIni;
 var
   i: integer;
@@ -1549,7 +1550,7 @@ begin
   end
   else
   begin
-    LoadIni;
+    LoadIni; //compatibility
 
     FLPanel.Padding := LPadding;
     FLPanel.ButtonWidth := ButtonWidth;

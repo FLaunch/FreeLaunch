@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -735,7 +736,7 @@ begin
   fHasIcon := false;
   FHeight := ButtonHeight;
   FWidth := ButtonWidth;
-  fHide := True;
+  fHide := False;
   IconBmp := TBitMap.Create;
   IconBmp.Width := ButtonWidth - 4;
   IconBmp.Height := ButtonHeight - 4;

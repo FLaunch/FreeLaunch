@@ -11,6 +11,7 @@ del /f /q "bin\*.drc"
 del /f /q "bin\*.map"
 rd /s /q "bin\help"
 rd /s /q "bin\languages"
+rd /s /q "bin\IconCache"
 @echo Copying files
 @echo off
 xcopy "..\AUTHORS.txt" "bin" /c /q /r /y
