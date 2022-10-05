@@ -9,6 +9,7 @@ del /f /q *.zip
 del /f /q "bin\*.txt"
 del /f /q "bin\*.drc"
 del /f /q "bin\*.map"
+del /f /q "bin\*.xml"
 rd /s /q "bin\help"
 rd /s /q "bin\languages"
 rd /s /q "bin\IconCache"
