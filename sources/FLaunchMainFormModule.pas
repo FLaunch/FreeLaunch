@@ -1525,8 +1525,8 @@ end;
 
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
 begin
+  //get app version
   FLVersion := GetAppVersion;
-
   //--Создаем список имен вкладок
   TabNames := TStringList.Create;
   //--Создаем экземпляр панели с кнопками

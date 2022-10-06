@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -120,7 +121,7 @@ var
   Dir: string;
 begin
   LanguagesBox.Clear;
-  Dir := ExtractFilePath(Application.ExeName) + 'Languages\';
+  Dir := ExtractFilePath(Application.ExeName) + 'languages\';
   if FindFirst(Dir + '*.*', faAnyFile, SearchRec) = 0 then
     repeat
       if (SearchRec.name = '.') or (SearchRec.name = '..') then
