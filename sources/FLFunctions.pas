@@ -129,6 +129,8 @@ procedure InitEnvironment;
 function IsPortable: Boolean;
 /// <summary> Конвертация пути в путь с использованием переменных окружения </summary>
 function PathToPortable(APath: string): string;
+/// get current user language code ID. See the for LCID: https://learn.microsoft.com/ru-ru/openspecs/windows_protocols/ms-lcid/
+function GetCurrLCID: Word;
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
@@ -887,6 +889,12 @@ begin
   else
     if ContainsText(FullPath, fl_root) then
       Result := ReplaceText(FullPath, fl_root, '%FL_ROOT%\');
+end;
+
+/// get current user language code ID. See the for LCID: https://learn.microsoft.com/ru-ru/openspecs/windows_protocols/ms-lcid/
+function GetCurrLCID: Word;
+begin
+  Result := GetUserDefaultUILanguage;
 end;
 
 end.
