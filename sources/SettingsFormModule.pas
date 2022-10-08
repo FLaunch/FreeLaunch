@@ -106,7 +106,6 @@ begin
     SetLength(LngFiles, LangCount + 1);
     LngFiles[LangCount] := ExtractFileName(FileName);
     Langs[LangCount].Load(lngfile);
-
     LanguagesBox.Items.Add(Langs[LangCount].Name);
     if Language.Info.Name = Langs[LangCount].Name then
       LanguagesBox.ItemIndex := LanguagesBox.Items.Count - 1;
@@ -121,7 +120,7 @@ var
   Dir: string;
 begin
   LanguagesBox.Clear;
-  Dir := ExtractFilePath(Application.ExeName) + 'languages\';
+  Dir := ExtractFilePath(ParamStr(0)) + 'languages\';
   if FindFirst(Dir + '*.*', faAnyFile, SearchRec) = 0 then
     repeat
       if (SearchRec.name = '.') or (SearchRec.name = '..') then

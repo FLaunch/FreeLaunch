@@ -69,7 +69,6 @@ type
 
   TLngInfo = record
     Name, Author: string;
-    CodeID: Word;
     Image: TBitmap;
     procedure Load(AIni: TCustomIniFile);
   end;
@@ -410,10 +409,7 @@ const
   SctInfo = 'information';
 var
   ImageStr: string;
-  lid: Integer;
 begin
-  lid := AIni.ReadInteger(SctInfo, 'langid', 1033);
-  if (lid < 0) or (lid > $FFFF) then CodeID := 1033 else CodeID := lid;
   Name := Parse(AIni.ReadString(SctInfo, 'name', 'English'));
   Author := Parse(AIni.ReadString(SctInfo, 'author', 'no information'));
   ImageStr := Parse(AIni.ReadString(SctInfo, 'image', 'Qk1GAgAAAAAAADYAAAAoAA' +

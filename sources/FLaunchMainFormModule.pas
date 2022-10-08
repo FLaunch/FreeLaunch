@@ -158,6 +158,7 @@ type
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
     function ConfirmDialog(Msg, Title: string): Boolean;
+    function FindSysUserDefLangFile: string;
     //--Событие генерируется при клике по кнопке на панели
     procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
     //--Событие генерируется при нажатии кнопки мыши на кнопке панели
@@ -262,6 +263,37 @@ begin
       FreeMem(VInfo, VInfoSize);
     end;
   end;
+end;
+
+//getting OS user default language for app
+function TFLaunchMainForm.FindSysUserDefLangFile: string;
+var
+  CurrLCID: Word;
+  sRec: TSearchRec;
+  Dir: string;
+  lngfile: TIniFile;
+begin
+  Result := 'english.lng'; //default language
+  // get current user language code ID. See the for LCID: https://learn.microsoft.com/ru-ru/openspecs/windows_protocols/ms-lcid/
+  CurrLCID := GetUserDefaultUILanguage;
+  Dir := ExtractFilePath(ParamStr(0)) + 'languages\';
+  if FindFirst(Dir + '*.*', faAnyFile, sRec) = 0 then repeat
+    if (sRec.Name = '.') or (sRec.Name = '..') then Continue;
+    if ExtractFileExt(sRec.Name).ToLower = '.lng' then begin
+      lngfile := TIniFile.Create(Dir + sRec.Name);
+      try
+        if lngfile.ReadInteger('information','langid', -1) = CurrLCID
+        then begin
+          Result := sRec.Name;
+          FindClose(sRec);
+          Exit;
+        end;
+      finally
+        lngfile.Free;
+      end;
+    end;
+  until FindNext(sRec) <> 0;
+  FindClose(sRec);
 end;
 
 //convert window position from pixels to percent
@@ -444,7 +476,7 @@ var
   i: integer;
 begin
   Ini := TIniFile.Create(fl_WorkDir+'FLaunch.ini');
-  lngfilename := ini.ReadString(inisection, 'language', 'English.lng');
+  lngfilename := ini.ReadString(inisection, 'language', '');
   tabscount := ini.ReadInteger(inisection, 'tabs', 3);
   if tabscount > maxt then
     tabscount := maxt;
@@ -1550,22 +1582,19 @@ begin
   end
   else
   begin
-    LoadIni; //compatibility
-
+    LoadIni; //compatibility with old versions
     FLPanel.Padding := LPadding;
     FLPanel.ButtonWidth := ButtonWidth;
     FLPanel.ButtonHeight := ButtonHeight;
     FLPanel.RowsCount := RowsCount;
     FLPanel.ColsCount := ColsCount;
-
     GrowTabNames(TabsCount);
     MainTabsNew.TabIndex := tabind;
-
     LoadLinksCfgFile;
   end;
-
   FLPanel.PageNumber := MainTabsNew.TabIndex;
-
+  if not FileExists(ExtractFilePath(ParamStr(0)) + 'languages\' + lngfilename)
+  then lngfilename := FindSysUserDefLangFile;
   Language.AddNotifier(LoadLanguage);
   Language.Load(lngfilename);
   //--Разрешаем/запрешаем автозагрузку
@@ -1578,9 +1607,7 @@ begin
   FLPanel.OnDropFile := FLPanelDropFile;
   FLPanel.ButtonsPopup := ButtonPopupMenu;
   SetTabNames;
-
   GenerateWnd;
-
   //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
   if TOSVersion.Check(6) then
   begin
@@ -1588,7 +1615,6 @@ begin
     ChangeWindowMessageFilter (WM_COPYDATA, MSGFLT_ADD);
     ChangeWindowMessageFilter ($0049, MSGFLT_ADD);
   end;
-
   if not fileexists(fl_WorkDir + '.session') then
   begin
     //--Создаем файл, который будет идентифицировать сессию. При корректном завершении программы файл будет удален
@@ -1596,10 +1622,7 @@ begin
     SetFileAttributes(PChar(fl_WorkDir + '.session'), FILE_ATTRIBUTE_HIDDEN);
   end;
   TrayIcon.Hint := Format('%s %s',[cr_progname, FLVersion]);
-  if not StartHide then
-    ChWinView(True)
-  else
-    Application.ShowMainForm := False;
+  if not StartHide then ChWinView(True) else Application.ShowMainForm := False;
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
   ChPos := false;
 end;
@@ -1747,7 +1770,6 @@ begin
   finally
     Strings.Free;
   end;
-
   Button.LinkToData(Link);
 end;
 
