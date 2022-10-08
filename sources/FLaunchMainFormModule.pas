@@ -225,7 +225,6 @@ var
   FocusCol: integer = -1;
   GlobTabNum: integer = -1;
   Nim: TNotifyIconData;
-  Ini: TIniFile;
   Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
     statusbarvis: boolean;
   titlebar, tabsview: integer;
@@ -474,6 +473,7 @@ end;
 procedure TFlaunchMainForm.LoadIni;
 var
   i: integer;
+  Ini: TIniFile;
 begin
   Ini := TIniFile.Create(fl_WorkDir+'FLaunch.ini');
   lngfilename := ini.ReadString(inisection, 'language', '');
