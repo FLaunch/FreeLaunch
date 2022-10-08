@@ -37,31 +37,25 @@ const
 
 type
   TSettingsForm = class(TForm)
-    PageControl1: TPageControl;
-    TabSheet1: TTabSheet;
+    pgc: TPageControl;
+    TabGeneral: TTabSheet;
     OKButton: TButton;
     CancelButton: TButton;
-    Label2: TLabel;
-    Label1: TLabel;
-    Label3: TLabel;
+    lblNumofTabs: TLabel;
+    lblNumofRows: TLabel;
+    lblNumofCols: TLabel;
     AutorunCheckBox: TCheckBox;
     TopCheckBox: TCheckBox;
-    Bevel1: TBevel;
-    Label6: TLabel;
-    Bevel3: TBevel;
+    lblWndTitle: TLabel;
     TBarBox: TComboBox;
-    Label4: TLabel;
-    Bevel2: TBevel;
+    lblTabStyle: TLabel;
     TabsBox: TComboBox;
-    Label5: TLabel;
+    lblPadding: TLabel;
     ReloadIconsButton: TButton;
-    Label9: TLabel;
-    Bevel4: TBevel;
-    Label7: TLabel;
-    Label8: TLabel;
+    lblBtnW: TLabel;
+    lblBtnH: TLabel;
     StartHideBox: TCheckBox;
-    Label10: TLabel;
-    Bevel5: TBevel;
+    lblLang: TLabel;
     LanguagesBox: TComboBox;
     StatusBarBox: TCheckBox;
     PaddingEdit: TSpinEdit;
@@ -70,6 +64,8 @@ type
     TabsEdit: TSpinEdit;
     IWEdit: TSpinEdit;
     IHEdit: TSpinEdit;
+    TabInterface: TTabSheet;
+    grpBtnSize: TGroupBox;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -198,52 +194,35 @@ begin
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);
-var
-  w: integer;
 begin
   settingsshowing := true;
   //--Loading language
   OKButton.Caption := Language.BtnOk;
   CancelButton.Caption := Language.BtnCancel;
-  PageControl1.Pages[0].Caption := Language.Settings.General;
+  TabGeneral.Caption := Language.Settings.General;
+  TabInterface.Caption := Language.Settings.GUIProperties;
   Caption := Language.Settings.Caption;
-  Label2.Caption := Language.Settings.Tabs + ':';
-  Label1.Caption := Language.Settings.Rows + ':';
-  Label3.Caption := Language.Settings.Buttons + ':';
-  Label5.Caption := Language.Settings.Spacing + ':';
+  lblNumofTabs.Caption := Language.Settings.NumOfTabs + ':';
+  lblNumofRows.Caption := Language.Settings.Rows + ':';
+  lblNumofCols.Caption := Language.Settings.Cols + ':';
+  lblPadding.Caption := Language.Settings.Padding + ':';
   AutorunCheckBox.Caption := Language.Settings.ChbAutorun;
   TopCheckBox.Caption := Language.Settings.ChbAlwaysOnTop;
   StartHideBox.Caption := Language.Settings.ChbStartHide;
   StatusBarBox.Caption := Language.Settings.ChbStatusbar;
-  Label6.Caption := Language.Settings.Titlebar;
   TBarBox.Items.Add(Language.Settings.TitlebarNormal);
   TBarBox.Items.Add(Language.Settings.TitlebarMini);
   TBarBox.Items.Add(Language.Settings.TitlebarHidden);
-  Bevel3.Left := Label6.Left + Label6.Width + 7;
-  w := 337 - Bevel3.Left;
-  if w < 0 then w := 0;
-  Bevel3.Width := w;
-  Label4.Caption := Language.Settings.TabStyle;
   TabsBox.Items.Add(Language.Settings.TabStylePages);
   TabsBox.Items.Add(Language.Settings.TabStyleButtons);
   TabsBox.Items.Add(Language.Settings.TabStyleFButtons);
-  Bevel2.Left := Label4.Left + Label4.Width + 7;
-  w := 337 - Bevel2.Left;
-  if w < 0 then w := 0;
-  Bevel2.Width := w;
-  Label10.Caption := Language.Settings.Language;
-  Bevel5.Left := Label10.Left + Label10.Width + 7;
-  w := 337 - Bevel5.Left;
-  if w < 0 then w := 0;
-  Bevel5.Width := w;
-  Label9.Caption := Language.Settings.Icons;
-  Bevel4.Left := Label9.Left + Label9.Width + 7;
-  w := 337 - Bevel4.Left;
-  if w < 0 then w := 0;
-  Bevel4.Width := w;
-  Label7.Caption := Language.Settings.Size + ':';
+  lblLang.Caption := Language.Settings.Language + ':';
+  lblWndTitle.Caption := Language.Settings.Titlebar + ':';
+  lblTabStyle.Caption := Language.Settings.TabStyle + ':';
+  grpBtnSize.Caption := Language.Settings.BtnSizes;
+  lblBtnW.Caption := Language.Settings.BtnWidth + ':';
+  lblBtnH.Caption := Language.Settings.BtnHeight + ':';
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
-
   ScanLanguagesDir;
   AutorunCheckBox.Checked := (not IsPortable) and (Autorun);
   TopCheckBox.Checked := AlwaysOnTop;

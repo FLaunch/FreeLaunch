@@ -47,10 +47,10 @@ type
   end;
 
   TLngSettings = record
-    Caption, General, Tabs, Rows, Buttons, Spacing, ChbAutorun, ChbAlwaysOnTop,
+    Caption, General, NumOfTabs, Rows, Cols, Padding, ChbAutorun, ChbAlwaysOnTop,
     ChbStartHide, ChbStatusbar, Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
-    Language, Icons, Size, ReloadIcons: string;
+    Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties: string;
   end;
 
   TLngMenu = record
@@ -68,7 +68,7 @@ type
   end;
 
   TLngInfo = record
-    Name, Author: string;
+    Name, Authors: string;
     Image: TBitmap;
     procedure Load(AIni: TCustomIniFile);
   end;
@@ -274,14 +274,16 @@ begin
       'Settings'));
     Settings.General :=          Parse(Ini.ReadString(SctSettings, 'general',
       'General'));
-    Settings.Tabs :=             Parse(Ini.ReadString(SctSettings, 'tabs',
-      'Tabs'));
+    Settings.GUIProperties :=    Parse(Ini.ReadString(SctSettings, 'interface',
+      'Interface'));
+    Settings.NumofTabs :=             Parse(Ini.ReadString(SctSettings, 'tabs',
+      'Number of tabs'));
     Settings.Rows :=             Parse(Ini.ReadString(SctSettings, 'rows',
-      'Rows'));
-    Settings.Buttons :=          Parse(Ini.ReadString(SctSettings, 'buttons',
-      'Buttons'));
-    Settings.Spacing :=          Parse(Ini.ReadString(SctSettings, 'spacing',
-      'Spacing'));
+      'Number of rows on the tab'));
+    Settings.Cols :=             Parse(Ini.ReadString(SctSettings, 'cols',
+      'Number of columns on the tab'));
+    Settings.Padding :=          Parse(Ini.ReadString(SctSettings, 'padding',
+      'Padding between buttons'));
     Settings.ChbAutorun :=       Parse(Ini.ReadString(SctSettings, 'chb_autorun',
       'Autostart with system'));
     Settings.ChbAlwaysOnTop :=   Parse(Ini.ReadString(SctSettings, 'chb_alwaysontop',
@@ -289,9 +291,9 @@ begin
     Settings.ChbStartHide :=     Parse(Ini.ReadString(SctSettings, 'chb_starthide',
       'Start hidden'));
     Settings.ChbStatusbar :=     Parse(Ini.ReadString(SctSettings, 'chb_statusbar',
-      'Status bar'));
+      'Show status bar'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
-      'Titlebar'));
+      'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',
       'Normal'));
     Settings.TitlebarMini :=     Parse(Ini.ReadString(SctSettings, 'titlebar_mini',
@@ -308,10 +310,12 @@ begin
       'Flat buttons'));
     Settings.Language :=         Parse(Ini.ReadString(SctSettings, 'language',
       'Language'));
-    Settings.Icons :=            Parse(Ini.ReadString(SctSettings, 'icons',
-      'Icons'));
-    Settings.Size :=             Parse(Ini.ReadString(SctSettings, 'size',
-      'Size'));
+    Settings.BtnSizes :=         Parse(Ini.ReadString(SctSettings, 'btnsizes',
+      'Button size'));
+    Settings.BtnWidth :=         Parse(Ini.ReadString(SctSettings, 'btnwidth',
+      'Width'));
+    Settings.BtnHeight :=        Parse(Ini.ReadString(SctSettings, 'btnheight',
+      'Height'));
     Settings.ReloadIcons :=      Parse(Ini.ReadString(SctSettings, 'reloadicons',
       'Reload icons'));
 
@@ -411,7 +415,7 @@ var
   ImageStr: string;
 begin
   Name := Parse(AIni.ReadString(SctInfo, 'name', 'English'));
-  Author := Parse(AIni.ReadString(SctInfo, 'author', 'no information'));
+  Authors := Parse(AIni.ReadString(SctInfo, 'authors', 'no information'));
   ImageStr := Parse(AIni.ReadString(SctInfo, 'image', 'Qk1GAgAAAAAAADYAAAAoAA' +
     'AAEAAAAAsAAAABABgAAAAAABACAADEDgAAxA4AAAAAAAAAAAAAxJt7aUuYsWVQjisYjisYji' +
     'sY6tXNNxuFNxuF6tXNbRQAbRQAbRQAjisY07aQjisY07aQ//7+fIX53cTCx4Rxx4Rx//7+Tl' +
