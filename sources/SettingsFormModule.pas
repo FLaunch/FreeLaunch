@@ -225,7 +225,7 @@ begin
   Bevel3.Width := w;
   Label4.Caption := Language.Settings.TabStyle;
   TabsBox.Items.Add(Language.Settings.TabStylePages);
-  TabsBox.Items.Add(Language.Settings.Buttons);
+  TabsBox.Items.Add(Language.Settings.TabStyleButtons);
   TabsBox.Items.Add(Language.Settings.TabStyleFButtons);
   Bevel2.Left := Label4.Left + Label4.Width + 7;
   w := 337 - Bevel2.Left;
