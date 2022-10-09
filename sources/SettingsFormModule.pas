@@ -66,6 +66,9 @@ type
     IHEdit: TSpinEdit;
     TabInterface: TTabSheet;
     grpBtnSize: TGroupBox;
+    TabNewButtons: TTabSheet;
+    grpNewBtns: TGroupBox;
+    HideCheckBox: TCheckBox;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -201,6 +204,7 @@ begin
   CancelButton.Caption := Language.BtnCancel;
   TabGeneral.Caption := Language.Settings.General;
   TabInterface.Caption := Language.Settings.GUIProperties;
+  TabNewButtons.Caption := Language.Settings.BtnProperties;
   Caption := Language.Settings.Caption;
   lblNumofTabs.Caption := Language.Settings.NumOfTabs + ':';
   lblNumofRows.Caption := Language.Settings.Rows + ':';
@@ -210,6 +214,7 @@ begin
   TopCheckBox.Caption := Language.Settings.ChbAlwaysOnTop;
   StartHideBox.Caption := Language.Settings.ChbStartHide;
   StatusBarBox.Caption := Language.Settings.ChbStatusbar;
+  HideCheckBox.Caption := Language.Settings.ChbHideAL;
   TBarBox.Items.Add(Language.Settings.TitlebarNormal);
   TBarBox.Items.Add(Language.Settings.TitlebarMini);
   TBarBox.Items.Add(Language.Settings.TitlebarHidden);
@@ -223,6 +228,7 @@ begin
   lblBtnW.Caption := Language.Settings.BtnWidth + ':';
   lblBtnH.Caption := Language.Settings.BtnHeight + ':';
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
+  grpNewBtns.Caption := Language.Settings.NewBtnProperties;
   ScanLanguagesDir;
   AutorunCheckBox.Checked := (not IsPortable) and (Autorun);
   TopCheckBox.Checked := AlwaysOnTop;
@@ -239,6 +245,7 @@ begin
   PaddingEdit.Value := lpadding;
   IWEdit.Value := FlaunchMainForm.ButtonWidth;
   IHEdit.Value := FlaunchMainForm.ButtonHeight;
+  HideCheckBox.Checked := hideafterlaunch;
   AutoRunCheckBox.Enabled := not IsPortable;
   pgc.ActivePageIndex := 0;
   pgc.ActivePage.SetFocus;
@@ -254,6 +261,7 @@ begin
   AlwaysOnTop := TopCheckBox.Checked;
   StartHide := StartHideBox.Checked;
   StatusBarVis := StatusBarBox.Checked;
+  hideafterlaunch := HideCheckBox.Checked;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then
     lngfilename := LngFiles[LanguagesBox.ItemIndex];

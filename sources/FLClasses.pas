@@ -399,7 +399,7 @@ type
 implementation
 
 uses
-  IOUtils;
+  IOUtils, FLaunchMainFormModule;
 
 {*******************************}
 {*****-- Класс TFLButton --*****}
@@ -581,7 +581,6 @@ begin
     TmpData.Pr := ALink.pr;
     TmpData.WSt := ALink.wst;
     TmpData.FIsAdmin := ALink.IsAdmin;
-
     TmpData.AssignIcons;
     Invalidate;
   end
@@ -736,7 +735,7 @@ begin
   fHasIcon := false;
   FHeight := ButtonHeight;
   FWidth := ButtonWidth;
-  fHide := False;
+  fHide := hideafterlaunch;
   IconBmp := TBitMap.Create;
   IconBmp.Width := ButtonWidth - 4;
   IconBmp.Height := ButtonHeight - 4;

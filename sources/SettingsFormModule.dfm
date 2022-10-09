@@ -25,9 +25,69 @@ object SettingsForm: TSettingsForm
     Top = 8
     Width = 377
     Height = 301
-    ActivePage = TabGeneral
+    ActivePage = TabNewButtons
     TabOrder = 0
     object TabGeneral: TTabSheet
+      object AutorunCheckBox: TCheckBox
+        Left = 10
+        Top = 10
+        Width = 350
+        Height = 17
+        TabOrder = 0
+      end
+      object TopCheckBox: TCheckBox
+        Left = 10
+        Top = 35
+        Width = 350
+        Height = 17
+        TabOrder = 1
+      end
+      object ReloadIconsButton: TButton
+        Left = 210
+        Top = 240
+        Width = 145
+        Height = 25
+        TabOrder = 4
+        OnClick = ReloadIconsButtonClick
+      end
+      object StartHideBox: TCheckBox
+        Left = 10
+        Top = 60
+        Width = 350
+        Height = 17
+        TabOrder = 2
+      end
+      object StatusBarBox: TCheckBox
+        Left = 10
+        Top = 85
+        Width = 350
+        Height = 17
+        TabOrder = 3
+      end
+    end
+    object TabInterface: TTabSheet
+      ImageIndex = 1
+      object lblWndTitle: TLabel
+        Left = 190
+        Top = 55
+        Width = 3
+        Height = 13
+        Alignment = taRightJustify
+      end
+      object lblTabStyle: TLabel
+        Left = 190
+        Top = 85
+        Width = 3
+        Height = 13
+        Alignment = taRightJustify
+      end
+      object lblLang: TLabel
+        Left = 190
+        Top = 15
+        Width = 3
+        Height = 13
+        Alignment = taRightJustify
+      end
       object lblNumofTabs: TLabel
         Left = 240
         Top = 125
@@ -56,106 +116,6 @@ object SettingsForm: TSettingsForm
         Height = 13
         Alignment = taRightJustify
       end
-      object AutorunCheckBox: TCheckBox
-        Left = 10
-        Top = 10
-        Width = 350
-        Height = 17
-        TabOrder = 0
-      end
-      object TopCheckBox: TCheckBox
-        Left = 10
-        Top = 35
-        Width = 350
-        Height = 17
-        TabOrder = 1
-      end
-      object ReloadIconsButton: TButton
-        Left = 210
-        Top = 240
-        Width = 145
-        Height = 25
-        TabOrder = 8
-        OnClick = ReloadIconsButtonClick
-      end
-      object StartHideBox: TCheckBox
-        Left = 10
-        Top = 60
-        Width = 350
-        Height = 17
-        TabOrder = 2
-      end
-      object StatusBarBox: TCheckBox
-        Left = 10
-        Top = 85
-        Width = 350
-        Height = 17
-        TabOrder = 3
-      end
-      object PaddingEdit: TSpinEdit
-        Left = 250
-        Top = 210
-        Width = 70
-        Height = 22
-        MaxValue = 100
-        MinValue = 0
-        TabOrder = 7
-        Value = 1
-      end
-      object ColsEdit: TSpinEdit
-        Left = 250
-        Top = 180
-        Width = 70
-        Height = 22
-        MaxValue = 100
-        MinValue = 1
-        TabOrder = 6
-        Value = 1
-      end
-      object RowsEdit: TSpinEdit
-        Left = 250
-        Top = 150
-        Width = 70
-        Height = 22
-        MaxValue = 100
-        MinValue = 1
-        TabOrder = 5
-        Value = 1
-      end
-      object TabsEdit: TSpinEdit
-        Left = 250
-        Top = 120
-        Width = 70
-        Height = 22
-        MaxValue = 100
-        MinValue = 1
-        TabOrder = 4
-        Value = 1
-      end
-    end
-    object TabInterface: TTabSheet
-      ImageIndex = 1
-      object lblWndTitle: TLabel
-        Left = 190
-        Top = 55
-        Width = 3
-        Height = 13
-        Alignment = taRightJustify
-      end
-      object lblTabStyle: TLabel
-        Left = 190
-        Top = 85
-        Width = 3
-        Height = 13
-        Alignment = taRightJustify
-      end
-      object lblLang: TLabel
-        Left = 190
-        Top = 15
-        Width = 3
-        Height = 13
-        Alignment = taRightJustify
-      end
       object TBarBox: TComboBox
         Left = 200
         Top = 50
@@ -172,12 +132,81 @@ object SettingsForm: TSettingsForm
         Style = csDropDownList
         TabOrder = 2
       end
+      object LanguagesBox: TComboBox
+        Left = 200
+        Top = 10
+        Width = 145
+        Height = 21
+        Style = csOwnerDrawFixed
+        ItemHeight = 15
+        TabOrder = 0
+        OnDrawItem = LanguagesBoxDrawItem
+        Items.Strings = (
+          #1056#1091#1089#1089#1082#1080#1081)
+      end
+      object PaddingEdit: TSpinEdit
+        Left = 250
+        Top = 210
+        Width = 70
+        Height = 22
+        MaxValue = 100
+        MinValue = 0
+        TabOrder = 6
+        Value = 1
+      end
+      object TabsEdit: TSpinEdit
+        Left = 250
+        Top = 120
+        Width = 70
+        Height = 22
+        MaxValue = 100
+        MinValue = 1
+        TabOrder = 3
+        Value = 1
+      end
+      object RowsEdit: TSpinEdit
+        Left = 250
+        Top = 150
+        Width = 70
+        Height = 22
+        MaxValue = 100
+        MinValue = 1
+        TabOrder = 4
+        Value = 1
+      end
+      object ColsEdit: TSpinEdit
+        Left = 250
+        Top = 180
+        Width = 70
+        Height = 22
+        MaxValue = 100
+        MinValue = 1
+        TabOrder = 5
+        Value = 1
+      end
+    end
+    object TabNewButtons: TTabSheet
+      ImageIndex = 2
+      object grpNewBtns: TGroupBox
+        Left = 10
+        Top = 10
+        Width = 350
+        Height = 150
+        TabOrder = 0
+        object HideCheckBox: TCheckBox
+          Left = 10
+          Top = 20
+          Width = 330
+          Height = 17
+          TabOrder = 0
+        end
+      end
       object grpBtnSize: TGroupBox
         Left = 10
-        Top = 120
+        Top = 180
         Width = 350
         Height = 80
-        TabOrder = 3
+        TabOrder = 1
         object lblBtnW: TLabel
           Left = 230
           Top = 20
@@ -212,18 +241,6 @@ object SettingsForm: TSettingsForm
           TabOrder = 1
           Value = 32
         end
-      end
-      object LanguagesBox: TComboBox
-        Left = 200
-        Top = 10
-        Width = 145
-        Height = 21
-        Style = csOwnerDrawFixed
-        ItemHeight = 15
-        TabOrder = 0
-        OnDrawItem = LanguagesBoxDrawItem
-        Items.Strings = (
-          #1056#1091#1089#1089#1082#1080#1081)
       end
     end
   end

@@ -48,9 +48,10 @@ type
 
   TLngSettings = record
     Caption, General, NumOfTabs, Rows, Cols, Padding, ChbAutorun, ChbAlwaysOnTop,
-    ChbStartHide, ChbStatusbar, Titlebar, TitlebarNormal, TitlebarMini,
+    ChbStartHide, ChbStatusbar, ChbHideAL, Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
-    Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties: string;
+    Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
+    BtnProperties, NewBtnProperties: string;
   end;
 
   TLngMenu = record
@@ -276,7 +277,9 @@ begin
       'General'));
     Settings.GUIProperties :=    Parse(Ini.ReadString(SctSettings, 'interface',
       'Interface'));
-    Settings.NumofTabs :=             Parse(Ini.ReadString(SctSettings, 'tabs',
+    Settings.BtnProperties :=    Parse(Ini.ReadString(SctSettings, 'buttons',
+      'Buttons'));
+    Settings.NumofTabs :=        Parse(Ini.ReadString(SctSettings, 'tabs',
       'Number of tabs'));
     Settings.Rows :=             Parse(Ini.ReadString(SctSettings, 'rows',
       'Number of rows on the tab'));
@@ -292,6 +295,8 @@ begin
       'Start hidden'));
     Settings.ChbStatusbar :=     Parse(Ini.ReadString(SctSettings, 'chb_statusbar',
       'Show status bar'));
+    Settings.ChbHideAL :=        Parse(Ini.ReadString(SctSettings, 'chb_hide',
+      'Hide FreeLaunch after launching a button'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',
@@ -318,6 +323,8 @@ begin
       'Height'));
     Settings.ReloadIcons :=      Parse(Ini.ReadString(SctSettings, 'reloadicons',
       'Reload icons'));
+    Settings.NewBtnProperties := Parse(Ini.ReadString(SctSettings, 'newbtns_properties',
+      'Properties of new buttons'));
 
     Info.Load(Ini);
 
