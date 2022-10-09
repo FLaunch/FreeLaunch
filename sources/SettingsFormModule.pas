@@ -240,7 +240,8 @@ begin
   IWEdit.Value := FlaunchMainForm.ButtonWidth;
   IHEdit.Value := FlaunchMainForm.ButtonHeight;
   AutoRunCheckBox.Enabled := not IsPortable;
-  TabsEdit.SetFocus;
+  pgc.ActivePageIndex := 0;
+  pgc.ActivePage.SetFocus;
 end;
 
 procedure TSettingsForm.OKButtonClick(Sender: TObject);
