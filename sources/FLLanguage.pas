@@ -48,7 +48,8 @@ type
 
   TLngSettings = record
     Caption, General, NumOfTabs, Rows, Cols, Padding, ChbAutorun, ChbAlwaysOnTop,
-    ChbStartHide, ChbStatusbar, ChbHideAL, Titlebar, TitlebarNormal, TitlebarMini,
+    ChbStartHide, ChbStatusbar, ChbHideAL, ChbQoL,
+    Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
     Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
     BtnProperties, NewBtnProperties: string;
@@ -297,6 +298,8 @@ begin
       'Show status bar'));
     Settings.ChbHideAL :=        Parse(Ini.ReadString(SctSettings, 'chb_hide',
       'Hide FreeLaunch after launching a button'));
+    Settings.ChbQoL :=           Parse(Ini.ReadString(SctSettings, 'chb_query',
+      'Request confirmation before launching the button'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',

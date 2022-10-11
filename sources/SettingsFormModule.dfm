@@ -195,10 +195,17 @@ object SettingsForm: TSettingsForm
         TabOrder = 0
         object HideCheckBox: TCheckBox
           Left = 10
-          Top = 20
+          Top = 30
           Width = 330
           Height = 17
           TabOrder = 0
+        end
+        object QoLCheckBox: TCheckBox
+          Left = 10
+          Top = 60
+          Width = 330
+          Height = 17
+          TabOrder = 1
         end
       end
       object grpBtnSize: TGroupBox

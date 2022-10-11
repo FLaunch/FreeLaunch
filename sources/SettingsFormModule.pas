@@ -69,6 +69,7 @@ type
     TabNewButtons: TTabSheet;
     grpNewBtns: TGroupBox;
     HideCheckBox: TCheckBox;
+    QoLCheckBox: TCheckBox;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -154,7 +155,6 @@ begin
   FlagRect.Top := Rect.Top + 2;
   FlagRect.Height := Rect.Height - 4;
   FlagRect.Width := Round(Image.Width * Multiplier);
-
   LanguagesBox.Canvas.fillrect(rect);
   LanguagesBox.Canvas.StretchDraw(FlagRect, Image);
   LanguagesBox.Canvas.textout(rect.left + FlagRect.Width + 4, rect.top + 2,
@@ -182,7 +182,6 @@ begin
   PaddingEdit.PopupMenu := NoPopup;
   IWEdit.PopupMenu := NoPopup;
   IHEdit.PopupMenu := NoPopup;
-
   LanguagesBox.ItemHeight := MulDiv(LanguagesBox.ItemHeight,
     Screen.PixelsPerInch, DesignDPI);
 end;
@@ -215,6 +214,7 @@ begin
   StartHideBox.Caption := Language.Settings.ChbStartHide;
   StatusBarBox.Caption := Language.Settings.ChbStatusbar;
   HideCheckBox.Caption := Language.Settings.ChbHideAL;
+  QoLCheckBox.Caption := Language.Settings.ChbQoL;
   TBarBox.Items.Add(Language.Settings.TitlebarNormal);
   TBarBox.Items.Add(Language.Settings.TitlebarMini);
   TBarBox.Items.Add(Language.Settings.TitlebarHidden);
@@ -230,6 +230,7 @@ begin
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
   grpNewBtns.Caption := Language.Settings.NewBtnProperties;
   ScanLanguagesDir;
+  //loading settings
   AutorunCheckBox.Checked := (not IsPortable) and (Autorun);
   TopCheckBox.Checked := AlwaysOnTop;
   StartHideBox.Checked := StartHide;
@@ -246,6 +247,7 @@ begin
   IWEdit.Value := FlaunchMainForm.ButtonWidth;
   IHEdit.Value := FlaunchMainForm.ButtonHeight;
   HideCheckBox.Checked := hideafterlaunch;
+  QoLCheckBox.Checked := queryonlaunch;
   AutoRunCheckBox.Enabled := not IsPortable;
   pgc.ActivePageIndex := 0;
   pgc.ActivePage.SetFocus;
@@ -262,6 +264,7 @@ begin
   StartHide := StartHideBox.Checked;
   StatusBarVis := StatusBarBox.Checked;
   hideafterlaunch := HideCheckBox.Checked;
+  queryonlaunch := QoLCheckBox.Checked;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then
     lngfilename := LngFiles[LanguagesBox.ItemIndex];
@@ -273,7 +276,6 @@ begin
   rowscount := strtoint(RowsEdit.Text);
   colscount := strtoint(ColsEdit.Text);
   lpadding := strtoint(PaddingEdit.Text);
-
   FlaunchMainForm.GrowTabNames(FlaunchMainForm.tabscount);
   FlaunchMainForm.SetTabNames;
   FlaunchMainForm.FLPanel.ColsCount := colscount;

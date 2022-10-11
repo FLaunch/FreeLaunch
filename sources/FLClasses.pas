@@ -736,6 +736,7 @@ begin
   FHeight := ButtonHeight;
   FWidth := ButtonWidth;
   fHide := hideafterlaunch;
+  fQues := queryonlaunch;
   IconBmp := TBitMap.Create;
   IconBmp.Width := ButtonWidth - 4;
   IconBmp.Height := ButtonHeight - 4;

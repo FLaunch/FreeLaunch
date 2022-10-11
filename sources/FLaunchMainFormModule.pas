@@ -226,7 +226,7 @@ var
   GlobTabNum: integer = -1;
   Nim: TNotifyIconData;
   Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
-    statusbarvis, hideafterlaunch: boolean;
+    statusbarvis, hideafterlaunch, queryonlaunch: boolean;
   titlebar, tabsview: integer;
   lngfilename: string;
   ChPos: boolean = false;
@@ -518,6 +518,7 @@ begin
   autorun := ini.ReadBool(inisection, 'autorun', false);
   starthide := ini.ReadBool(inisection, 'starthide', false);
   hideafterlaunch := ini.ReadBool(inisection, 'hideafterlaunchbtn', False);
+  queryonlaunch := ini.ReadBool(inisection, 'queryonlaunch', False);
   GrowTabNames(tabscount);
   for i := 1 to tabscount do
     TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
@@ -858,7 +859,7 @@ begin
   WindowNode.AddChild('StatusBar').NodeValue := statusbarvis;
   WindowNode.AddChild('StartHidden').NodeValue := starthide;
   WindowNode.AddChild('HideAfterLaunchBtn').NodeValue := hideafterlaunch;
-
+  WindowNode.AddChild('QueryOnLaunchBtn').NodeValue := queryonlaunch;
   TabRootNode := WindowNode.AddChild('Tabs');
 
   TabRootNode.AddChild('View').NodeValue := tabsview;
@@ -1051,6 +1052,7 @@ begin
   statusbarvis := GetBool(WindowNode, 'StatusBar');
   starthide := GetBool(WindowNode, 'StartHidden');
   hideafterlaunch := GetBool(WindowNode, 'HideAfterLaunchBtn');
+  queryonlaunch := GetBool(WindowNode, 'QueryOnLaunchBtn');
 
   TabsCount := 0;
   TabNumber := 0;
