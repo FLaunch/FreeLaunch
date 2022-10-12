@@ -1542,6 +1542,8 @@ begin
     Button.Data.WorkDir := PathToPortable(Button.Data.WorkDir);
     Button.Data.Icon := PathToPortable(Button.Data.Icon);
   end;
+  Button.Data.Hide := hideafterlaunch;
+  Button.Data.Ques := queryonlaunch;
   //--Рисуем иконки на кнопке
   Button.Data.AssignIcons;
   //--Перерисовываем кнопку
