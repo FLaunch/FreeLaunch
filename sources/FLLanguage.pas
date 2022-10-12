@@ -147,7 +147,7 @@ begin
     Main.TabName :=      Parse(Ini.ReadString(SctMain, 'tabname',
       'Tab %%'), '%d');
     Main.Location :=     Parse(Ini.ReadString(SctMain, 'location',
-      'Lacation: %%'), '%s');
+      'Location: %%'), '%s');
     Main.Parameters :=   Parse(Ini.ReadString(SctMain, 'parameters',
       'Parameters: %%'), '%s');
     Main.Description :=  Parse(Ini.ReadString(SctMain, 'description',
