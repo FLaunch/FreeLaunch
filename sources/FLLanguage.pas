@@ -48,7 +48,7 @@ type
 
   TLngSettings = record
     Caption, General, NumOfTabs, Rows, Cols, Padding, ChbAutorun, ChbAlwaysOnTop,
-    ChbStartHide, ChbStatusbar, ChbHideAL, ChbQoL,
+    ChbStartHide, ChbStatusbar, ChbHideAL, ChbQoL, ChbDelLnk,
     Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
     Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
@@ -299,7 +299,9 @@ begin
     Settings.ChbHideAL :=        Parse(Ini.ReadString(SctSettings, 'chb_hide',
       'Hide FreeLaunch after launching a button'));
     Settings.ChbQoL :=           Parse(Ini.ReadString(SctSettings, 'chb_query',
-      'Request confirmation before launching the button'));
+      'Request confirmation before launching a button'));
+    Settings.ChbDelLnk :=        Parse(Ini.ReadString(SctSettings, 'chb_dellnk',
+      'Delete shortcut file after creating a button'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',

@@ -70,6 +70,7 @@ type
     grpNewBtns: TGroupBox;
     HideCheckBox: TCheckBox;
     QoLCheckBox: TCheckBox;
+    DelLnkCheckBox: TCheckBox;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -215,6 +216,7 @@ begin
   StatusBarBox.Caption := Language.Settings.ChbStatusbar;
   HideCheckBox.Caption := Language.Settings.ChbHideAL;
   QoLCheckBox.Caption := Language.Settings.ChbQoL;
+  DelLnkCheckBox.Caption := Language.Settings.ChbDelLnk;
   TBarBox.Items.Add(Language.Settings.TitlebarNormal);
   TBarBox.Items.Add(Language.Settings.TitlebarMini);
   TBarBox.Items.Add(Language.Settings.TitlebarHidden);
@@ -248,6 +250,7 @@ begin
   IHEdit.Value := FlaunchMainForm.ButtonHeight;
   HideCheckBox.Checked := hideafterlaunch;
   QoLCheckBox.Checked := queryonlaunch;
+  DelLnkCheckBox.Checked := deletelnk;
   AutoRunCheckBox.Enabled := not IsPortable;
   pgc.ActivePageIndex := 0;
   pgc.ActivePage.SetFocus;
@@ -265,6 +268,7 @@ begin
   StatusBarVis := StatusBarBox.Checked;
   hideafterlaunch := HideCheckBox.Checked;
   queryonlaunch := QoLCheckBox.Checked;
+  deletelnk := DelLnkCheckBox.Checked;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then
     lngfilename := LngFiles[LanguagesBox.ItemIndex];
