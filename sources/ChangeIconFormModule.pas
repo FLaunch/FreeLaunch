@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -47,7 +48,6 @@ type
     procedure BrowseIconClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
-    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefPropsClick(Sender: TObject);
     procedure IndexEditChange(Sender: TObject);
@@ -118,15 +118,6 @@ end;
 procedure TChangeIconForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   action := CAFree;
-end;
-
-procedure TChangeIconForm.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if key = vk_return then
-    OKButtonClick(OKButton);
-  if key = vk_escape then
-    CancelButtonClick(CancelButton);
 end;
 
 procedure TChangeIconForm.FormShow(Sender: TObject);

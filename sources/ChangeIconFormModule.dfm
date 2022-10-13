@@ -15,7 +15,6 @@ object ChangeIconForm: TChangeIconForm
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
-  OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -92,6 +91,7 @@ object ChangeIconForm: TChangeIconForm
     Top = 111
     Width = 75
     Height = 25
+    Cancel = True
     TabOrder = 2
     OnClick = CancelButtonClick
   end
@@ -100,6 +100,7 @@ object ChangeIconForm: TChangeIconForm
     Top = 111
     Width = 75
     Height = 25
+    Default = True
     TabOrder = 1
     OnClick = OKButtonClick
   end

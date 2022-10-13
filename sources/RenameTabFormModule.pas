@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -38,7 +39,6 @@ type
     OKButton: TButton;
     CancelButton: TButton;
     procedure FormShow(Sender: TObject);
-    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
 
   public
@@ -65,15 +65,6 @@ begin
   end;
 end;
 
-procedure TRenameTabForm.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if key = vk_return then
-    OKButton.Click;
-  if key = vk_escape then
-    CancelButton.Click;
-end;
-
 procedure TRenameTabForm.FormShow(Sender: TObject);
 begin
   //--Loading language
@@ -81,7 +72,6 @@ begin
   CancelButton.Caption := Language.BtnCancel;
   Caption := Language.TabRename;
   Label1.Caption := Caption + ':';
-
   TabNameEdit.SelectAll;
   TabNameEdit.SetFocus;
 end;

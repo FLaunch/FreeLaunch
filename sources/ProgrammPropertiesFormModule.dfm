@@ -15,7 +15,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
   OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
-  OnKeyDown = FormKeyDown
   OnShow = FormShow
   DesignSize = (
     538
@@ -246,6 +245,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    Default = True
     ModalResult = 1
     TabOrder = 1
     OnClick = OKButtonClick
@@ -256,6 +256,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    Cancel = True
     ModalResult = 2
     TabOrder = 2
   end
