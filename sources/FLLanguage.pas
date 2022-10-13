@@ -266,7 +266,7 @@ begin
     Properties.ChbHide :=        Parse(Ini.ReadString(SctProperties, 'chb_hide',
       'Hide after launch'));
     Properties.ProgramFilter :=  Parse(Ini.ReadString(SctProperties, 'tprogramfilter',
-      'Executed file (*.exe, *.bat)'));
+      'Executable file (*.exe, *.bat)'));
     Properties.ChbAdmin :=       Parse(Ini.ReadString(SctProperties, 'chb_admin',
       'Run with Admin rights'));
 
