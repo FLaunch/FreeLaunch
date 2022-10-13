@@ -28,10 +28,11 @@ unit SettingsFormModule;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, IniFiles, Vcl.Samples.Spin,
-  FLLanguage, FLFunctions, Data.Bind.EngExt, Vcl.Bind.DBEngExt, System.Rtti,
-  System.Bindings.Outputs, Vcl.Bind.Editors, Data.Bind.Components;
+  Winapi.Windows, Winapi.Messages,
+  System.SysUtils, System.Variants, System.Classes, System.IniFiles,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Menus, Vcl.Samples.Spin,
+  FLLanguage, FLFunctions;
 
 const
   DesignDPI = 96;
@@ -73,9 +74,6 @@ type
     QoLCheckBox: TCheckBox;
     DelLnkCheckBox: TCheckBox;
     DateTimeBox: TCheckBox;
-    BindsList: TBindingsList;
-    StatusBarLink: TLinkControlToProperty;
-    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -84,6 +82,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure LanguagesBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
+    procedure StatusBarBoxClick(Sender: TObject);
   public
     Langs: array of TLngInfo;
     LngFiles: array of string;
@@ -135,6 +134,11 @@ begin
     until
       FindNext(SearchRec) <> 0;
   FindClose(SearchRec);
+end;
+
+procedure TSettingsForm.StatusBarBoxClick(Sender: TObject);
+begin
+  DateTimeBox.Enabled := StatusBarBox.Checked;
 end;
 
 procedure TSettingsForm.ReloadIconsButtonClick(Sender: TObject);
@@ -191,15 +195,6 @@ begin
     Screen.PixelsPerInch, DesignDPI);
 end;
 
-procedure TSettingsForm.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if key = vk_return then
-    OKButtonClick(OKButton);
-  if key = vk_escape then
-    CancelButtonClick(CancelButton);
-end;
-
 procedure TSettingsForm.FormShow(Sender: TObject);
 begin
   settingsshowing := true;
@@ -243,6 +238,7 @@ begin
   StartHideBox.Checked := StartHide;
   StatusBarBox.Checked := StatusBarVis;
   DateTimeBox.Checked := dtimeinstbar;
+  DateTimeBox.Enabled := StatusBarBox.Checked;
   TBarBox.ItemIndex := titlebar;
   TabsBox.ItemIndex := tabsview;
   TabsEdit.MaxValue := TabsCountMax;

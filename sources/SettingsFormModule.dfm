@@ -16,7 +16,6 @@ object SettingsForm: TSettingsForm
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -65,6 +64,7 @@ object SettingsForm: TSettingsForm
         Checked = True
         State = cbChecked
         TabOrder = 3
+        OnClick = StatusBarBoxClick
       end
       object DateTimeBox: TCheckBox
         Left = 30
@@ -272,6 +272,7 @@ object SettingsForm: TSettingsForm
     Top = 315
     Width = 75
     Height = 25
+    Default = True
     TabOrder = 1
     OnClick = OKButtonClick
   end
@@ -280,20 +281,8 @@ object SettingsForm: TSettingsForm
     Top = 315
     Width = 75
     Height = 25
+    Cancel = True
     TabOrder = 2
     OnClick = CancelButtonClick
-  end
-  object BindsList: TBindingsList
-    Methods = <>
-    OutputConverters = <>
-    Left = 316
-    Top = 29
-    object StatusBarLink: TLinkControlToProperty
-      Category = 'Quick Bindings'
-      Control = StatusBarBox
-      Track = True
-      Component = DateTimeBox
-      ComponentProperty = 'Enabled'
-    end
   end
 end
