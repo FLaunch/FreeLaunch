@@ -226,7 +226,7 @@ var
   GlobTabNum: integer = -1;
   Nim: TNotifyIconData;
   Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
-    statusbarvis, hideafterlaunch, queryonlaunch, deletelnk: boolean;
+    statusbarvis, dtimeinstbar, hideafterlaunch, queryonlaunch, deletelnk: boolean;
   titlebar, tabsview: integer;
   lngfilename: string;
   ChPos: boolean = false;
@@ -514,7 +514,8 @@ begin
     tabsview := 0;
   alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
   statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
-  Timer1.Enabled := statusbarvis;
+  dtimeinstbar := ini.ReadBool(inisection, 'datetimeinstatusbar', False);
+  Timer1.Enabled := statusbarvis and dtimeinstbar;
   autorun := ini.ReadBool(inisection, 'autorun', false);
   starthide := ini.ReadBool(inisection, 'starthide', false);
   hideafterlaunch := ini.ReadBool(inisection, 'hideafterlaunchbtn', False);
@@ -598,6 +599,12 @@ end;
 
 procedure TFlaunchMainForm.Timer1Timer(Sender: TObject);
 begin
+  if StatusBar.Panels.Count = 1
+  then begin
+    StatusBar.Panels.Add;
+    StatusBar.Panels[1].Alignment := taCenter;
+    StatusBar.Panels[1].Width := 50;
+  end;
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
 end;
 
@@ -606,8 +613,7 @@ begin
   if b then
     begin
       Visible := true;
-      Timer1.Enabled := statusbarvis;
-      Timer1Timer(Self);
+      Timer1.Enabled := statusbarvis and dtimeinstbar;
       ShowWindow(Application.Handle, SW_HIDE);
       SetForegroundWindow(Application.Handle);
     end
@@ -616,6 +622,8 @@ begin
       Visible := false;
       Timer1.Enabled := False;
     end;
+  if (dtimeinstbar = False) and (StatusBar.Panels.Count > 1)
+    then StatusBar.Panels.Delete(1);
 end;
 
 procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
@@ -858,6 +866,7 @@ begin
   WindowNode.AddChild('TitleBar').NodeValue := titlebar;
   WindowNode.AddChild('AlwaysOnTop').NodeValue := alwaysontop;
   WindowNode.AddChild('StatusBar').NodeValue := statusbarvis;
+  WindowNode.AddChild('DateTimeInStatusBar').NodeValue := dtimeinstbar;
   WindowNode.AddChild('StartHidden').NodeValue := starthide;
   WindowNode.AddChild('HideAfterLaunchBtn').NodeValue := hideafterlaunch;
   WindowNode.AddChild('QueryOnLaunchBtn').NodeValue := queryonlaunch;
@@ -1052,6 +1061,7 @@ begin
   titlebar := GetInt(WindowNode, 'TitleBar');
   alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
   statusbarvis := GetBool(WindowNode, 'StatusBar');
+  dtimeinstbar := GetBool(WindowNode, 'DateTimeInStatusBar');
   starthide := GetBool(WindowNode, 'StartHidden');
   hideafterlaunch := GetBool(WindowNode, 'HideAfterLaunchBtn');
   queryonlaunch := GetBool(WindowNode, 'QueryOnLaunchBtn');
@@ -1640,7 +1650,6 @@ begin
   end;
   TrayIcon.Hint := Format('%s %s',[cr_progname, FLVersion]);
   if not StartHide then ChWinView(True) else Application.ShowMainForm := False;
-  StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
   ChPos := false;
 end;
 

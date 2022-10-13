@@ -25,7 +25,7 @@ object SettingsForm: TSettingsForm
     Top = 8
     Width = 377
     Height = 301
-    ActivePage = TabNewButtons
+    ActivePage = TabGeneral
     TabOrder = 0
     object TabGeneral: TTabSheet
       object AutorunCheckBox: TCheckBox
@@ -47,7 +47,7 @@ object SettingsForm: TSettingsForm
         Top = 240
         Width = 145
         Height = 25
-        TabOrder = 4
+        TabOrder = 5
         OnClick = ReloadIconsButtonClick
       end
       object StartHideBox: TCheckBox
@@ -62,7 +62,16 @@ object SettingsForm: TSettingsForm
         Top = 85
         Width = 350
         Height = 17
+        Checked = True
+        State = cbChecked
         TabOrder = 3
+      end
+      object DateTimeBox: TCheckBox
+        Left = 30
+        Top = 110
+        Width = 330
+        Height = 17
+        TabOrder = 4
       end
     end
     object TabInterface: TTabSheet
@@ -195,21 +204,21 @@ object SettingsForm: TSettingsForm
         TabOrder = 0
         object HideCheckBox: TCheckBox
           Left = 10
-          Top = 60
+          Top = 50
           Width = 330
           Height = 17
           TabOrder = 1
         end
         object QoLCheckBox: TCheckBox
           Left = 10
-          Top = 90
+          Top = 75
           Width = 330
           Height = 17
           TabOrder = 2
         end
         object DelLnkCheckBox: TCheckBox
           Left = 10
-          Top = 30
+          Top = 25
           Width = 330
           Height = 17
           TabOrder = 0
@@ -273,5 +282,18 @@ object SettingsForm: TSettingsForm
     Height = 25
     TabOrder = 2
     OnClick = CancelButtonClick
+  end
+  object BindsList: TBindingsList
+    Methods = <>
+    OutputConverters = <>
+    Left = 316
+    Top = 29
+    object StatusBarLink: TLinkControlToProperty
+      Category = 'Quick Bindings'
+      Control = StatusBarBox
+      Track = True
+      Component = DateTimeBox
+      ComponentProperty = 'Enabled'
+    end
   end
 end

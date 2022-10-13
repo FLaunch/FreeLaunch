@@ -48,7 +48,7 @@ type
 
   TLngSettings = record
     Caption, General, NumOfTabs, Rows, Cols, Padding, ChbAutorun, ChbAlwaysOnTop,
-    ChbStartHide, ChbStatusbar, ChbHideAL, ChbQoL, ChbDelLnk,
+    ChbStartHide, ChbStatusbar, ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk,
     Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
     Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
@@ -296,6 +296,8 @@ begin
       'Start hidden'));
     Settings.ChbStatusbar :=     Parse(Ini.ReadString(SctSettings, 'chb_statusbar',
       'Show status bar'));
+    Settings.ChbDateTime :=      Parse(Ini.ReadString(SctSettings, 'chb_datetime',
+      'Show the date and time in the status bar'));
     Settings.ChbHideAL :=        Parse(Ini.ReadString(SctSettings, 'chb_hide',
       'Hide FreeLaunch after launching a button'));
     Settings.ChbQoL :=           Parse(Ini.ReadString(SctSettings, 'chb_query',

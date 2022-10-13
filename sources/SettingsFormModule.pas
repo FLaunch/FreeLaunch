@@ -30,7 +30,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, IniFiles, Vcl.Samples.Spin,
-  FLLanguage, FLFunctions;
+  FLLanguage, FLFunctions, Data.Bind.EngExt, Vcl.Bind.DBEngExt, System.Rtti,
+  System.Bindings.Outputs, Vcl.Bind.Editors, Data.Bind.Components;
 
 const
   DesignDPI = 96;
@@ -71,6 +72,9 @@ type
     HideCheckBox: TCheckBox;
     QoLCheckBox: TCheckBox;
     DelLnkCheckBox: TCheckBox;
+    DateTimeBox: TCheckBox;
+    BindsList: TBindingsList;
+    StatusBarLink: TLinkControlToProperty;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -214,6 +218,7 @@ begin
   TopCheckBox.Caption := Language.Settings.ChbAlwaysOnTop;
   StartHideBox.Caption := Language.Settings.ChbStartHide;
   StatusBarBox.Caption := Language.Settings.ChbStatusbar;
+  DateTimeBox.Caption := Language.Settings.ChbDateTime;
   HideCheckBox.Caption := Language.Settings.ChbHideAL;
   QoLCheckBox.Caption := Language.Settings.ChbQoL;
   DelLnkCheckBox.Caption := Language.Settings.ChbDelLnk;
@@ -237,6 +242,7 @@ begin
   TopCheckBox.Checked := AlwaysOnTop;
   StartHideBox.Checked := StartHide;
   StatusBarBox.Checked := StatusBarVis;
+  DateTimeBox.Checked := dtimeinstbar;
   TBarBox.ItemIndex := titlebar;
   TabsBox.ItemIndex := tabsview;
   TabsEdit.MaxValue := TabsCountMax;
@@ -266,6 +272,7 @@ begin
   AlwaysOnTop := TopCheckBox.Checked;
   StartHide := StartHideBox.Checked;
   StatusBarVis := StatusBarBox.Checked;
+  dtimeinstbar := DateTimeBox.Checked;
   hideafterlaunch := HideCheckBox.Checked;
   queryonlaunch := QoLCheckBox.Checked;
   deletelnk := DelLnkCheckBox.Checked;
