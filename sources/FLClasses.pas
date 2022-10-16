@@ -738,6 +738,7 @@ begin
   fHide := hideafterlaunch;
   fQues := queryonlaunch;
   fWSt := WStateDef;
+  FIsAdmin := rwar;
   IconBmp := TBitMap.Create;
   IconBmp.Width := ButtonWidth - 4;
   IconBmp.Height := ButtonHeight - 4;

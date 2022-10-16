@@ -47,8 +47,9 @@ type
   end;
 
   TLngSettings = record
-    Caption, General, NumOfTabs, Rows, Cols, Padding, ChbAutorun, ChbAlwaysOnTop,
-    ChbStartHide, ChbStatusbar, ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk,
+    Caption, General, NumOfTabs, Rows, Cols, Padding,
+    ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
+    ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk,
     Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
     Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
@@ -293,6 +294,8 @@ begin
       'Autostart with system'));
     Settings.ChbAlwaysOnTop :=   Parse(Ini.ReadString(SctSettings, 'chb_alwaysontop',
       'Always on top'));
+    Settings.ChbAdmin :=         Parse(Ini.ReadString(SctSettings, 'chb_admin',
+      'Run with Administrator rights'));
     Settings.ChbStartHide :=     Parse(Ini.ReadString(SctSettings, 'chb_starthide',
       'Start hidden'));
     Settings.ChbStatusbar :=     Parse(Ini.ReadString(SctSettings, 'chb_statusbar',

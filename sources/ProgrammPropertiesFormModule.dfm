@@ -125,21 +125,21 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Alignment = taRightJustify
       end
       object ParamsEdit: TEdit
-        Left = 78
+        Left = 80
         Top = 75
         Width = 259
         Height = 21
         TabOrder = 3
       end
       object DescrEdit: TEdit
-        Left = 78
+        Left = 80
         Top = 161
         Width = 259
         Height = 21
         TabOrder = 6
       end
       object PriorBox: TComboBox
-        Left = 78
+        Left = 80
         Top = 191
         Width = 107
         Height = 21
@@ -170,7 +170,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         TabOrder = 8
       end
       object DropBox: TCheckBox
-        Left = 78
+        Left = 80
         Top = 105
         Width = 259
         Height = 17
@@ -178,7 +178,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         OnClick = DropBoxClick
       end
       object DropParamsEdit: TEdit
-        Left = 78
+        Left = 80
         Top = 131
         Width = 259
         Height = 21
@@ -193,7 +193,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         TabOrder = 11
       end
       object RefProps: TButton
-        Left = 316
+        Left = 320
         Top = 15
         Width = 21
         Height = 21
@@ -205,7 +205,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         OnClick = RefPropsClick
       end
       object CommandEdit: TButtonedEdit
-        Left = 78
+        Left = 80
         Top = 15
         Width = 236
         Height = 21
@@ -218,15 +218,14 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         OnRightButtonClick = BrowseExecClick
       end
       object AdminBox: TCheckBox
-        Left = 78
+        Left = 80
         Top = 218
         Width = 259
         Height = 17
-        Caption = 'Run with Admin rights'
         TabOrder = 9
       end
       object WorkFolderEdit: TButtonedEdit
-        Left = 78
+        Left = 80
         Top = 45
         Width = 259
         Height = 21

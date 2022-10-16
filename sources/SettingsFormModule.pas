@@ -76,6 +76,7 @@ type
     DateTimeBox: TCheckBox;
     WSBox: TComboBox;
     lblWState: TLabel;
+    AdminCheckBox: TCheckBox;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -219,6 +220,7 @@ begin
   HideCheckBox.Caption := Language.Settings.ChbHideAL;
   QoLCheckBox.Caption := Language.Settings.ChbQoL;
   DelLnkCheckBox.Caption := Language.Settings.ChbDelLnk;
+  AdminCheckBox.Caption := Language.Settings.ChbAdmin;
   TBarBox.Items.Add(Language.Settings.TitlebarNormal);
   TBarBox.Items.Add(Language.Settings.TitlebarMini);
   TBarBox.Items.Add(Language.Settings.TitlebarHidden);
@@ -261,6 +263,7 @@ begin
   HideCheckBox.Checked := hideafterlaunch;
   QoLCheckBox.Checked := queryonlaunch;
   DelLnkCheckBox.Checked := deletelnk;
+  AdminCheckBox.Checked := rwar;
   AutoRunCheckBox.Enabled := not IsPortable;
   pgc.ActivePageIndex := 0;
   pgc.ActivePage.SetFocus;
@@ -280,6 +283,7 @@ begin
   hideafterlaunch := HideCheckBox.Checked;
   queryonlaunch := QoLCheckBox.Checked;
   deletelnk := DelLnkCheckBox.Checked;
+  rwar := AdminCheckBox.Checked;
   WStateDef := WSBox.ItemIndex;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then
