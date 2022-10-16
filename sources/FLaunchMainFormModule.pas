@@ -217,6 +217,7 @@ var
     LeftPer, TopPer: integer;
   templinks: link;
   links: array[0..maxt - 1] of link;
+  WStateDef: Byte = 0;
   GlobTab: integer = -1;
   GlobRow: integer = -1;
   GlobCol: integer = -1;
@@ -512,6 +513,8 @@ begin
   tabsview := ini.ReadInteger(inisection, 'tabsview', 0);
   if (tabsview < 0) or (tabsview > 2) then
     tabsview := 0;
+  WStateDef := ini.ReadInteger(inisection, 'defwindowstate', 0);
+  if WStateDef > 3 then WStateDef := 0;
   alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
   statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
   dtimeinstbar := ini.ReadBool(inisection, 'datetimeinstatusbar', False);
@@ -871,8 +874,9 @@ begin
   WindowNode.AddChild('HideAfterLaunchBtn').NodeValue := hideafterlaunch;
   WindowNode.AddChild('QueryOnLaunchBtn').NodeValue := queryonlaunch;
   WindowNode.AddChild('DeleteLNK').NodeValue := deletelnk;
-  TabRootNode := WindowNode.AddChild('Tabs');
+  WindowNode.AddChild('DefWinState').NodeValue := WStateDef;
 
+  TabRootNode := WindowNode.AddChild('Tabs');
   TabRootNode.AddChild('View').NodeValue := tabsview;
 
   FontNode := TabRootNode.AddChild('Font');
@@ -1066,6 +1070,8 @@ begin
   hideafterlaunch := GetBool(WindowNode, 'HideAfterLaunchBtn');
   queryonlaunch := GetBool(WindowNode, 'QueryOnLaunchBtn');
   deletelnk := GetBool(WindowNode, 'DeleteLNK');
+  WStateDef := GetInt(WindowNode, 'DefWinState');
+  if WStateDef > 3 then WStateDef := 0;
 
   TabsCount := 0;
   TabNumber := 0;
@@ -1564,6 +1570,7 @@ begin
   end;
   Button.Data.Hide := hideafterlaunch;
   Button.Data.Ques := queryonlaunch;
+  Button.Data.WSt := WStateDef;
   //--Рисуем иконки на кнопке
   Button.Data.AssignIcons;
   //--Перерисовываем кнопку

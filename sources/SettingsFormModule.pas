@@ -74,6 +74,8 @@ type
     QoLCheckBox: TCheckBox;
     DelLnkCheckBox: TCheckBox;
     DateTimeBox: TCheckBox;
+    WSBox: TComboBox;
+    lblWState: TLabel;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -229,6 +231,12 @@ begin
   grpBtnSize.Caption := Language.Settings.BtnSizes;
   lblBtnW.Caption := Language.Settings.BtnWidth + ':';
   lblBtnH.Caption := Language.Settings.BtnHeight + ':';
+  lblWState.Caption := Language.Settings.WState + ':';
+  WSBox.Items.Add(Language.Settings.WSNormal);
+  WSBox.Items.Add(Language.Settings.WSMax);
+  WSBox.Items.Add(Language.Settings.WSMin);
+  WSBox.Items.Add(Language.Settings.WSHidden);
+  WSBox.ItemIndex := WStateDef;
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
   grpNewBtns.Caption := Language.Settings.NewBtnProperties;
   ScanLanguagesDir;
@@ -272,6 +280,7 @@ begin
   hideafterlaunch := HideCheckBox.Checked;
   queryonlaunch := QoLCheckBox.Checked;
   deletelnk := DelLnkCheckBox.Checked;
+  WStateDef := WSBox.ItemIndex;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then
     lngfilename := LngFiles[LanguagesBox.ItemIndex];

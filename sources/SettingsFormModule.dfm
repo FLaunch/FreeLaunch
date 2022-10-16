@@ -200,6 +200,13 @@ object SettingsForm: TSettingsForm
         Width = 350
         Height = 150
         TabOrder = 0
+        object lblWState: TLabel
+          Left = 180
+          Top = 115
+          Width = 3
+          Height = 13
+          Alignment = taRightJustify
+        end
         object HideCheckBox: TCheckBox
           Left = 10
           Top = 50
@@ -220,6 +227,14 @@ object SettingsForm: TSettingsForm
           Width = 330
           Height = 17
           TabOrder = 0
+        end
+        object WSBox: TComboBox
+          Left = 190
+          Top = 110
+          Width = 145
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 3
         end
       end
       object grpBtnSize: TGroupBox

@@ -52,7 +52,8 @@ type
     Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
     Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
-    BtnProperties, NewBtnProperties: string;
+    BtnProperties, NewBtnProperties,
+    WState, WSNormal, WSMin, WSMax, WSHidden: string;
   end;
 
   TLngMenu = record
@@ -332,6 +333,16 @@ begin
       'Reload icons'));
     Settings.NewBtnProperties := Parse(Ini.ReadString(SctSettings, 'newbtns_properties',
       'Properties of new buttons'));
+    Settings.WState :=           Parse(Ini.ReadString(SctSettings, 'windowstate',
+      'Window state'));
+    Settings.WSNormal :=         Parse(Ini.ReadString(SctSettings, 'ws_normal',
+      'Normal'));
+    Settings.WSMin :=            Parse(Ini.ReadString(SctSettings, 'ws_min',
+      'Minimized'));
+    Settings.WSMax :=            Parse(Ini.ReadString(SctSettings, 'ws_max',
+      'Maximized'));
+    Settings.WSHidden :=         Parse(Ini.ReadString(SctSettings, 'ws_hidden',
+      'Hidden'));
 
     Info.Load(Ini);
 
