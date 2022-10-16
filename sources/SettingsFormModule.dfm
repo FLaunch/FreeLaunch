@@ -150,8 +150,6 @@ object SettingsForm: TSettingsForm
         ItemHeight = 15
         TabOrder = 0
         OnDrawItem = LanguagesBoxDrawItem
-        Items.Strings = (
-          #1056#1091#1089#1089#1082#1080#1081)
       end
       object PaddingEdit: TSpinEdit
         Left = 250
