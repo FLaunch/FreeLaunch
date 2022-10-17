@@ -25,3 +25,9 @@ FreeLaunch is a free links manager for Microsoft Windows. It allows to organize 
 Project page was located on SourceForge: https://sourceforge.net/projects/freelaunch/
 
 Last revision of source code from SourceForge you can find in custom branch: [[original_branch]](../../tree/original_branch).
+
+## Releases
+
+All actual releases can be found at [Releases page](../../releases)
+
+All archived builds and releases can be found at [Yandex.Disk mirror](https://disk.yandex.ru/d/bzNkOA7oGUCIbg)
