@@ -240,18 +240,18 @@ object SettingsForm: TSettingsForm
         Left = 20
         Top = 20
         Width = 400
-        Height = 200
+        Height = 225
         TabOrder = 0
         object lblWState: TLabel
           Left = 230
-          Top = 130
+          Top = 155
           Width = 3
           Height = 13
           Alignment = taRightJustify
         end
         object lblPriority: TLabel
           Left = 230
-          Top = 155
+          Top = 180
           Width = 3
           Height = 13
           Alignment = taRightJustify
@@ -279,11 +279,11 @@ object SettingsForm: TSettingsForm
         end
         object WSBox: TComboBox
           Left = 240
-          Top = 125
+          Top = 150
           Width = 145
           Height = 21
           Style = csDropDownList
-          TabOrder = 4
+          TabOrder = 5
         end
         object AdminCheckBox: TCheckBox
           Left = 10
@@ -294,11 +294,18 @@ object SettingsForm: TSettingsForm
         end
         object PriorityBox: TComboBox
           Left = 240
-          Top = 150
+          Top = 175
           Width = 145
           Height = 21
           Style = csDropDownList
-          TabOrder = 5
+          TabOrder = 6
+        end
+        object DropCheckBox: TCheckBox
+          Left = 10
+          Top = 125
+          Width = 380
+          Height = 17
+          TabOrder = 4
         end
       end
     end

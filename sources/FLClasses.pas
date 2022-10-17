@@ -739,6 +739,7 @@ begin
   fQues := queryonlaunch;
   fWSt := WStateDef;
   FIsAdmin := rwar;
+  fDropFiles := defdrop;
   fPr := PriorDef;
   IconBmp := TBitMap.Create;
   IconBmp.Width := ButtonWidth - 4;

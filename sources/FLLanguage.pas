@@ -51,7 +51,7 @@ type
   TLngSettings = record
     Caption, General, NumOfTabs, Rows, Cols, Padding,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
-    ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk,
+    ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop,
     Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
     PriorityBelowNormal, PriorityRealTime,
     Titlebar, TitlebarNormal, TitlebarMini,
@@ -318,6 +318,8 @@ begin
       'Request confirmation before launching a button'));
     Settings.ChbDelLnk :=        Parse(Ini.ReadString(SctSettings, 'chb_dellnk',
       'Delete shortcut file after creating a button'));
+    Settings.ChbDrop :=          Parse(Ini.ReadString(SctSettings, 'chb_drop',
+      'Accept dropped files'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',

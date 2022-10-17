@@ -229,7 +229,7 @@ var
   Nim: TNotifyIconData;
   Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
     statusbarvis, dtimeinstbar, hideafterlaunch, queryonlaunch, deletelnk,
-    rwar: boolean;
+    rwar, defdrop: boolean;
   titlebar, tabsview: integer;
   lngfilename: string;
   ChPos: boolean = false;
@@ -529,6 +529,7 @@ begin
   queryonlaunch := ini.ReadBool(inisection, 'queryonlaunch', False);
   deletelnk := ini.ReadBool(inisection, 'deletelnk', False);
   rwar := ini.ReadBool(inisection, 'runbtnasadmin', False);
+  defdrop := ini.ReadBool(inisection, 'acceptdropfiles', False);
   GrowTabNames(tabscount);
   for i := 1 to tabscount do
     TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
@@ -880,6 +881,7 @@ begin
   WindowNode.AddChild('QueryOnLaunchBtn').NodeValue := queryonlaunch;
   WindowNode.AddChild('RunBtnAsAdmin').NodeValue := rwar;
   WindowNode.AddChild('DeleteLNK').NodeValue := deletelnk;
+  WindowNode.AddChild('DefAcceptDropFiles').NodeValue := defdrop;
   WindowNode.AddChild('DefWinState').NodeValue := WStateDef;
   WindowNode.AddChild('DefPriority').NodeValue := PriorDef;
 
@@ -1078,6 +1080,7 @@ begin
   queryonlaunch := GetBool(WindowNode, 'QueryOnLaunchBtn');
   deletelnk := GetBool(WindowNode, 'DeleteLNK');
   rwar := GetBool(WindowNode, 'RunBtnAsAdmin');
+  defdrop := GetBool(WindowNode, 'DefAcceptDropFiles');
   WStateDef := GetInt(WindowNode, 'DefWinState');
   if WStateDef > 3 then WStateDef := 0;
   PriorDef := GetInt(WindowNode, 'DefPriority');
@@ -1582,6 +1585,7 @@ begin
   Button.Data.Ques := queryonlaunch;
   Button.Data.WSt := WStateDef;
   Button.Data.IsAdmin := rwar;
+  Button.Data.DropFiles := defdrop;
   Button.Data.Pr := PriorDef;
   //--Рисуем иконки на кнопке
   Button.Data.AssignIcons;

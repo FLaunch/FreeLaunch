@@ -79,6 +79,7 @@ type
     AdminCheckBox: TCheckBox;
     lblPriority: TLabel;
     PriorityBox: TComboBox;
+    DropCheckBox: TCheckBox;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -223,6 +224,7 @@ begin
   QoLCheckBox.Caption := Language.Settings.ChbQoL;
   DelLnkCheckBox.Caption := Language.Settings.ChbDelLnk;
   AdminCheckBox.Caption := Language.Settings.ChbAdmin;
+  DropCheckBox.Caption := Language.Settings.ChbDrop;
   TBarBox.Items.Add(Language.Settings.TitlebarNormal);
   TBarBox.Items.Add(Language.Settings.TitlebarMini);
   TBarBox.Items.Add(Language.Settings.TitlebarHidden);
@@ -274,6 +276,7 @@ begin
   QoLCheckBox.Checked := queryonlaunch;
   DelLnkCheckBox.Checked := deletelnk;
   AdminCheckBox.Checked := rwar;
+  DropCheckBox.Checked := defdrop;
   AutoRunCheckBox.Enabled := not IsPortable;
   pgc.ActivePageIndex := 0;
   pgc.ActivePage.SetFocus;
@@ -294,6 +297,7 @@ begin
   queryonlaunch := QoLCheckBox.Checked;
   deletelnk := DelLnkCheckBox.Checked;
   rwar := AdminCheckBox.Checked;
+  defdrop := DropCheckBox.Checked;
   WStateDef := WSBox.ItemIndex;
   PriorDef := PriorityBox.ItemIndex;
   FlaunchMainForm.SetAutorun(Autorun);
