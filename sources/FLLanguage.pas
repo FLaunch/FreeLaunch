@@ -52,6 +52,8 @@ type
     Caption, General, NumOfTabs, Rows, Cols, Padding,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
     ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk,
+    Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
+    PriorityBelowNormal, PriorityRealTime,
     Titlebar, TitlebarNormal, TitlebarMini,
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
     Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
@@ -354,6 +356,20 @@ begin
       'Maximized'));
     Settings.WSHidden :=         Parse(Ini.ReadString(SctSettings, 'ws_hidden',
       'Hidden'));
+    Settings.Priority :=         Parse(Ini.ReadString(SctSettings, 'priority',
+      'Priority'));
+    Settings.PriorityNormal :=   Parse(Ini.ReadString(SctSettings,
+      'priority_normal', 'Normal'));
+    Settings.PriorityHigh :=     Parse(Ini.ReadString(SctSettings,
+      'priority_high',  'High'));
+    Settings.PriorityIdle :=     Parse(Ini.ReadString(SctSettings,
+      'priority_idle', 'Idle'));
+    Settings.PriorityRealTime := Parse(Ini.ReadString(SctSettings,
+      'priority_realtime', 'Real time'));
+    Settings.PriorityBelowNormal := Parse(Ini.ReadString(SctSettings,
+      'priority_below_normal', 'Below normal'));
+    Settings.PriorityAboveNormal := Parse(Ini.ReadString(SctSettings,
+      'priority_above_normal', 'Above normal'));
 
     Info.Load(Ini);
 

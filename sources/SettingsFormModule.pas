@@ -77,6 +77,8 @@ type
     WSBox: TComboBox;
     lblWState: TLabel;
     AdminCheckBox: TCheckBox;
+    lblPriority: TLabel;
+    PriorityBox: TComboBox;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -234,11 +236,19 @@ begin
   lblBtnW.Caption := Language.Settings.BtnWidth + ':';
   lblBtnH.Caption := Language.Settings.BtnHeight + ':';
   lblWState.Caption := Language.Settings.WState + ':';
+  lblPriority.Caption := Language.Settings.Priority + ':';
   WSBox.Items.Add(Language.Settings.WSNormal);
   WSBox.Items.Add(Language.Settings.WSMax);
   WSBox.Items.Add(Language.Settings.WSMin);
   WSBox.Items.Add(Language.Settings.WSHidden);
   WSBox.ItemIndex := WStateDef;
+  PriorityBox.Items.Add(Language.Settings.PriorityNormal);
+  PriorityBox.Items.Add(Language.Settings.PriorityHigh);
+  PriorityBox.Items.Add(Language.Settings.PriorityIdle);
+  PriorityBox.Items.Add(Language.Settings.PriorityRealTime);
+  PriorityBox.Items.Add(Language.Settings.PriorityBelowNormal);
+  PriorityBox.Items.Add(Language.Settings.PriorityAboveNormal);
+  PriorityBox.ItemIndex := PriorDef;
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
   grpNewBtns.Caption := Language.Settings.NewBtnProperties;
   ScanLanguagesDir;
@@ -285,6 +295,7 @@ begin
   deletelnk := DelLnkCheckBox.Checked;
   rwar := AdminCheckBox.Checked;
   WStateDef := WSBox.ItemIndex;
+  PriorDef := PriorityBox.ItemIndex;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then
     lngfilename := LngFiles[LanguagesBox.ItemIndex];

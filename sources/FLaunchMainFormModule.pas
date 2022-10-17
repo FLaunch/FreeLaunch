@@ -217,6 +217,7 @@ var
     LeftPer, TopPer: integer;
   templinks: link;
   links: array[0..maxt - 1] of link;
+  PriorDef: Byte = 0;
   WStateDef: Byte = 0;
   GlobTab: integer = -1;
   GlobRow: integer = -1;
@@ -516,6 +517,8 @@ begin
     tabsview := 0;
   WStateDef := ini.ReadInteger(inisection, 'defwindowstate', 0);
   if WStateDef > 3 then WStateDef := 0;
+  PriorDef := ini.ReadInteger(inisection, 'defpriority', 0);
+  if PriorDef > 5 then PriorDef := 0;
   alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
   statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
   dtimeinstbar := ini.ReadBool(inisection, 'datetimeinstatusbar', False);
@@ -878,6 +881,7 @@ begin
   WindowNode.AddChild('RunBtnAsAdmin').NodeValue := rwar;
   WindowNode.AddChild('DeleteLNK').NodeValue := deletelnk;
   WindowNode.AddChild('DefWinState').NodeValue := WStateDef;
+  WindowNode.AddChild('DefPriority').NodeValue := PriorDef;
 
   TabRootNode := WindowNode.AddChild('Tabs');
   TabRootNode.AddChild('View').NodeValue := tabsview;
@@ -1076,6 +1080,8 @@ begin
   rwar := GetBool(WindowNode, 'RunBtnAsAdmin');
   WStateDef := GetInt(WindowNode, 'DefWinState');
   if WStateDef > 3 then WStateDef := 0;
+  PriorDef := GetInt(WindowNode, 'DefPriority');
+  if PriorDef > 5 then PriorDef := 0;
 
   TabsCount := 0;
   TabNumber := 0;
@@ -1576,6 +1582,7 @@ begin
   Button.Data.Ques := queryonlaunch;
   Button.Data.WSt := WStateDef;
   Button.Data.IsAdmin := rwar;
+  Button.Data.Pr := PriorDef;
   //--Рисуем иконки на кнопке
   Button.Data.AssignIcons;
   //--Перерисовываем кнопку
