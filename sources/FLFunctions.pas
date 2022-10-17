@@ -626,6 +626,9 @@ begin
       0: Prior := NORMAL_PRIORITY_CLASS;
       1: Prior := HIGH_PRIORITY_CLASS;
       2: Prior := IDLE_PRIORITY_CLASS;
+      3: Prior := REALTIME_PRIORITY_CLASS;
+      4: Prior := BELOW_NORMAL_PRIORITY_CLASS;
+      5: Prior := ABOVE_NORMAL_PRIORITY_CLASS;
     end;
     if ADroppedFile <> '' then
       params := stringreplace(ALink.dropparams, '%1', ADroppedFile, [rfReplaceAll])

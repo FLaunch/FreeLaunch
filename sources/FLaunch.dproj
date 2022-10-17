@@ -112,9 +112,9 @@
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_Define>madExcept;$(DCC_Define)</DCC_Define>
         <VerInfo_MinorVer>7</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch is a free links manager for Windows;FileVersion=2.7.2022.1016;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.7;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch is a free links manager for Windows;FileVersion=2.7.2022.1017;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.7;Comments=</VerInfo_Keys>
         <VerInfo_Release>2022</VerInfo_Release>
-        <VerInfo_Build>1016</VerInfo_Build>
+        <VerInfo_Build>1017</VerInfo_Build>
         <VerInfo_PreRelease>true</VerInfo_PreRelease>
         <VerInfo_Debug>true</VerInfo_Debug>
     </PropertyGroup>
