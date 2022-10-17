@@ -272,7 +272,7 @@ begin
     Properties.Change :=         Parse(Ini.ReadString(SctProperties, 'change',
       'Change...'));
     Properties.ChbDrop :=        Parse(Ini.ReadString(SctProperties, 'chb_drop',
-      'Process dropping files (%1 - filename)'));
+      'Accept dropped files (%1 - filename)'));
     Properties.ChbQuestion :=    Parse(Ini.ReadString(SctProperties, 'chb_question',
       'Confirm launch'));
     Properties.ChbHide :=        Parse(Ini.ReadString(SctProperties, 'chb_hide',
