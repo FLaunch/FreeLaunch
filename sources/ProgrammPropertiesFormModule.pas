@@ -169,14 +169,16 @@ begin
   Caption := Language.Properties.Caption;
   Label9.Caption := Language.Properties.Folder + ':';
   Label1.Caption := Language.Properties.LblObject + ':';
-
   Label2.Caption := Language.Properties.Parameters + ':';
   Label8.Caption := Label2.Caption;
   Label4.Caption := Language.Properties.Description + ':';
   Label3.Caption := Language.Properties.Priority + ':';
   PriorBox.Items.Add(Language.Properties.PriorityNormal);
   PriorBox.Items.Add(Language.Properties.PriorityHigh);
-  PriorBox.Items.Add(Language.Properties.PriorityLow);
+  PriorBox.Items.Add(Language.Properties.PriorityIdle);
+  PriorBox.Items.Add(Language.Properties.PriorityRealTime);
+  PriorBox.Items.Add(Language.Properties.PriorityBelowNormal);
+  PriorBox.Items.Add(Language.Properties.PriorityAboveNormal);
   Label7.Caption := Language.Properties.View + ':';
   WStyleBox.Items.Add(Language.Properties.ViewNormal);
   WStyleBox.Items.Add(Language.Properties.ViewMax);

@@ -40,8 +40,10 @@ type
   end;
 
   TLngProperties = record
-    Caption, Folder, LblObject, Parameters, Description, Priority,
-    PriorityNormal, PriorityHigh, PriorityLow, View, ViewNormal, ViewMax,
+    Caption, Folder, LblObject, Parameters, Description,
+    Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
+    PriorityBelowNormal, PriorityRealTime,
+    View, ViewNormal, ViewMax,
     ViewMin, ViewHidden, BeHint, RpHint, Options, Icon, Change, ChbDrop,
     ChbQuestion, ChbHide, ProgramFilter, ChbAdmin: string;
   end;
@@ -235,12 +237,18 @@ begin
       'Description'));
     Properties.Priority :=       Parse(Ini.ReadString(SctProperties, 'priority',
       'Priority'));
-    Properties.PriorityNormal := Parse(Ini.ReadString(SctProperties, 'priority_normal',
-      'Normal'));
-    Properties.PriorityHigh :=   Parse(Ini.ReadString(SctProperties, 'priority_high',
-      'High'));
-    Properties.PriorityLow :=    Parse(Ini.ReadString(SctProperties, 'priority_low',
-      'Low'));
+    Properties.PriorityNormal := Parse(Ini.ReadString(SctProperties,
+      'priority_normal', 'Normal'));
+    Properties.PriorityHigh :=   Parse(Ini.ReadString(SctProperties,
+      'priority_high',  'High'));
+    Properties.PriorityIdle :=   Parse(Ini.ReadString(SctProperties,
+      'priority_idle', 'Idle'));
+    Properties.PriorityRealTime := Parse(Ini.ReadString(SctProperties,
+      'priority_realtime', 'Real time'));
+    Properties.PriorityBelowNormal := Parse(Ini.ReadString(SctProperties,
+      'priority_below_normal', 'Below normal'));
+    Properties.PriorityAboveNormal := Parse(Ini.ReadString(SctProperties,
+      'priority_above_normal', 'Above normal'));
     Properties.View :=           Parse(Ini.ReadString(SctProperties, 'view',
       'View'));
     Properties.ViewNormal :=     Parse(Ini.ReadString(SctProperties, 'view_normal',
