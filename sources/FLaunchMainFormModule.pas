@@ -229,7 +229,7 @@ var
   Nim: TNotifyIconData;
   Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
     statusbarvis, dtimeinstbar, hideafterlaunch, queryonlaunch, deletelnk,
-    rwar, defdrop: boolean;
+    rwar, defdrop, nobgnotabs: boolean;
   titlebar, tabsview: integer;
   lngfilename: string;
   ChPos: boolean = false;
@@ -530,6 +530,7 @@ begin
   deletelnk := ini.ReadBool(inisection, 'deletelnk', False);
   rwar := ini.ReadBool(inisection, 'runbtnasadmin', False);
   defdrop := ini.ReadBool(inisection, 'acceptdropfiles', False);
+  nobgnotabs := ini.ReadBool(inisection, 'glasswithnotabs', True);
   GrowTabNames(tabscount);
   for i := 1 to tabscount do
     TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
@@ -884,6 +885,7 @@ begin
   WindowNode.AddChild('DefAcceptDropFiles').NodeValue := defdrop;
   WindowNode.AddChild('DefWinState').NodeValue := WStateDef;
   WindowNode.AddChild('DefPriority').NodeValue := PriorDef;
+  WindowNode.AddChild('GlassWhenNoTabs').NodeValue := nobgnotabs;
 
   TabRootNode := WindowNode.AddChild('Tabs');
   TabRootNode.AddChild('View').NodeValue := tabsview;
@@ -1081,6 +1083,7 @@ begin
   deletelnk := GetBool(WindowNode, 'DeleteLNK');
   rwar := GetBool(WindowNode, 'RunBtnAsAdmin');
   defdrop := GetBool(WindowNode, 'DefAcceptDropFiles');
+  nobgnotabs := GetBool(WindowNode, 'GlassWhenNoTabs');
   WStateDef := GetInt(WindowNode, 'DefWinState');
   if WStateDef > 3 then WStateDef := 0;
   PriorDef := GetInt(WindowNode, 'DefPriority');
@@ -1369,11 +1372,9 @@ begin
     FLPanel.Top := TabInternalRect.Top;
     FLPanel.DoubleBuffered := True;
     GlassFrame.Enabled := False;
-
     MainTabsNew.Width := MainTabsNew.Width + FLPanel.Width - TabInternalRect.Width;
     MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height - TabInternalRect.Height;
     MainTabsNew.TabIndex := FLPanel.PageNumber;
-
     MainHeight := MainTabsNew.Height;
     MainWidth := MainTabsNew.Width;
   end
@@ -1383,25 +1384,19 @@ begin
     MainTabsNew.Hide;
     FLPanel.Left := 0;
     FLPanel.Top := 0;
-    FLPanel.DoubleBuffered := False;
-    GlassFrame.Enabled := True;
-
+    FLPanel.DoubleBuffered := not nobgnotabs;
+    GlassFrame.Enabled := nobgnotabs;
     MainHeight := FLPanel.Height;
     MainWidth := FLPanel.Width;
   end;
-
   //--Позволяем перетягивать файлы на кнопку
   DragAcceptFiles(FLPanel.Handle, True);
-
   StatusBar.Top := MainHeight + 1;
   StatusBar.Panels[0].Width := MainWidth - MulDiv(122, Screen.PixelsPerInch, DesignDPI);
-
   ClientWidth := MainWidth;
-  if statusbarvis then
-    ClientHeight := MainHeight + StatusBar.Height
-  else
-    ClientHeight := MainHeight;
-
+  if statusbarvis
+    then ClientHeight := MainHeight + StatusBar.Height
+    else ClientHeight := MainHeight;
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
 end;
@@ -1613,8 +1608,6 @@ begin
   TabNames := TStringList.Create;
   //--Создаем экземпляр панели с кнопками
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
-  //--fix the bug with color, when no tabs
-  FlPanel.ParentBackground := False;
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   ChPos := true;
   randomize;
