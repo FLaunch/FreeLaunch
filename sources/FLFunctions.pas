@@ -665,7 +665,11 @@ begin
       try
         ThreadLaunch(ALink, AMainHandle, ADroppedFile);
       except
-        on e: Exception do
+        on E: EOSError do
+          if not (e.ErrorCode = ERROR_CANCELLED) then
+            WarningMessage(AMainHandle,
+              StringReplace(e.Message, '%1', ExtractFileName(ALink.exec), [rfReplaceAll]));
+        on E: Exception do
           WarningMessage(AMainHandle,
             StringReplace(e.Message, '%1', ExtractFileName(ALink.exec), [rfReplaceAll]));
       end;

@@ -47,7 +47,7 @@ object SettingsForm: TSettingsForm
         Top = 275
         Width = 145
         Height = 25
-        TabOrder = 6
+        TabOrder = 7
         OnClick = ReloadIconsButtonClick
       end
       object StartHideBox: TCheckBox
@@ -80,6 +80,13 @@ object SettingsForm: TSettingsForm
         Width = 420
         Height = 17
         TabOrder = 5
+      end
+      object DelLnkCheckBox: TCheckBox
+        Left = 10
+        Top = 160
+        Width = 420
+        Height = 17
+        TabOrder = 6
       end
     end
     object TabInterface: TTabSheet
@@ -247,44 +254,52 @@ object SettingsForm: TSettingsForm
         Left = 20
         Top = 20
         Width = 400
-        Height = 225
+        Height = 200
         TabOrder = 0
         object lblWState: TLabel
           Left = 230
-          Top = 155
+          Top = 130
           Width = 3
           Height = 13
           Alignment = taRightJustify
         end
         object lblPriority: TLabel
           Left = 230
-          Top = 180
+          Top = 155
           Width = 3
           Height = 13
           Alignment = taRightJustify
         end
         object HideCheckBox: TCheckBox
           Left = 10
+          Top = 25
+          Width = 380
+          Height = 17
+          TabOrder = 0
+        end
+        object QoLCheckBox: TCheckBox
+          Left = 10
           Top = 50
           Width = 380
           Height = 17
           TabOrder = 1
         end
-        object QoLCheckBox: TCheckBox
+        object WSBox: TComboBox
+          Left = 240
+          Top = 125
+          Width = 145
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 4
+        end
+        object AdminCheckBox: TCheckBox
           Left = 10
           Top = 75
           Width = 380
           Height = 17
           TabOrder = 2
         end
-        object DelLnkCheckBox: TCheckBox
-          Left = 10
-          Top = 25
-          Width = 380
-          Height = 17
-          TabOrder = 0
-        end
-        object WSBox: TComboBox
+        object PriorityBox: TComboBox
           Left = 240
           Top = 150
           Width = 145
@@ -292,27 +307,12 @@ object SettingsForm: TSettingsForm
           Style = csDropDownList
           TabOrder = 5
         end
-        object AdminCheckBox: TCheckBox
+        object DropCheckBox: TCheckBox
           Left = 10
           Top = 100
           Width = 380
           Height = 17
           TabOrder = 3
-        end
-        object PriorityBox: TComboBox
-          Left = 240
-          Top = 175
-          Width = 145
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 6
-        end
-        object DropCheckBox: TCheckBox
-          Left = 10
-          Top = 125
-          Width = 380
-          Height = 17
-          TabOrder = 4
         end
       end
     end
