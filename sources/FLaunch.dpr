@@ -45,7 +45,9 @@ uses
   FLClasses in 'FLClasses.pas',
   FLLanguage in 'FLLanguage.pas',
   FLDialogs in 'FLDialogs.pas',
-  FLData in 'FLData.pas' {Data: TDataModule};
+  FLData in 'FLData.pas' {Data: TDataModule},
+  Vcl.Themes,
+  Vcl.Styles;
 
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED}
 
