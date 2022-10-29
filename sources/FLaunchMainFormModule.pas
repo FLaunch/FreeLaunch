@@ -213,8 +213,6 @@ type
 var
   FlaunchMainForm: TFlaunchMainForm;
   PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
-  rowscount, colscount, lpadding, tabind,
-    LeftPer, TopPer: integer;
   templinks: link;
   links: array[0..maxt - 1] of link;
   PriorDef: Byte = 0;
@@ -226,13 +224,30 @@ var
   FocusRow: integer = -1;
   FocusCol: integer = -1;
   GlobTabNum: integer = -1;
+  tabind: Integer = 0;
+  tabsview: Integer = 0;
+  titlebar: Integer = 0;
+  TopPer: Integer = 0;
+  lpadding: Integer = 1;
+  rowscount: Integer = 2;
+  colscount: Integer = 10;
+  LeftPer: Integer = 100;
   Nim: TNotifyIconData;
-  Autorun, AlwaysOnTop, nowactive, starthide, aboutshowing, settingsshowing,
-    statusbarvis, dtimeinstbar, hideafterlaunch, queryonlaunch, deletelnk,
-    rwar, defdrop, nobgnotabs: boolean;
-  titlebar, tabsview: integer;
+  nowactive, aboutshowing, settingsshowing: boolean;
   lngfilename: string;
-  ChPos: boolean = false;
+  AlwaysOnTop: Boolean = False;
+  Autorun: Boolean = False;
+  ChPos: Boolean = False;
+  defdrop: Boolean = False;
+  deletelnk: Boolean = False;
+  dtimeinstbar: Boolean = False;
+  hideafterlaunch: Boolean = False;
+  queryonlaunch: Boolean = False;
+  rwar: Boolean = False;
+  starthide: Boolean = False;
+  ClearONF: Boolean = True;
+  nobgnotabs: Boolean = True;
+  statusbarvis: Boolean = True;
 
 implementation
 
@@ -326,7 +341,9 @@ begin
       for c := 0 to ColsCount - 1 do
         if FLPanel.Buttons[t,r,c].IsActive then
         begin
-          FLPanel.Buttons[t,r,c].Data.AssignIcons;
+          if not FileExists(FLPanel.Buttons[t,r,c].Data.Exec) and ClearONF
+            then FLPanel.Buttons[t,r,c].FreeData
+            else FLPanel.Buttons[t,r,c].Data.AssignIcons;
           FLPanel.Buttons[t,r,c].Repaint;
         end;
   FLPanel.PageNumber := MainTabsNew.TabIndex;
@@ -531,6 +548,7 @@ begin
   rwar := ini.ReadBool(inisection, 'runbtnasadmin', False);
   defdrop := ini.ReadBool(inisection, 'acceptdropfiles', False);
   nobgnotabs := ini.ReadBool(inisection, 'glasswithnotabs', True);
+  ClearONF := ini.ReadBool(inisection, 'clearbtnifonf', True);
   GrowTabNames(tabscount);
   for i := 1 to tabscount do
     TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
@@ -886,6 +904,7 @@ begin
   WindowNode.AddChild('DefWinState').NodeValue := WStateDef;
   WindowNode.AddChild('DefPriority').NodeValue := PriorDef;
   WindowNode.AddChild('GlassWhenNoTabs').NodeValue := nobgnotabs;
+  WindowNode.AddChild('ClearBtnIfONF').NodeValue := ClearONF;
 
   TabRootNode := WindowNode.AddChild('Tabs');
   TabRootNode.AddChild('View').NodeValue := tabsview;
@@ -1084,6 +1103,7 @@ begin
   rwar := GetBool(WindowNode, 'RunBtnAsAdmin');
   defdrop := GetBool(WindowNode, 'DefAcceptDropFiles');
   nobgnotabs := GetBool(WindowNode, 'GlassWhenNoTabs');
+  ClearONF := GetBool(WindowNode, 'ClearBtnIfONF');
   WStateDef := GetInt(WindowNode, 'DefWinState');
   if WStateDef > 3 then WStateDef := 0;
   PriorDef := GetInt(WindowNode, 'DefPriority');

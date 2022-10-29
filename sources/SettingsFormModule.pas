@@ -81,6 +81,7 @@ type
     PriorityBox: TComboBox;
     DropCheckBox: TCheckBox;
     GlassCheckBox: TCheckBox;
+    ClearCheckBox: TCheckBox;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -227,6 +228,7 @@ begin
   AdminCheckBox.Caption := Language.Settings.ChbAdmin;
   DropCheckBox.Caption := Language.Settings.ChbDrop;
   GlassCheckBox.Caption := Language.Settings.ChbGlass;
+  ClearCheckBox.Caption := Language.Settings.ChbClear;
   TBarBox.Items.Add(Language.Settings.TitlebarNormal);
   TBarBox.Items.Add(Language.Settings.TitlebarMini);
   TBarBox.Items.Add(Language.Settings.TitlebarHidden);
@@ -264,6 +266,7 @@ begin
   DateTimeBox.Checked := dtimeinstbar;
   DateTimeBox.Enabled := StatusBarBox.Checked;
   GlassCheckBox.Checked := nobgnotabs;
+  ClearCheckBox.Checked := ClearONF;
   TBarBox.ItemIndex := titlebar;
   TabsBox.ItemIndex := tabsview;
   TabsEdit.MaxValue := TabsCountMax;
@@ -302,6 +305,7 @@ begin
   rwar := AdminCheckBox.Checked;
   defdrop := DropCheckBox.Checked;
   nobgnotabs := GlassCheckBox.Checked;
+  ClearONF := ClearCheckBox.Checked;
   WStateDef := WSBox.ItemIndex;
   PriorDef := PriorityBox.ItemIndex;
   FlaunchMainForm.SetAutorun(Autorun);

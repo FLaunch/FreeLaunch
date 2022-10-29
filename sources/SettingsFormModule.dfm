@@ -47,7 +47,7 @@ object SettingsForm: TSettingsForm
         Top = 275
         Width = 145
         Height = 25
-        TabOrder = 7
+        TabOrder = 8
         OnClick = ReloadIconsButtonClick
       end
       object StartHideBox: TCheckBox
@@ -87,6 +87,13 @@ object SettingsForm: TSettingsForm
         Width = 420
         Height = 17
         TabOrder = 6
+      end
+      object ClearCheckBox: TCheckBox
+        Left = 10
+        Top = 185
+        Width = 420
+        Height = 17
+        TabOrder = 7
       end
     end
     object TabInterface: TTabSheet

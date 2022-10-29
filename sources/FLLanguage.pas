@@ -51,7 +51,7 @@ type
   TLngSettings = record
     Caption, General, NumOfTabs, Rows, Cols, Padding,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
-    ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbGlass,
+    ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbGlass, ChbClear,
     Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
     PriorityBelowNormal, PriorityRealTime,
     Titlebar, TitlebarNormal, TitlebarMini,
@@ -322,6 +322,8 @@ begin
       'Accept dropped files'));
     Settings.ChbGlass :=         Parse(Ini.ReadString(SctSettings, 'chb_glass',
       'Make button background transparent if there are no tabs'));
+    Settings.ChbClear :=         Parse(Ini.ReadString(SctSettings, 'chb_clear',
+      'When reloading buttons, delete the button if the object is not found'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',
