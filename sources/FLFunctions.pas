@@ -614,14 +614,14 @@ begin
     2: WinType := SW_SHOWMINIMIZED;
     3: WinType := SW_HIDE;
   end;
+  if (not FileExists(exec)) and (not DirectoryExists(exec))
+    then begin
+      WarningMessage(AMainHandle,
+        format(Language.Messages.NotFound, [ExtractFileName(exec)]));
+      Exit;
+    end;
   if ALink.ltype = 0 then
   begin
-    if not FileExists(exec) then
-      begin
-        WarningMessage(AMainHandle,
-          format(Language.Messages.NotFound, [ExtractFileName(exec)]));
-        exit;
-      end;
     case ALink.pr of
       0: Prior := NORMAL_PRIORITY_CLASS;
       1: Prior := HIGH_PRIORITY_CLASS;
@@ -636,7 +636,6 @@ begin
       params := ALink.params;
     params := GetAbsolutePath(params);
     execparams := Format('"%s" %s', [exec, params]);
-
     if (ALink.IsAdmin) and (not ParamStr(0).Contains('FLExecutor.exe')) then
       RunElevated
     else
