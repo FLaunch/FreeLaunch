@@ -49,7 +49,6 @@ begin
     begin
       WinHandle := StrToIntDef(ParamStr(2), 0);
       Language.Load(ParamStr(3));
-
       LinkStrings := TStringList.Create;
       try
         LinkStrings.Delimiter := ';';
@@ -60,8 +59,8 @@ begin
       finally
         LinkStrings.Free;
       end;
-
-      ThreadLaunch(Link, WinHandle, ParamStr(4));
+      if WinHandle > 0
+        then ThreadLaunch(Link, WinHandle, ParamStr(4));
     end;
   except
     on E: Exception do
