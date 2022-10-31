@@ -479,6 +479,13 @@ begin
     Result := Copy(Str, 1, Len) + '...';
 end;
 
+function RequestMessage(AHandle: HWND; AText: string): Integer;
+begin
+  Result := MessageBox(AHandle, PChar(AText),
+    PChar(Language.Messages.Confirmation),
+    MB_YESNO or MB_ICONQUESTION or MB_DEFBUTTON2 or MB_TOPMOST);
+end;
+
 procedure WarningMessage(AHandle: HWND; AText: string);
 begin
   MessageBox(AHandle, PChar(AText), PChar(Language.Messages.Caution),
@@ -603,11 +610,11 @@ begin
   if path = '' then
     path := ExtractFilePath(exec);
   if not ALink.active then
-    exit;
-  if ((ALink.ques) and (MessageBox(AMainHandle,
-    PChar(Format(Language.Messages.RunProgram, [ExtractFileName(exec)])),
-    PChar(Language.Messages.Confirmation), MB_ICONQUESTION or MB_YESNO) = IDNO)) then
-    exit;
+    Exit;
+  if (ALink.ques) and
+    (RequestMessage(AMainHandle, Format(Language.Messages.RunProgram,
+      [ExtractFileName(exec)])) = IDNO)
+    then Exit;
   case ALink.wst of
     0: WinType := SW_SHOW;
     1: WinType := SW_SHOWMAXIMIZED;

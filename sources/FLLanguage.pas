@@ -165,7 +165,7 @@ begin
     Messages.OldSettings :=  Parse(Ini.ReadString(SctMain, 'message1',
       'File FLaunch.dat has an older version (%%).\nDo you wish to convert it for using?'), '%s');
     Messages.RunProgram :=   Parse(Ini.ReadString(SctMain, 'message2',
-      'Do you wish to run this program?\n\n%%'), '%s');
+      'Do you wish to run this object?\n\n%%'), '%s');
     Messages.DeleteTab :=    Parse(Ini.ReadString(SctMain, 'message3',
       'Do you wish to delete this tab?\n\n%%'), '%s');
     Messages.DeleteButton := Parse(Ini.ReadString(SctMain, 'message4',
