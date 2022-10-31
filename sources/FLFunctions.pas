@@ -103,6 +103,8 @@ procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
 function MyCutting(Str: string; Len: byte): string;
 /// <summary> Простая обертка над MessageBox </summary>
 procedure WarningMessage(AHandle: HWND; AText: string);
+/// MessageBox with YES and NO buttons
+function RequestMessage(AHandle: HWND; AText: string): Integer;
 /// <summary> Определение типа файла </summary>
 function IsExecutable(Ext: string): Boolean;
 /// <summary> Обертка над CreateProcess </summary>
@@ -621,12 +623,6 @@ begin
     2: WinType := SW_SHOWMINIMIZED;
     3: WinType := SW_HIDE;
   end;
-  if (not FileExists(exec)) and (not DirectoryExists(exec))
-    then begin
-      WarningMessage(AMainHandle,
-        format(Language.Messages.NotFound, [ExtractFileName(exec)]));
-      Exit;
-    end;
   if ALink.ltype = 0 then
   begin
     case ALink.pr of

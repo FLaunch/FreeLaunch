@@ -667,7 +667,14 @@ procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
 begin
   Inc(LaunchID);
   LaunchingButtons.Add(LaunchID, AButton);
-  NewProcess(AButton.DataToLink, Handle, LaunchID, ADroppedFile);
+  if not FileExists(AButton.DataToLink.exec)
+      and (not DirectoryExists(AButton.DataToLink.exec))
+    then begin
+      if RequestMessage(Handle,
+          Format(Language.Messages.NotFound, [AButton.DataToLink.exec])) = IDYES
+        then AButton.FreeData;
+    end else
+      NewProcess(AButton.DataToLink, Handle, LaunchID, ADroppedFile);
 end;
 
 function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;

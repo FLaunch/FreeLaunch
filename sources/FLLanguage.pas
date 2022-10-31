@@ -177,7 +177,7 @@ begin
     Messages.ImportButton := Parse(Ini.ReadString(SctMain, 'message7',
       'Do you wish to import button settings from this file?\n\n%%'), '%s');
     Messages.NotFound :=     Parse(Ini.ReadString(SctMain, 'message8',
-      'Object not found\n\n%%'), '%s');
+      'Object not found\n\n%%\n\nDo you wish to delete this button?'), '%s');
 
     Menu.Show :=         Parse(Ini.ReadString(SctMain, 'ni_show',
       '&FreeLaunch'));
