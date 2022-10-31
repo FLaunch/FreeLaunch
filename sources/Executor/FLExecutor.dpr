@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #                                                                        #
   #  This file is part of FreeLaunch.                                      #
@@ -29,7 +30,7 @@ uses
   System.SysUtils, Winapi.Windows, FLFunctions, FLLanguage, System.Classes;
 
 var
-  WinHandle: HWND;
+  WinHandle: HWND = 0;
   ErrorCode: Integer;
   LinkStrings: TStringList;
   Link: TLink;
