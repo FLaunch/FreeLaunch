@@ -157,7 +157,6 @@ type
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
-    function ConfirmDialog(Msg, Title: string): Boolean;
     function FindSysUserDefLangFile: string;
     //--Событие генерируется при клике по кнопке на панели
     procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
@@ -458,10 +457,9 @@ procedure TFlaunchMainForm.DeleteTab(i: integer);
 begin
   if TabsCount = 1 then
     Exit;
-  if not ConfirmDialog(format(Language.Messages.DeleteTab, [MainTabsNew.Tabs[i]]),
-    Language.Messages.Confirmation)
-  then
-    Exit;
+  if not RequestMessage(Handle, format(Language.Messages.DeleteTab,
+      [MainTabsNew.Tabs[i]])) = IDYES
+    then Exit;
   //--Удаляем имя этой вкладки
   TabNames.Delete(i);
   //--Удаляем вкладку
@@ -481,12 +479,6 @@ begin
   //--Подгоняем размер окна под актуальный размер панели
   ChangeWndSize;
   if TabsCount = 1 then ChPos := False;
-end;
-
-function TFlaunchMainForm.ConfirmDialog(Msg, Title: string): Boolean;
-begin
-  Result := Application.MessageBox(PChar(Msg), PChar(Title),
-    MB_ICONQUESTION or MB_YESNO) = ID_YES;
 end;
 
 //for compatibility with old versions
@@ -608,10 +600,9 @@ end;
 {*--Обработка пунктов контекстного меню вкладок--*}
 procedure TFlaunchMainForm.TabPopupItem_ClearClick(Sender: TObject);
 begin
-  if not ConfirmDialog(format(Language.Messages.ClearTab, [MainTabsNew.Tabs[MainTabsNew.TabIndex]]),
-    Language.Messages.Confirmation)
-  then
-    exit;
+  if not RequestMessage(Handle, format(Language.Messages.ClearTab,
+      [MainTabsNew.Tabs[MainTabsNew.TabIndex]])) = IDYES
+    then Exit;
   FLPanel.ClearPage(MainTabsNew.TabIndex);
 end;
 
@@ -796,9 +787,8 @@ begin
   if VerStr <> '2.0 beta 1' then
   begin
     FileClose(LinksCfgFile);
-
-    if ConfirmDialog(format(Language.Messages.OldSettings,[VerStr]),
-      Language.Messages.Confirmation)
+    if RequestMessage(Handle, format(Language.Messages.OldSettings,
+      [VerStr])) = IDYES
     then
     begin
       if (VerStr = '1.21') or (VerStr = '1.2') or ((VerStr = '1.1')) then
@@ -1319,10 +1309,9 @@ var
 begin
   TempButton := FLPanel.LastUsedButton;
   TempButton.Highlight;
-  if ConfirmDialog(Format(Language.Messages.DeleteButton, [ExtractFileName(TempButton.Data.Exec)]),
-    Language.Messages.Confirmation)
-  then
-    TempButton.FreeData;
+  if RequestMessage(Handle, Format(Language.Messages.DeleteButton,
+      [ExtractFileName(TempButton.Data.Exec)])) = IDYES
+    then TempButton.FreeData;
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ExportClick(Sender: TObject);
@@ -1522,18 +1511,17 @@ begin
   if Button.IsActive then
   begin
     Button.Highlight;
-    if not ConfirmDialog(Language.Messages.BusyReplace,
-      Language.Messages.Confirmation)
-    then
-      Exit;
+    if not RequestMessage(Handle, Language.Messages.BusyReplace) = IDYES
+      then Exit;
   end;
   Ext := ExtractFileExt(FileName).ToLower;
   //--Если был перетянут файл кнопки
   if Ext = '.flb' then
   begin
     Button.Highlight;
-    if ConfirmDialog(format(Language.Messages.ImportButton,[FileName]), Language.Messages.Confirmation) then
-      ImportButton(Button, FileName);
+    if RequestMessage(Handle,
+        format(Language.Messages.ImportButton,[FileName])) = IDYES
+      then ImportButton(Button, FileName);
     exit;
   end;
   //--Инициализируем ячейку данных
