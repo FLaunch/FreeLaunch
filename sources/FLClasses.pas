@@ -141,6 +141,7 @@ type
       fPr: integer;
       fWSt: integer;
       FIsAdmin: Boolean;
+      FASAdminPerm: Boolean;
       {*----------------*}
       //--Флаг, определяюший, установлена ли иконка
       fHasIcon: boolean;
@@ -198,6 +199,8 @@ type
       //--Приоритет запущенного процесса
       property Pr: integer read fPr write fPr;
       property IsAdmin: Boolean read FIsAdmin write FIsAdmin;
+      property AsAdminPerm: Boolean read FAsAdminPerm write FASAdminPerm
+        default False;
       //--Состояние окна
       property WSt: integer read fWSt write fWSt;
       property Height: Integer read FHeight write SetHeight;
@@ -444,7 +447,8 @@ begin
       Result.hide := TmpData.Hide;
       Result.pr := TmpData.Pr;
       Result.wst := TmpData.WSt;
-      Result.IsAdmin := TmpData.FIsAdmin;
+      Result.IsAdmin := TmpData.IsAdmin;
+      Result.AsAdminPerm := TmpData.AsAdminPerm;
     end;
   finally
     Father.ExpandStrings := True;

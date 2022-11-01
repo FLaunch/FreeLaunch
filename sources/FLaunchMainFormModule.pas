@@ -72,8 +72,6 @@ const
   cr_nightly = False;
   {$ENDIF}
 
-  DesignDPI = 96;
-
 type
   TAByte = array [0..maxInt-1] of byte;
   TPAByte = ^TAByte;
@@ -108,6 +106,7 @@ type
     TabPopupItem_Rename: TMenuItem;
     TabPopupItem_Clear: TMenuItem;
     TabPopupItem_Delete: TMenuItem;
+    ButtonPopupItem_RunAsAdmin: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure NI_CloseClick(Sender: TObject);
@@ -137,6 +136,7 @@ type
     procedure TabPopupItem_DeleteClick(Sender: TObject);
     procedure TabPopupItem_ClearClick(Sender: TObject);
     procedure MainTabsNewMouseLeave(Sender: TObject);
+    procedure ButtonPopupItem_RunAsAdminClick(Sender: TObject);
   private
     //--Список имен вкладок
     TabNames: TStringList;
@@ -150,7 +150,7 @@ type
     procedure UMShowMainForm(var Msg: TMessage); message UM_ShowMainForm;
     procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
     procedure UMLaunchDone(var Msg: TMessage); message UM_LaunchDone;
-    procedure LaunchButton(AButton: TFLButton; ADroppedFile: string = '');
+    procedure LaunchButton(AButton: TFLButton; ADroppedFile: string = ''; RunAsAdmin: Boolean = False);
     procedure ImportButton(Button: TFLButton; FileName: string);
     procedure ExportButton(Button: TFLButton; FileName: string);
     function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -254,6 +254,9 @@ implementation
 
 uses
   Xml.XMLDoc, Xml.XMLIntf, PngImage, System.IOUtils, System.Math;
+
+var
+  LaunchID: Integer = 0;
 
 //getting app version from executable file of freelaunch
 function TFlaunchMainForm.GetAppVersion: string;
@@ -365,9 +368,10 @@ begin
   NI_About.Caption := Language.Menu.About;
   NI_Close.Caption := Language.Menu.Close;
   ButtonPopupItem_Run.Caption := Language.Menu.Run;
+  ButtonPopupItem_RunAsAdmin.Caption := Language.Menu.RunAsAdmin;
   ButtonPopupItem_TypeProgramm.Caption := Language.Menu.TypeProgramm;
   ButtonPopupItem_TypeFile.Caption := Language.Menu.TypeFile;
-  ButtonPopupItem_Export.Caption := Language.Menu.Export;
+  ButtonPopupItem_Export.Caption := Language.Menu.ExportBtn;
   ButtonPopupItem_Import.Caption := Language.Menu.Import;
   ButtonPopupItem_Clear.Caption := Language.Menu.Clear;
   ButtonPopupItem_Props.Caption := Language.Menu.Prop;
@@ -572,7 +576,6 @@ end;
 procedure TFlaunchMainForm.UMLaunchDone(var Msg: TMessage);
 var
   Button: TFLButton;
-
 begin
   Button := LaunchingButtons.Items[Msg.LParam];
   LaunchingButtons.Remove(Msg.LParam);
@@ -650,22 +653,23 @@ begin
   ChWinView((not nowactive) or not (Showing));
 end;
 
-var
-  LaunchID: Integer = 0;
-
 procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
-  ADroppedFile: string);
+  ADroppedFile: string; RunAsAdmin: Boolean);
+var
+  TempLink: TLink;
 begin
   Inc(LaunchID);
   LaunchingButtons.Add(LaunchID, AButton);
-  if not FileExists(AButton.DataToLink.exec)
-      and (not DirectoryExists(AButton.DataToLink.exec))
+  TempLink := AButton.DataToLink;
+  TempLink.AsAdminPerm := RunAsAdmin;
+  if not FileExists(TempLink.exec)
+      and (not DirectoryExists(TempLink.exec))
     then begin
       if RequestMessage(Handle,
-          Format(Language.Messages.NotFound, [AButton.DataToLink.exec])) = IDYES
+          Format(Language.Messages.NotFound, [TempLink.exec])) = IDYES
         then AButton.FreeData;
     end else
-      NewProcess(AButton.DataToLink, Handle, LaunchID, ADroppedFile);
+      NewProcess(TempLink, Handle, LaunchID, ADroppedFile);
 end;
 
 function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
@@ -1364,6 +1368,17 @@ begin
     TempButton.LinkToData(TFilePropertiesForm.Execute(Link));
 end;
 
+procedure TFlaunchMainForm.ButtonPopupItem_RunAsAdminClick(Sender: TObject);
+var
+  TempButton: TFLButton;
+begin
+  TempButton := FLPanel.LastUsedButton;
+  TempButton.Highlight;
+  if not TempButton.IsActive
+    then Exit;
+  LaunchButton(TempButton, '', True);
+end;
+
 procedure TFlaunchMainForm.ButtonPopupItem_RunClick(Sender: TObject);
 begin
   FLPanel.LastUsedButton.Click;
@@ -1463,6 +1478,7 @@ begin
         ButtonPopupItem_TypeProgramm.Checked := True;
 
     ButtonPopupItem_Run.Enabled := Button.IsActive;
+    ButtonPopupItem_RunAsAdmin.Enabled := Button.IsActive;
     ButtonPopupItem_Import.Enabled := not Button.IsActive;
     ButtonPopupItem_Export.Enabled := Button.IsActive;
     ButtonPopupItem_Clear.Enabled := Button.IsActive;

@@ -59,6 +59,7 @@ type
     pr: byte;
     wst: byte;
     IsAdmin: Boolean;
+    AsAdminPerm: Boolean;
   end;
 
   //--Структура информации о ярлыке
@@ -639,7 +640,7 @@ begin
       params := ALink.params;
     params := GetAbsolutePath(params);
     execparams := Format('"%s" %s', [exec, params]);
-    if (ALink.IsAdmin) and (not ParamStr(0).Contains('FLExecutor.exe')) then
+    if (ALink.IsAdmin or ALink.AsAdminPerm) and (not ParamStr(0).Contains('FLExecutor.exe')) then
       RunElevated
     else
       if not CreateProcess(exec, execparams, path, WinType, Prior, ErrorCode) then

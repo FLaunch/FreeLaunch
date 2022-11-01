@@ -62,8 +62,8 @@ type
   end;
 
   TLngMenu = record
-    Show, Settings, About, Close, Run, TypeProgramm, TypeFile, Export, Import,
-    Clear, Prop, Rename, ClearTab, DeleteTab, Group: string;
+    Show, Settings, About, Close, Run, RunAsAdmin, TypeProgramm, TypeFile,
+    ExportBtn, Import, Clear, Prop, Rename, ClearTab, DeleteTab, Group: string;
   end;
 
   TLngMain = record
@@ -71,8 +71,8 @@ type
   end;
 
   TLngMessages = record
-    Caution, Confirmation, OldSettings, RunProgram, DeleteTab, DeleteButton, ClearTab,
-    BusyReplace, ImportButton, NotFound: string;
+    Caution, Confirmation, OldSettings, RunProgram, DeleteTab, DeleteButton,
+    ClearTab, BusyReplace, ImportButton, NotFound: string;
   end;
 
   TLngInfo = record
@@ -185,15 +185,15 @@ begin
       '&Settings...'));
     Menu.About :=        Parse(Ini.ReadString(SctMain, 'ni_about',
       '&About...'));
-    Menu.Close :=        Parse(Ini.ReadString(SctMain, 'ni_close',
-      '&Close'));
-    Menu.Run :=          Parse(Ini.ReadString(SctMain, 'ni_run',
-      '&Execute'));
+    Menu.Close :=        Parse(Ini.ReadString(SctMain, 'ni_close', '&Close'));
+    Menu.Run :=          Parse(Ini.ReadString(SctMain, 'ni_run', '&Execute'));
+    Menu.RunAsAdmin :=   Parse(Ini.ReadString(SctMain, 'ni_runasadmin',
+      'Run as Administrator'));
     Menu.TypeProgramm := Parse(Ini.ReadString(SctMain, 'ni_tprogram',
       '&Executed file'));
     Menu.TypeFile :=     Parse(Ini.ReadString(SctMain, 'ni_tfile',
       '&File, folder'));
-    Menu.Export :=       Parse(Ini.ReadString(SctMain, 'ni_export',
+    Menu.ExportBtn :=    Parse(Ini.ReadString(SctMain, 'ni_export',
       '&Export...'));
     Menu.Import :=       Parse(Ini.ReadString(SctMain, 'ni_import',
       '&Import...'));

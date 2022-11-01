@@ -185,6 +185,9 @@ object FlaunchMainForm: TFlaunchMainForm
       Default = True
       OnClick = ButtonPopupItem_RunClick
     end
+    object ButtonPopupItem_RunAsAdmin: TMenuItem
+      OnClick = ButtonPopupItem_RunAsAdminClick
+    end
     object ButtonPopupItem_Line: TMenuItem
       Caption = '-'
     end
