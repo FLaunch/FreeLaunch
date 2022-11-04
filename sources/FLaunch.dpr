@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko                                     #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -56,13 +57,12 @@ var
 
 begin
   Wnd := FindWindow('TFlaunchMainForm', nil);
-  if Wnd <> 0 then
-    PostMessage(Wnd, UM_ShowMainForm, 0, 0)
-  else
-  begin
-    Application.Initialize;
-    Application.CreateForm(TData, Data);
-  Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
-  Application.Run;
-  end;
+  if Wnd <> 0
+    then PostMessage(Wnd, UM_ShowMainForm, 0, 0)
+    else begin
+      Application.Initialize;
+      Application.CreateForm(TData, Data);
+      Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
+      Application.Run;
+    end;
 end.
