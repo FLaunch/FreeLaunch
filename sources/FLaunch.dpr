@@ -62,9 +62,11 @@ begin
     then PostMessage(Wnd, UM_ShowMainForm, 0, 0)
     else begin
       Application.Initialize;
-      if WinDarkModeEnabled
-        then TStyleManager.TrySetStyle('Windows10 SlateGray')
-        else TStyleManager.TrySetStyle('Windows10');
+      case WinThemeDetect of
+        0: TStyleManager.TrySetStyle('Windows10 SlateGray', False);
+        1: TStyleManager.TrySetStyle('Windows10', False);
+        else TStyleManager.TrySetStyle('Windows', False);
+      end;
       Application.CreateForm(TData, Data);
       Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
       Application.Run;
