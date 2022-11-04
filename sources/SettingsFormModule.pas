@@ -34,9 +34,6 @@ uses
   Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Menus, Vcl.Samples.Spin,
   FLLanguage, FLFunctions;
 
-const
-  DesignDPI = 96;
-
 type
   TSettingsForm = class(TForm)
     pgc: TPageControl;
@@ -199,8 +196,6 @@ begin
   PaddingEdit.PopupMenu := NoPopup;
   IWEdit.PopupMenu := NoPopup;
   IHEdit.PopupMenu := NoPopup;
-  LanguagesBox.ItemHeight := MulDiv(LanguagesBox.ItemHeight,
-    Screen.PixelsPerInch, DesignDPI);
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);

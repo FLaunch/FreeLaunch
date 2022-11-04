@@ -625,7 +625,10 @@ begin
   then begin
     StatusBar.Panels.Add;
     StatusBar.Panels[1].Alignment := taCenter;
-    StatusBar.Panels[1].Width := 50;
+    StatusBar.Panels[1].Width :=
+      StatusBar.Canvas.TextWidth(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now)
+      + Space + Space + Space + Space); //4 spaces
+    StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width;
   end;
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
 end;
@@ -1423,7 +1426,10 @@ begin
   //--Позволяем перетягивать файлы на кнопку
   DragAcceptFiles(FLPanel.Handle, True);
   StatusBar.Top := MainHeight + 1;
-  StatusBar.Panels[0].Width := MainWidth - MulDiv(122, Screen.PixelsPerInch, DesignDPI);
+  StatusBar.Width := MainWidth;
+  if StatusBar.Panels.Count > 1 then
+    StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width
+  else StatusBar.Panels[0].Width := StatusBar.Width;
   ClientWidth := MainWidth;
   if statusbarvis
     then ClientHeight := MainHeight + StatusBar.Height
@@ -1641,12 +1647,10 @@ begin
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   ChPos := true;
-  randomize;
-  registerhotkey(Handle, HotKeyID, mod_control or mod_win, 0);
-
+  Randomize;
+  RegisterHotKey(Handle, HotKeyID, MOD_CONTROL or MOD_WIN, 0);
   InitEnvironment;
   MESettings().BugReportFile := fl_WorkDir + 'bugReport.mbr';
-
   if FileExists(fl_WorkDir + 'FLaunch.xml') then
   begin
     //--Читаем настройки кнопок
