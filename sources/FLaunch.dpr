@@ -2,7 +2,6 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko                                     #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -33,7 +32,9 @@ uses
   madListHardware,
   madListProcesses,
   madListModules,
-  Forms,
+  Vcl.Forms,
+  Vcl.Themes,
+  Vcl.Styles,
   Windows,
   FLaunchMainFormModule in 'FLaunchMainFormModule.pas' {FlaunchMainForm},
   ProgrammPropertiesFormModule in 'ProgrammPropertiesFormModule.pas' {ProgrammPropertiesForm},
@@ -53,7 +54,7 @@ uses
 {$R *.res}
 
 var
-  Wnd: Hwnd;
+  Wnd: HWND;
 
 begin
   Wnd := FindWindow('TFlaunchMainForm', nil);
@@ -61,6 +62,9 @@ begin
     then PostMessage(Wnd, UM_ShowMainForm, 0, 0)
     else begin
       Application.Initialize;
+      if WinDarkModeEnabled
+        then TStyleManager.TrySetStyle('Windows10 SlateGray')
+        else TStyleManager.TrySetStyle('Windows10');
       Application.CreateForm(TData, Data);
       Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
       Application.Run;

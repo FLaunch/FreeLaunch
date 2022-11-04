@@ -66,6 +66,7 @@
         <DCC_F>false</DCC_F>
         <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <Custom_Styles>Windows10|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Windows10.vsf;&quot;Windows10 SlateGray|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Windows10SlateGray.vsf&quot;</Custom_Styles>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <Icon_MainIcon>Image\Main.ico</Icon_MainIcon>
@@ -151,7 +152,6 @@
         <DCCReference Include="FLDialogs.pas"/>
         <DCCReference Include="FLData.pas">
             <Form>Data</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
         <RcItem Include="Image\Blank.ico">

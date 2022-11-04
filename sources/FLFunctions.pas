@@ -132,6 +132,8 @@ procedure InitEnvironment;
 function IsPortable: Boolean;
 /// <summary> Конвертация пути в путь с использованием переменных окружения </summary>
 function PathToPortable(APath: string): string;
+/// Check if Windows Dark mode enabled
+function WinDarkModeEnabled: Boolean;
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
@@ -144,7 +146,7 @@ implementation
 uses
   ShellApi, ShFolder, SysUtils, ActiveX, ComObj, ShlObj, FLLanguage,
   System.IniFiles, Winapi.CommCtrl, jclGraphics, System.IOUtils,
-  System.StrUtils;
+  System.StrUtils, System.Win.Registry;
 
 //--Функция не позволяет уйти значению за пределы допустимых
 //--Входные параметры: значение, минимальное значение, максимальное значение
@@ -897,6 +899,27 @@ begin
   else
     if ContainsText(FullPath, fl_root) then
       Result := ReplaceText(FullPath, fl_root, '%FL_ROOT%\');
+end;
+
+function WinDarkModeEnabled: Boolean;
+const
+  DarkKey = 'Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\';
+  DarkValue = 'AppsUseLightTheme';
+var
+  reg: TRegistry;
+begin
+  Result := False;
+  reg := TRegistry.Create(KEY_READ);
+  try
+    reg.RootKey := HKEY_CURRENT_USER;
+    if not reg.KeyExists(DarkKey) then Exit;
+    if not reg.OpenKeyReadOnly(DarkKey) then Exit;
+    if not reg.ValueExists(DarkValue) then Exit;    
+    Result := reg.ReadInteger(DarkValue) = 0;
+  finally
+    reg.CloseKey;
+    reg.Free;
+  end;
 end;
 
 end.
