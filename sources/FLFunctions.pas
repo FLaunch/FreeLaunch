@@ -198,7 +198,6 @@ function GetFileIcon(FileName: string; Index, Size: integer): HIcon;
 type
   TILSizes = array of Integer;
 const
-  XPSizes: TILSizes = [SHIL_SMALL, SHIL_LARGE, SHIL_EXTRALARGE];
   VistaSizes: TILSizes = [SHIL_SMALL, SHIL_LARGE, SHIL_EXTRALARGE, SHIL_JUMBO];
 var
   SFI: TShFileInfo;
@@ -206,37 +205,22 @@ var
   ILSizes: TILSizes;
 begin
   Result := 0;
-
   if GetIconCount(FileName) > 0 then
   begin
-    if TOSVersion.Check(6) then
-      Result := VistaGetIcon(FileName, Index, Size)
-    else
-      Result := ExtractIcon(hinstance, pchar(FileName), Index);
-
+    Result := VistaGetIcon(FileName, Index, Size);
     Exit;
   end;
-
-  if TOSVersion.Check(6) then
-  begin
-    FillChar(SFI, sizeof(SFI), 0);
-    ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), SHGFI_ICONLOCATION);
-    if SFI.szDisplayName[0] <> #0 then
-      Result := VistaGetIcon(SFI.szDisplayName, SFI.iIcon, Size);
-
-    ILSizes := VistaSizes;
-  end
-  else
-    ILSizes := XPSizes;
-
+  FillChar(SFI, sizeof(SFI), 0);
+  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), SHGFI_ICONLOCATION);
+  if SFI.szDisplayName[0] <> #0
+    then Result := VistaGetIcon(SFI.szDisplayName, SFI.iIcon, Size);
+  ILSizes := VistaSizes;
   FillChar(SFI, sizeof(SFI), 0);
   ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), SHGFI_SYSICONINDEX);
   MinSize := 0;
   for CurrentSize in ILSizes do
   begin
-    if Result <> 0 then
-      Exit;
-
+    if Result <> 0 then Exit;
     Result := GetShellIcon(CurrentSize, SFI.iIcon, MinSize, Size);
   end;
 end;
@@ -841,11 +825,7 @@ procedure DrawShieldIcon(ACanvas: TCanvas; APosition: TPoint; ASize: TSize);
 var
   IconHandle: HICON;
 begin
-  if not TOSVersion.Check(6) then
-    Exit;
-
   IconHandle := GetSystemIcon(IDI_SHIELD, False, @ASize);
-
   DrawIconEx(ACanvas.Handle, APosition.X, APosition.Y, IconHandle, ASize.cx,
     ASize.cy, 0, 0, DI_NORMAL);
 end;

@@ -1687,12 +1687,9 @@ begin
   SetTabNames;
   GenerateWnd;
   //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
-  if TOSVersion.Check(6) then
-  begin
-    ChangeWindowMessageFilter (WM_DROPFILES, MSGFLT_ADD);
-    ChangeWindowMessageFilter (WM_COPYDATA, MSGFLT_ADD);
-    ChangeWindowMessageFilter ($0049, MSGFLT_ADD);
-  end;
+  ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
+  ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
+  ChangeWindowMessageFilter(WM_COPYGLOBALDATA, MSGFLT_ADD);
   if not fileexists(fl_WorkDir + '.session') then
   begin
     //--Создаем файл, который будет идентифицировать сессию. При корректном завершении программы файл будет удален
