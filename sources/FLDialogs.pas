@@ -2,6 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
+  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -139,13 +140,10 @@ function TFileOrDirDialog.Execute: Boolean;
 var
   FilePath: string;
 begin
-  if TOSVersion.Check(6) then
-  begin
-    FilePath := ExtractFilePath(FFileName);
-    if DirectoryExists(FilePath) then
-      FOpenDialog.DefaultFolder := FilePath;
+  FilePath := ExtractFilePath(FFileName);
+  if DirectoryExists(FilePath) then
+    FOpenDialog.DefaultFolder := FilePath;
     FOpenDialog.FileName := 'Select file or directory';
-
     Result := FOpenDialog.Execute;
     if Result then
     begin
@@ -154,10 +152,6 @@ begin
       else
         FFileName := ExtractFilePath(FOpenDialog.FileName);
     end;
-  end
-  else
-    Result := BrowseDialog(Application.ActiveFormHandle,
-      'Select file or directory', FFileName);
 end;
 
 procedure TFileOrDirDialog.OpenDialogFolderChange(Sender: TObject);

@@ -39,22 +39,17 @@ type
   end;
 
 const
-  TCM_GETITEMRECT = $130A;
   UM_ShowMainForm = WM_USER + 1;
   UM_HideMainForm = WM_USER + 2;
   UM_LaunchDone = WM_USER + 3;
-  FLThemes : array [0..6] of TFLThemeInfo = (
+  //default themes (integrated in exe)
+  FLThemes : array [0..2] of TFLThemeInfo = (
       /// first theme is always classic
       (ID: 0; Name: 'Windows'; NameForGUI: 'Classic'),
       // second theme is always for Windows 10+ dark mode
       (ID: 1; Name: 'Windows10 SlateGray'; NameForGUI: 'Slate Gray'),
       /// third theme is always for Windows 10+ light mode
-      (ID: 2; Name: 'Windows10'; NameForGUI: 'Light'),
-      /// another custom themes below
-      (ID: 3; Name: 'Windows10 Blue'; NameForGUI: 'Blue'),
-      (ID: 4; Name: 'Windows10 Dark'; NameForGUI: 'Dark'),
-      (ID: 5; Name: 'Windows10 Green'; NameForGUI: 'Green'),
-      (ID: 6; Name: 'Windows10 Purple'; NameForGUI: 'Purple')
+      (ID: 2; Name: 'Windows10'; NameForGUI: 'Light')
     );
 
 
