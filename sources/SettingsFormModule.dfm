@@ -3,7 +3,7 @@ object SettingsForm: TSettingsForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  ClientHeight = 421
+  ClientHeight = 431
   ClientWidth = 444
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,8 +23,8 @@ object SettingsForm: TSettingsForm
     Left = 0
     Top = 0
     Width = 444
-    Height = 360
-    ActivePage = TabGeneral
+    Height = 390
+    ActivePage = TabInterface
     Align = alTop
     TabOrder = 0
     object TabGeneral: TTabSheet
@@ -44,7 +44,7 @@ object SettingsForm: TSettingsForm
       end
       object ReloadIconsButton: TButton
         Left = 10
-        Top = 275
+        Top = 325
         Width = 145
         Height = 25
         TabOrder = 8
@@ -100,14 +100,14 @@ object SettingsForm: TSettingsForm
       ImageIndex = 1
       object lblWndTitle: TLabel
         Left = 190
-        Top = 45
+        Top = 75
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblTabStyle: TLabel
         Left = 190
-        Top = 75
+        Top = 105
         Width = 3
         Height = 13
         Alignment = taRightJustify
@@ -121,47 +121,54 @@ object SettingsForm: TSettingsForm
       end
       object lblNumofTabs: TLabel
         Left = 265
-        Top = 105
+        Top = 135
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblNumofRows: TLabel
         Left = 265
-        Top = 135
+        Top = 165
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblNumofCols: TLabel
         Left = 265
-        Top = 165
+        Top = 195
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblPadding: TLabel
         Left = 265
-        Top = 195
+        Top = 225
+        Width = 3
+        Height = 13
+        Alignment = taRightJustify
+      end
+      object lblTheme: TLabel
+        Left = 190
+        Top = 45
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object TBarBox: TComboBox
         Left = 200
-        Top = 40
-        Width = 145
-        Height = 21
-        Style = csDropDownList
-        TabOrder = 1
-      end
-      object TabsBox: TComboBox
-        Left = 200
         Top = 70
         Width = 145
         Height = 21
         Style = csDropDownList
         TabOrder = 2
+      end
+      object TabsBox: TComboBox
+        Left = 200
+        Top = 100
+        Width = 145
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 3
       end
       object LanguagesBox: TComboBox
         Left = 200
@@ -175,25 +182,15 @@ object SettingsForm: TSettingsForm
       end
       object PaddingEdit: TSpinEdit
         Left = 275
-        Top = 190
+        Top = 220
         Width = 70
         Height = 22
         MaxValue = 100
         MinValue = 0
-        TabOrder = 6
+        TabOrder = 7
         Value = 1
       end
       object TabsEdit: TSpinEdit
-        Left = 275
-        Top = 100
-        Width = 70
-        Height = 22
-        MaxValue = 100
-        MinValue = 1
-        TabOrder = 3
-        Value = 1
-      end
-      object RowsEdit: TSpinEdit
         Left = 275
         Top = 130
         Width = 70
@@ -203,7 +200,7 @@ object SettingsForm: TSettingsForm
         TabOrder = 4
         Value = 1
       end
-      object ColsEdit: TSpinEdit
+      object RowsEdit: TSpinEdit
         Left = 275
         Top = 160
         Width = 70
@@ -213,12 +210,22 @@ object SettingsForm: TSettingsForm
         TabOrder = 5
         Value = 1
       end
+      object ColsEdit: TSpinEdit
+        Left = 275
+        Top = 190
+        Width = 70
+        Height = 22
+        MaxValue = 100
+        MinValue = 1
+        TabOrder = 6
+        Value = 1
+      end
       object grpBtnSize: TGroupBox
         Left = 20
-        Top = 230
+        Top = 260
         Width = 400
         Height = 80
-        TabOrder = 7
+        TabOrder = 8
         object lblBtnW: TLabel
           Left = 245
           Top = 20
@@ -253,6 +260,14 @@ object SettingsForm: TSettingsForm
           TabOrder = 1
           Value = 32
         end
+      end
+      object ThemesBox: TComboBox
+        Left = 200
+        Top = 40
+        Width = 145
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 1
       end
     end
     object TabNewButtons: TTabSheet
@@ -326,7 +341,7 @@ object SettingsForm: TSettingsForm
   end
   object OKButton: TButton
     Left = 250
-    Top = 375
+    Top = 400
     Width = 75
     Height = 25
     Default = True
@@ -335,7 +350,7 @@ object SettingsForm: TSettingsForm
   end
   object CancelButton: TButton
     Left = 350
-    Top = 375
+    Top = 400
     Width = 75
     Height = 25
     Cancel = True

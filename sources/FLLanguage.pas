@@ -49,7 +49,7 @@ type
   end;
 
   TLngSettings = record
-    Caption, General, NumOfTabs, Rows, Cols, Padding,
+    Caption, General, NumOfTabs, Rows, Cols, Padding, Theme,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
     ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbGlass, ChbClear,
     Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
@@ -376,6 +376,8 @@ begin
       'priority_below_normal', 'Below normal'));
     Settings.PriorityAboveNormal := Parse(Ini.ReadString(SctSettings,
       'priority_above_normal', 'Above normal'));
+    Settings.Theme :=            Parse(Ini.ReadString(SctSettings,
+      'theme', 'Theme'));
 
     Info.Load(Ini);
 

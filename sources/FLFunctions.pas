@@ -51,6 +51,10 @@ const
       /// third theme is always for Windows 10+ light mode
       (ID: 2; Name: 'Windows10'; NameForGUI: 'Light'),
       /// another custom themes below
+      (ID: 3; Name: 'Windows10 Blue'; NameForGUI: 'Blue'),
+      (ID: 4; Name: 'Windows10 Dark'; NameForGUI: 'Dark'),
+      (ID: 5; Name: 'Windows10 Green'; NameForGUI: 'Green'),
+      (ID: 6; Name: 'Windows10 Purple'; NameForGUI: 'Purple')
     );
 
 

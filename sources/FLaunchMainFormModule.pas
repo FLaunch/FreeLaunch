@@ -214,19 +214,20 @@ var
   PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
   templinks: link;
   links: array[0..maxt - 1] of link;
-  PriorDef: Byte = 0;
-  WStateDef: Byte = 0;
-  GlobTab: integer = -1;
-  GlobRow: integer = -1;
-  GlobCol: integer = -1;
-  FocusTab: integer = -1;
-  FocusRow: integer = -1;
-  FocusCol: integer = -1;
+  GlobTab: Integer = -1;
+  GlobRow: Integer = -1;
+  GlobCol: Integer = -1;
+  FocusTab: Integer = -1;
+  FocusRow: Integer = -1;
+  FocusCol: Integer = -1;
   GlobTabNum: integer = -1;
+  CurrAppTheme: Integer = 0;
+  PriorDef: Integer = 0;
   tabind: Integer = 0;
   tabsview: Integer = 0;
   titlebar: Integer = 0;
   TopPer: Integer = 0;
+  WStateDef: Integer = 0;
   lpadding: Integer = 1;
   rowscount: Integer = 2;
   colscount: Integer = 10;
@@ -529,9 +530,16 @@ begin
   if (tabsview < 0) or (tabsview > 2) then
     tabsview := 0;
   WStateDef := ini.ReadInteger(inisection, 'defwindowstate', 0);
-  if WStateDef > 3 then WStateDef := 0;
+  if not WStateDef in [0..3] then WStateDef := 0;
   PriorDef := ini.ReadInteger(inisection, 'defpriority', 0);
-  if PriorDef > 5 then PriorDef := 0;
+  if not PriorDef in [0..5] then PriorDef := 0;
+  if ini.ReadInteger(inisection, 'currentthemeid', -1) < 0 
+    then CurrAppTheme := GetAppThemeIndex(GetAppTheme)
+    else begin
+      CurrAppTheme := ini.ReadInteger(inisection, 'currentthemeid', 0);
+      if not CurrAppTheme in [Low(FLThemes)..High(FLThemes)]
+        then CurrAppTheme := 0;
+    end;
   alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
   statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
   dtimeinstbar := ini.ReadBool(inisection, 'datetimeinstatusbar', False);
@@ -909,6 +917,7 @@ begin
   WindowNode.AddChild('DefPriority').NodeValue := PriorDef;
   WindowNode.AddChild('GlassWhenNoTabs').NodeValue := nobgnotabs;
   WindowNode.AddChild('ClearBtnIfONF').NodeValue := ClearONF;
+  WindowNode.AddChild('CurrentThemeID').NodeValue := CurrAppTheme;
 
   TabRootNode := WindowNode.AddChild('Tabs');
   TabRootNode.AddChild('View').NodeValue := tabsview;
@@ -1071,20 +1080,15 @@ begin
   RootNode := XMLDocument.ChildNodes.FindNode('FLaunch');
   if (not Assigned(RootNode)) or (not RootNode.HasChildNodes) then
     Exit;
-
   Version := GetStr(RootNode, 'Version');
-
   autorun := GetBool(RootNode, 'AutoRun');
   lngfilename := GetStr(RootNode, 'Language');
-
   WindowNode := RootNode.ChildNodes.FindNode('Windows');
   if (not Assigned(WindowNode)) or (not WindowNode.HasChildNodes) then
     Exit;
-
   WindowNode := WindowNode.ChildNodes.FindNode('Window');
   if (not Assigned(WindowNode)) or (not WindowNode.HasChildNodes) then
     Exit;
-
   PositionNode := WindowNode.ChildNodes.FindNode('Position');
   if Assigned(PositionNode) and PositionNode.HasChildNodes then
   begin
@@ -1095,7 +1099,6 @@ begin
     if TopPer < 0 then TopPer := 0;
     if TopPer > 100 then TopPer := 100;
   end;
-
   titlebar := GetInt(WindowNode, 'TitleBar');
   alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
   statusbarvis := GetBool(WindowNode, 'StatusBar');
@@ -1109,26 +1112,29 @@ begin
   nobgnotabs := GetBool(WindowNode, 'GlassWhenNoTabs');
   ClearONF := GetBool(WindowNode, 'ClearBtnIfONF');
   WStateDef := GetInt(WindowNode, 'DefWinState');
-  if WStateDef > 3 then WStateDef := 0;
   PriorDef := GetInt(WindowNode, 'DefPriority');
-  if PriorDef > 5 then PriorDef := 0;
-
+  if not WStateDef in [0..3] then WStateDef := 0;
+  if not PriorDef in [0..5] then PriorDef := 0;
+  if GetStr(WindowNode, 'CurrentThemeID') = '' then begin
+    CurrAppTheme := GetAppThemeIndex(GetAppTheme);
+  end else begin
+    CurrAppTheme := GetInt(WindowNode, 'CurrentThemeID');
+    if not CurrAppTheme in [Low(FLThemes)..High(FLThemes)]
+      then CurrAppTheme := 0;
+  end;
   TabsCount := 0;
   TabNumber := 0;
   TabNames.Clear;
   TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
   if (not Assigned(TabRootNode)) or (not TabRootNode.HasChildNodes) then
     Exit;
-
   tabsview := GetInt(TabRootNode, 'View');
-
   FontNode := TabRootNode.ChildNodes.FindNode('Font');
   if Assigned(FontNode) and FontNode.HasChildNodes then
   begin
     MainTabsNew.Font.Name := GetStr(FontNode, 'Name');
     MainTabsNew.Font.Size := GetInt(FontNode, 'Size');
   end;
-
   TabNode := TabRootNode.ChildNodes.FindNode('Tab');
   while Assigned(TabNode) and TabNode.HasChildNodes do
   begin
@@ -1136,32 +1142,25 @@ begin
     TabNumber := TabNode.Attributes['Number'];
     GrowTabNames(TabNumber);
     TabNames.Strings[TabNumber - 1] := GetStr(TabNode, 'Name');
-
     TabNode := TabNode.NextSibling;
   end;
-
   TabsCount := Min(TabsCount, TabsCountMax);
   GrowTabNames(TabNumber);
-
   MainTabsNew.TabIndex := GetInt(TabRootNode, 'ActiveTab') - 1;
-
   PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
   if (not Assigned(PanelRootNode)) or (not PanelRootNode.HasChildNodes) then
     Exit;
-
   PanelNode := PanelRootNode.ChildNodes.First;
   for TabNumber := 0 to TabsCount - 1 do
   begin
     if (not Assigned(PanelNode)) or (not PanelNode.HasChildNodes) then
       Exit;
-
     RowsCount := GetInt(PanelNode, 'Rows');
     ColsCount := GetInt(PanelNode, 'Columns');
     RowsCount := Min(RowsCount, RowsCountMax);
     ColsCount := Min(ColsCount, ColsCountMax);
     FLPanel.RowsCount := RowsCount;
     FLPanel.ColsCount := ColsCount;
-
     IconNode := PanelNode.ChildNodes.FindNode('Icons');
     if Assigned(IconNode) and IconNode.HasChildNodes then
     begin
@@ -1397,6 +1396,7 @@ var
   MainWidth, MainHeight: Integer;
   TabInternalRect: TRect;
 begin
+  SetAppThemeByIndex(CurrAppTheme);
   if TabsCount > 1 then
   begin
     MainTabsNew.Show;

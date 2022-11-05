@@ -79,6 +79,8 @@ type
     DropCheckBox: TCheckBox;
     GlassCheckBox: TCheckBox;
     ClearCheckBox: TCheckBox;
+    ThemesBox: TComboBox;
+    lblTheme: TLabel;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -199,6 +201,8 @@ begin
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);
+var
+  i: Integer;
 begin
   settingsshowing := true;
   //--Loading language
@@ -238,6 +242,7 @@ begin
   lblBtnH.Caption := Language.Settings.BtnHeight + ':';
   lblWState.Caption := Language.Settings.WState + ':';
   lblPriority.Caption := Language.Settings.Priority + ':';
+  lblTheme.Caption := Language.Settings.Theme + ':';
   WSBox.Items.Add(Language.Settings.WSNormal);
   WSBox.Items.Add(Language.Settings.WSMax);
   WSBox.Items.Add(Language.Settings.WSMin);
@@ -250,6 +255,9 @@ begin
   PriorityBox.Items.Add(Language.Settings.PriorityBelowNormal);
   PriorityBox.Items.Add(Language.Settings.PriorityAboveNormal);
   PriorityBox.ItemIndex := PriorDef;
+  for i := Low(FLThemes) to High(FLThemes)
+    do ThemesBox.Items.Add(FLThemes[i].NameForGUI);
+  ThemesBox.ItemIndex := CurrAppTheme;
   ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
   grpNewBtns.Caption := Language.Settings.NewBtnProperties;
   ScanLanguagesDir;
@@ -303,6 +311,7 @@ begin
   ClearONF := ClearCheckBox.Checked;
   WStateDef := WSBox.ItemIndex;
   PriorDef := PriorityBox.ItemIndex;
+  CurrAppTheme := ThemesBox.ItemIndex;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then
     lngfilename := LngFiles[LanguagesBox.ItemIndex];
