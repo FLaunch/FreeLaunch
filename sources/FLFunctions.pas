@@ -36,6 +36,9 @@ const
   UM_ShowMainForm = WM_USER + 1;
   UM_HideMainForm = WM_USER + 2;
   UM_LaunchDone = WM_USER + 3;
+  FLThemes : array [0..2] of string = ('Windows', 'Windows10 SlateGray',
+    'Windows10');
+
 
 type
   TAByte = array [0..maxInt-1] of byte;
@@ -133,7 +136,7 @@ function IsPortable: Boolean;
 /// <summary> Конвертация пути в путь с использованием переменных окружения </summary>
 function PathToPortable(APath: string): string;
 /// Check Windows visual theme
-function WinThemeDetect: Integer;
+function WinThemeDetect: string;
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
@@ -881,14 +884,15 @@ begin
       Result := ReplaceText(FullPath, fl_root, '%FL_ROOT%\');
 end;
 
-function WinThemeDetect: Integer;
+function WinThemeDetect: string;
 const
   DarkKey = 'Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\';
   DarkValue = 'AppsUseLightTheme';
 var
+  rval: Integer;
   reg: TRegistry;
 begin
-  Result := 0;
+  Result := FLThemes[0];
   reg := TRegistry.Create(KEY_READ);
   try
     reg.RootKey := HKEY_CURRENT_USER;
@@ -896,7 +900,9 @@ begin
       if not reg.KeyExists(DarkKey) then Exit;
       if not reg.OpenKeyReadOnly(DarkKey) then Exit;
       if not reg.ValueExists(DarkValue) then Exit;
-      Result := reg.ReadInteger(DarkValue) + 1;
+      rval := reg.ReadInteger(DarkValue) + 1;
+      if not rval in [0..2] then rval := 0;
+      Result := FLThemes[rval];
     end;
   finally
     reg.CloseKey;

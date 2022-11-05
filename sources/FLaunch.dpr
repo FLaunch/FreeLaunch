@@ -1,4 +1,4 @@
-﻿  {
+﻿{
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
@@ -62,11 +62,7 @@ begin
     then PostMessage(Wnd, UM_ShowMainForm, 0, 0)
     else begin
       Application.Initialize;
-      case WinThemeDetect of
-        1: TStyleManager.TrySetStyle('Windows10 SlateGray', False);
-        2: TStyleManager.TrySetStyle('Windows10', False);
-        else TStyleManager.TrySetStyle('Windows', False);
-      end;
+      TStyleManager.TrySetStyle(WinThemeDetect, False);
       Application.CreateForm(TData, Data);
       Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
       Application.Run;
