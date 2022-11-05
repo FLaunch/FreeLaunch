@@ -888,7 +888,7 @@ const
 var
   reg: TRegistry;
 begin
-  Result := 2;
+  Result := 0;
   reg := TRegistry.Create(KEY_READ);
   try
     reg.RootKey := HKEY_CURRENT_USER;
@@ -896,7 +896,7 @@ begin
       if not reg.KeyExists(DarkKey) then Exit;
       if not reg.OpenKeyReadOnly(DarkKey) then Exit;
       if not reg.ValueExists(DarkValue) then Exit;
-      Result := reg.ReadInteger(DarkValue);
+      Result := reg.ReadInteger(DarkValue) + 1;
     end;
   finally
     reg.CloseKey;
