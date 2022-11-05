@@ -28,9 +28,12 @@ unit ChangeIconFormModule;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ComCtrls, IniFiles, FLData, Vcl.Samples.Spin,
-  FLFunctions, FLLanguage;
+  Winapi.Windows, Winapi.Messages,
+  System.SysUtils, System.Variants, System.Classes, System.IniFiles,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls,
+  Vcl.StdCtrls, Vcl.ComCtrls,
+  Vcl.Samples.Spin,
+  FLData, FLFunctions, FLLanguage;
 
 type
   TChangeIconForm = class(TForm)

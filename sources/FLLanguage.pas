@@ -28,7 +28,7 @@ unit FLLanguage;
 interface
 
 uses
-  Graphics, IniFiles;
+  System.IniFiles, Vcl.Graphics;
 
 type
   TLngAbout = record
@@ -108,7 +108,8 @@ var
 implementation
 
 uses
-  SysUtils, Forms, Classes;
+  System.Classes, System.SysUtils,
+  Vcl.Forms;
 
 function Parse(Str: string; Frm: string = ''): string;
 begin

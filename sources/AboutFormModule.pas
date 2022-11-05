@@ -28,8 +28,11 @@ unit AboutFormModule;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, FLLanguage, Vcl.StdCtrls;
+  Winapi.Windows, Winapi.Messages,
+  System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  FLLanguage;
 
 const
   fn_authors = 'AUTHORS.txt';

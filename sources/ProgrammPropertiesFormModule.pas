@@ -28,9 +28,11 @@ unit ProgrammPropertiesFormModule;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, ExtCtrls, StdCtrls, ShellApi, IniFiles, FLLanguage,
-  ChangeIconFormModule, FLData, FLFunctions;
+  Winapi.Windows, Winapi.Messages, Winapi.ShellAPI,
+  System.SysUtils, System.Variants, System.Classes, System.IniFiles,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls,
+  Vcl.ExtCtrls, Vcl.StdCtrls,
+  ChangeIconFormModule, FLData, FLFunctions, FLLanguage;
 
 type
   TProgrammPropertiesForm = class(TForm)

@@ -254,7 +254,9 @@ implementation
 {$R *.dfm}
 
 uses
-  Xml.XMLDoc, Xml.XMLIntf, PngImage, System.IOUtils, System.Math;
+  Xml.XMLDoc, Xml.XMLIntf,
+  Vcl.Imaging.pngimage,
+  System.IOUtils, System.Math;
 
 var
   LaunchID: Integer = 0;

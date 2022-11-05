@@ -101,7 +101,6 @@ object AboutForm: TAboutForm
       ReadOnly = True
       ScrollBars = ssBoth
       TabOrder = 0
-      ExplicitWidth = 366
     end
   end
 end

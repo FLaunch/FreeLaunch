@@ -28,8 +28,10 @@ unit FLClasses;
 interface
 
 uses
-  Windows, SysUtils, Classes, Controls, ExtCtrls, ShellApi, Messages, Graphics, Menus, Dialogs,
-  FLFunctions, System.Generics.Collections, VCL.Buttons;
+  Winapi.Windows, Winapi.ShellAPI, Winapi.Messages,
+  System.SysUtils, System.Classes, System.Generics.Collections,
+  Vcl.Controls, Vcl.ExtCtrls, Vcl.Graphics, Vcl.Menus, Vcl.Dialogs, VCL.Buttons,
+  FLFunctions;
 
 const
   IconCacheDir = 'IconCache';
@@ -402,7 +404,8 @@ type
 implementation
 
 uses
-  IOUtils, FLaunchMainFormModule;
+  System.IOUtils,
+  FLaunchMainFormModule;
 
 {*******************************}
 {*****-- Класс TFLButton --*****}
