@@ -29,15 +29,29 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.Classes, Vcl.Graphics,
-  Vcl.Imaging.PNGImage;
+  Vcl.Imaging.PNGImage, Vcl.Themes, Vcl.Styles;
+
+type
+  TFLThemeInfo = record
+    ID: Integer;
+    Name: string;
+    NameForGUI: string;
+  end;
 
 const
   TCM_GETITEMRECT = $130A;
   UM_ShowMainForm = WM_USER + 1;
   UM_HideMainForm = WM_USER + 2;
   UM_LaunchDone = WM_USER + 3;
-  FLThemes : array [0..2] of string = ('Windows', 'Windows10 SlateGray',
-    'Windows10');
+  FLThemes : array [0..6] of TFLThemeInfo = (
+      /// first theme is always classic
+      (ID: 0; Name: 'Windows'; NameForGUI: 'Classic'),
+      // second theme is always for Windows 10+ dark mode
+      (ID: 1; Name: 'Windows10 SlateGray'; NameForGUI: 'Slate Gray'),
+      /// third theme is always for Windows 10+ light mode
+      (ID: 2; Name: 'Windows10'; NameForGUI: 'Light'),
+      /// another custom themes below
+    );
 
 
 type
@@ -137,6 +151,14 @@ function IsPortable: Boolean;
 function PathToPortable(APath: string): string;
 /// Check Windows visual theme
 function WinThemeDetect: string;
+/// Get current App visual theme
+function GetAppTheme: string;
+/// Get index of visual theme by name
+function GetAppThemeIndex(AName: string): Integer;
+/// Set App visual theme
+procedure SetAppTheme(AName: string);
+/// Set App visual theme by ID
+procedure SetAppThemeByIndex(AIndex: Integer);
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
@@ -892,7 +914,7 @@ var
   rval: Integer;
   reg: TRegistry;
 begin
-  Result := FLThemes[0];
+  Result := FLThemes[0].Name;
   reg := TRegistry.Create(KEY_READ);
   try
     reg.RootKey := HKEY_CURRENT_USER;
@@ -902,12 +924,42 @@ begin
       if not reg.ValueExists(DarkValue) then Exit;
       rval := reg.ReadInteger(DarkValue) + 1;
       if not rval in [0..2] then rval := 0;
-      Result := FLThemes[rval];
+      Result := FLThemes[rval].Name;
     end;
   finally
     reg.CloseKey;
     reg.Free;
   end;
+end;
+
+procedure SetAppTheme(AName: string);
+begin
+  TStyleManager.TrySetStyle(AName, False);
+end;
+
+function GetAppTheme: string;
+begin
+  Result := TStyleManager.ActiveStyle.Name;
+end;
+
+function GetAppThemeIndex(AName: string): Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+  WarningMessage(0, AName);
+  for I := Low(FLThemes) to High(FLThemes) do
+    if FLThemes[I].Name = AName then begin
+      Result := I;
+      Exit;
+    end;
+end;
+
+procedure SetAppThemeByIndex(AIndex: Integer);
+begin
+  if AIndex in [Low(FLThemes)..High(FLThemes)]
+    then SetAppTheme(FLThemes[AIndex].Name)
+    else SetAppTheme(FLThemes[0].Name);
 end;
 
 end.
