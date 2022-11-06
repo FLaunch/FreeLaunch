@@ -58,6 +58,7 @@ object FlaunchMainForm: TFlaunchMainForm
       OnClick = NI_ShowClick
     end
     object NI_Settings: TMenuItem
+      ShortCut = 16467
       OnClick = NI_SettingsClick
     end
     object NI_L5: TMenuItem
