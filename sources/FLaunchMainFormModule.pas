@@ -219,6 +219,7 @@ var
   FocusCol: Integer = -1;
   GlobTabNum: integer = -1;
   CurrAppTheme: Integer = 0;
+  lotabinsettings: Integer = 0;
   PriorDef: Integer = 0;
   tabind: Integer = 0;
   tabsview: Integer = 0;
@@ -544,6 +545,7 @@ begin
       if not CurrAppTheme in [Low(FLThemes)..High(FLThemes)]
         then CurrAppTheme := 0;
     end;
+  lotabinsettings := ini.ReadInteger(inisection, 'lasttabinsettings', 0);
   alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
   statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
   dtimeinstbar := ini.ReadBool(inisection, 'datetimeinstatusbar', False);
@@ -919,6 +921,7 @@ begin
   WindowNode.AddChild('GlassWhenNoTabs').NodeValue := nobgnotabs;
   WindowNode.AddChild('ClearBtnIfONF').NodeValue := ClearONF;
   WindowNode.AddChild('CurrentThemeID').NodeValue := CurrAppTheme;
+  WindowNode.AddChild('LastTabInSettings').NodeValue := lotabinsettings;
 
   TabRootNode := WindowNode.AddChild('Tabs');
   TabRootNode.AddChild('View').NodeValue := tabsview;
@@ -1116,6 +1119,7 @@ begin
   PriorDef := GetInt(WindowNode, 'DefPriority');
   if not WStateDef in [0..3] then WStateDef := 0;
   if not PriorDef in [0..5] then PriorDef := 0;
+  lotabinsettings := GetInt(WindowNode, 'LastTabInSettings');
   if GetStr(WindowNode, 'CurrentThemeID') = '' then begin
     CurrAppTheme := GetAppThemeIndex(GetAppTheme);
   end else begin

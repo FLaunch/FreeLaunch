@@ -92,6 +92,7 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure StatusBarBoxClick(Sender: TObject);
     procedure ApplyButtonClick(Sender: TObject);
+    procedure pgcChange(Sender: TObject);
   public
     Langs: array of TLngInfo;
     LngFiles: array of string;
@@ -357,7 +358,9 @@ begin
   AdminCheckBox.Checked := rwar;
   DropCheckBox.Checked := defdrop;
   AutoRunCheckBox.Enabled := not IsPortable;
-  pgc.ActivePageIndex := 0;
+  if lotabinsettings in [0..pgc.PageCount - 1]
+    then pgc.ActivePageIndex := lotabinsettings
+    else pgc.ActivePageIndex := 0;
   pgc.ActivePage.SetFocus;
 end;
 
@@ -371,6 +374,11 @@ procedure TSettingsForm.ApplyButtonClick(Sender: TObject);
 begin
   ApplySettings;
   ApplyLanguage;
+end;
+
+procedure TSettingsForm.pgcChange(Sender: TObject);
+begin
+  lotabinsettings := pgc.ActivePageIndex;
 end;
 
 end.

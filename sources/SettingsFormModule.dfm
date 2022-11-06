@@ -28,6 +28,7 @@ object SettingsForm: TSettingsForm
     ActivePage = TabInterface
     Align = alTop
     TabOrder = 0
+    OnChange = pgcChange
     object TabGeneral: TTabSheet
       object AutorunCheckBox: TCheckBox
         Left = 10
