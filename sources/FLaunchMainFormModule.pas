@@ -635,10 +635,7 @@ begin
   then begin
     StatusBar.Panels.Add;
     StatusBar.Panels[1].Alignment := taCenter;
-    StatusBar.Panels[1].Width :=
-      StatusBar.Canvas.TextWidth(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now)
-      + Space + Space + Space + Space); //4 spaces
-    StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width;
+    GenerateWnd;
   end;
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
 end;
@@ -1427,9 +1424,13 @@ begin
   DragAcceptFiles(FLPanel.Handle, True);
   StatusBar.Top := MainHeight + 1;
   StatusBar.Width := MainWidth;
-  if StatusBar.Panels.Count > 1 then
-    StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width
-  else StatusBar.Panels[0].Width := StatusBar.Width;
+  if StatusBar.Panels.Count > 1 then begin
+    StatusBar.Panels[1].Width :=
+      StatusBar.Canvas.TextWidth(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now)
+      + Space + Space + Space + Space);
+    StatusBar.Height := StatusBar.Canvas.TextHeight(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now)) * 2;
+    StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width;
+  end else StatusBar.Panels[0].Width := StatusBar.Width;
   ClientWidth := MainWidth;
   if statusbarvis
     then ClientHeight := MainHeight + StatusBar.Height
@@ -1453,7 +1454,6 @@ begin
   end;
   if AlwaysOnTop then
     FormStyle := fsStayOnTop;
-
   ChangeWndSize;
 end;
 

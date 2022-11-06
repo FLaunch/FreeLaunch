@@ -72,7 +72,7 @@ object FlaunchMainForm: TFlaunchMainForm
   end
   object Timer1: TTimer
     Enabled = False
-    Interval = 500
+    Interval = 100
     OnTimer = Timer1Timer
     Left = 112
     Top = 32
