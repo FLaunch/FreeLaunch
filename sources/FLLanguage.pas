@@ -94,7 +94,7 @@ type
     FileName: string;
     TabRename: string;
     FlbFilter: string;
-    BtnOk, BtnCancel: string;
+    BtnOk, BtnCancel, BtnApply: string;
     Messages: TLngMessages;
     procedure Load(ALanguage: string);
     procedure AddNotifier(ANotifier: TLngNotifier);
@@ -215,6 +215,7 @@ begin
       'FreeLaunch button file (*.flb)')) + '|*.flb';
     BtnOk :=     Parse(Ini.ReadString(SctMain, 'ok', 'OK'));
     BtnCancel := Parse(Ini.ReadString(SctMain, 'cancel', 'Cancel'));
+    BtnApply :=  Parse(Ini.ReadString(SctMain, 'apply', 'Apply'));
 
     About.Caption :=   Parse(Ini.ReadString(SctAbout, 'about', 'About'));
     About.Version :=   Parse(Ini.ReadString(SctAbout, 'version', 'Version'));

@@ -230,8 +230,9 @@ var
   colscount: Integer = 10;
   LeftPer: Integer = 100;
   Nim: TNotifyIconData;
-  nowactive, aboutshowing, settingsshowing: boolean;
+  nowactive: boolean;
   lngfilename: string;
+  aboutshowing: Boolean = False;
   AlwaysOnTop: Boolean = False;
   Autorun: Boolean = False;
   ChPos: Boolean = False;
@@ -241,6 +242,7 @@ var
   hideafterlaunch: Boolean = False;
   queryonlaunch: Boolean = False;
   rwar: Boolean = False;
+  settingsshowing: Boolean = False;
   starthide: Boolean = False;
   ClearONF: Boolean = True;
   nobgnotabs: Boolean = True;
@@ -1304,6 +1306,9 @@ begin
   if ((Key = ord('W')) and (ssCtrl in Shift)) then DeleteTab(MainTabsNew.TabIndex);
   //--F2 -> переименовать вкладку
   if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
+  if Key = VK_TAB then ShowMessage('tab');
+  if (Key = VK_TAB) and (ssShift in Shift) then ShowMessage('ShiftTab');
+
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ClearClick(Sender: TObject);

@@ -81,6 +81,7 @@ type
     ClearCheckBox: TCheckBox;
     ThemesBox: TComboBox;
     lblTheme: TLabel;
+    ApplyButton: TButton;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -90,10 +91,13 @@ type
     procedure LanguagesBoxDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure StatusBarBoxClick(Sender: TObject);
+    procedure ApplyButtonClick(Sender: TObject);
   public
     Langs: array of TLngInfo;
     LngFiles: array of string;
     NoPopup: TPopupMenu;
+    procedure ApplyLanguage;
+    procedure ApplySettings;
     procedure ProcLanguage(FileName: string);
     procedure ScanLanguagesDir;
   end;
@@ -104,6 +108,131 @@ uses
   FLaunchMainFormModule;
 
 {$R *.dfm}
+
+procedure TSettingsForm.ApplyLanguage;
+var
+  I: Integer;
+begin
+  PriorityBox.Items.Clear;
+  TabsBox.Items.Clear;
+  TBarBox.Items.Clear;
+  ThemesBox.Items.Clear;
+  WSBox.Items.Clear;
+  OKButton.Caption := Language.BtnOk;
+  CancelButton.Caption := Language.BtnCancel;
+  ApplyButton.Caption := Language.BtnApply;
+  TabGeneral.Caption := Language.Settings.General;
+  TabInterface.Caption := Language.Settings.GUIProperties;
+  TabNewButtons.Caption := Language.Settings.BtnProperties;
+  Caption := Language.Settings.Caption;
+  lblNumofTabs.Caption := Language.Settings.NumOfTabs + ':';
+  lblNumofRows.Caption := Language.Settings.Rows + ':';
+  lblNumofCols.Caption := Language.Settings.Cols + ':';
+  lblPadding.Caption := Language.Settings.Padding + ':';
+  AutorunCheckBox.Caption := Language.Settings.ChbAutorun;
+  TopCheckBox.Caption := Language.Settings.ChbAlwaysOnTop;
+  StartHideBox.Caption := Language.Settings.ChbStartHide;
+  StatusBarBox.Caption := Language.Settings.ChbStatusbar;
+  DateTimeBox.Caption := Language.Settings.ChbDateTime;
+  HideCheckBox.Caption := Language.Settings.ChbHideAL;
+  QoLCheckBox.Caption := Language.Settings.ChbQoL;
+  DelLnkCheckBox.Caption := Language.Settings.ChbDelLnk;
+  AdminCheckBox.Caption := Language.Settings.ChbAdmin;
+  DropCheckBox.Caption := Language.Settings.ChbDrop;
+  GlassCheckBox.Caption := Language.Settings.ChbGlass;
+  ClearCheckBox.Caption := Language.Settings.ChbClear;
+  lblLang.Caption := Language.Settings.Language + ':';
+  lblWndTitle.Caption := Language.Settings.Titlebar + ':';
+  lblTabStyle.Caption := Language.Settings.TabStyle + ':';
+  grpBtnSize.Caption := Language.Settings.BtnSizes;
+  lblBtnW.Caption := Language.Settings.BtnWidth + ':';
+  lblBtnH.Caption := Language.Settings.BtnHeight + ':';
+  lblWState.Caption := Language.Settings.WState + ':';
+  lblPriority.Caption := Language.Settings.Priority + ':';
+  lblTheme.Caption := Language.Settings.Theme + ':';
+  ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
+  grpNewBtns.Caption := Language.Settings.NewBtnProperties;
+  PriorityBox.Items.Add(Language.Settings.PriorityNormal);
+  PriorityBox.Items.Add(Language.Settings.PriorityHigh);
+  PriorityBox.Items.Add(Language.Settings.PriorityIdle);
+  PriorityBox.Items.Add(Language.Settings.PriorityRealTime);
+  PriorityBox.Items.Add(Language.Settings.PriorityBelowNormal);
+  PriorityBox.Items.Add(Language.Settings.PriorityAboveNormal);
+  TabsBox.Items.Add(Language.Settings.TabStylePages);
+  TabsBox.Items.Add(Language.Settings.TabStyleButtons);
+  TabsBox.Items.Add(Language.Settings.TabStyleFButtons);
+  TBarBox.Items.Add(Language.Settings.TitlebarNormal);
+  TBarBox.Items.Add(Language.Settings.TitlebarMini);
+  TBarBox.Items.Add(Language.Settings.TitlebarHidden);
+  WSBox.Items.Add(Language.Settings.WSNormal);
+  WSBox.Items.Add(Language.Settings.WSMax);
+  WSBox.Items.Add(Language.Settings.WSMin);
+  WSBox.Items.Add(Language.Settings.WSHidden);
+  for i := Low(FLThemes) to High(FLThemes)
+    do ThemesBox.Items.Add(FLThemes[i].NameForGUI);
+  PriorityBox.ItemIndex := PriorDef;
+  TabsBox.ItemIndex := tabsview;
+  TBarBox.ItemIndex := titlebar;
+  ThemesBox.ItemIndex := CurrAppTheme;
+  WSBox.ItemIndex := WStateDef;
+end;
+
+procedure TSettingsForm.ApplySettings;
+var
+  tabnum: integer;
+begin
+  ChPos := true;
+  FlaunchMainForm.ChWinView(False);
+  Autorun := AutorunCheckBox.Checked;
+  AlwaysOnTop := TopCheckBox.Checked;
+  StartHide := StartHideBox.Checked;
+  StatusBarVis := StatusBarBox.Checked;
+  dtimeinstbar := DateTimeBox.Checked;
+  hideafterlaunch := HideCheckBox.Checked;
+  queryonlaunch := QoLCheckBox.Checked;
+  deletelnk := DelLnkCheckBox.Checked;
+  rwar := AdminCheckBox.Checked;
+  defdrop := DropCheckBox.Checked;
+  nobgnotabs := GlassCheckBox.Checked;
+  ClearONF := ClearCheckBox.Checked;
+  WStateDef := WSBox.ItemIndex;
+  PriorDef := PriorityBox.ItemIndex;
+  CurrAppTheme := ThemesBox.ItemIndex;
+  FlaunchMainForm.SetAutorun(Autorun);
+  if LanguagesBox.ItemIndex >= 0 then
+    lngfilename := LngFiles[LanguagesBox.ItemIndex];
+  tabsview := TabsBox.ItemIndex;
+  titlebar := TBarBox.ItemIndex;
+  //FlaunchMainForm.MainTabs.SetFocus;
+  tabnum := FlaunchMainForm.MainTabsNew.TabIndex;
+  FlaunchMainForm.tabscount := strtoint(TabsEdit.Text);
+  rowscount := strtoint(RowsEdit.Text);
+  colscount := strtoint(ColsEdit.Text);
+  lpadding := strtoint(PaddingEdit.Text);
+  FlaunchMainForm.GrowTabNames(FlaunchMainForm.tabscount);
+  FlaunchMainForm.SetTabNames;
+  FlaunchMainForm.FLPanel.ColsCount := colscount;
+  FlaunchMainForm.FLPanel.RowsCount := rowscount;
+  if (FlaunchMainForm.ButtonWidth <> IWEdit.Value) or
+    (FlaunchMainForm.ButtonHeight <> IHEdit.Value)
+  then
+  begin
+    FlaunchMainForm.ButtonWidth := IWEdit.Value;
+    FlaunchMainForm.ButtonHeight := IHEdit.Value;
+    FlaunchMainForm.FLPanel.ButtonWidth := FlaunchMainForm.ButtonWidth;
+    FlaunchMainForm.FLPanel.ButtonHeight := FlaunchMainForm.ButtonHeight;
+    FlaunchMainForm.ReloadIcons;
+  end;
+  FlaunchMainForm.FLPanel.Padding := lpadding;
+  if tabnum < FlaunchMainForm.tabscount then
+    FlaunchMainForm.MainTabsNew.TabIndex := tabnum
+  else
+    FlaunchMainForm.MainTabsNew.TabIndex := 0;
+  Language.Load(lngfilename);
+  FlaunchMainForm.GenerateWnd;
+  FlaunchMainForm.ChWinView(true);
+  ChPos := false;
+end;
 
 procedure TSettingsForm.ProcLanguage(FileName: string);
 var
@@ -201,67 +330,10 @@ begin
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);
-var
-  i: Integer;
 begin
+  ApplyLanguage;
   settingsshowing := true;
-  //--Loading language
-  OKButton.Caption := Language.BtnOk;
-  CancelButton.Caption := Language.BtnCancel;
-  TabGeneral.Caption := Language.Settings.General;
-  TabInterface.Caption := Language.Settings.GUIProperties;
-  TabNewButtons.Caption := Language.Settings.BtnProperties;
-  Caption := Language.Settings.Caption;
-  lblNumofTabs.Caption := Language.Settings.NumOfTabs + ':';
-  lblNumofRows.Caption := Language.Settings.Rows + ':';
-  lblNumofCols.Caption := Language.Settings.Cols + ':';
-  lblPadding.Caption := Language.Settings.Padding + ':';
-  AutorunCheckBox.Caption := Language.Settings.ChbAutorun;
-  TopCheckBox.Caption := Language.Settings.ChbAlwaysOnTop;
-  StartHideBox.Caption := Language.Settings.ChbStartHide;
-  StatusBarBox.Caption := Language.Settings.ChbStatusbar;
-  DateTimeBox.Caption := Language.Settings.ChbDateTime;
-  HideCheckBox.Caption := Language.Settings.ChbHideAL;
-  QoLCheckBox.Caption := Language.Settings.ChbQoL;
-  DelLnkCheckBox.Caption := Language.Settings.ChbDelLnk;
-  AdminCheckBox.Caption := Language.Settings.ChbAdmin;
-  DropCheckBox.Caption := Language.Settings.ChbDrop;
-  GlassCheckBox.Caption := Language.Settings.ChbGlass;
-  ClearCheckBox.Caption := Language.Settings.ChbClear;
-  TBarBox.Items.Add(Language.Settings.TitlebarNormal);
-  TBarBox.Items.Add(Language.Settings.TitlebarMini);
-  TBarBox.Items.Add(Language.Settings.TitlebarHidden);
-  TabsBox.Items.Add(Language.Settings.TabStylePages);
-  TabsBox.Items.Add(Language.Settings.TabStyleButtons);
-  TabsBox.Items.Add(Language.Settings.TabStyleFButtons);
-  lblLang.Caption := Language.Settings.Language + ':';
-  lblWndTitle.Caption := Language.Settings.Titlebar + ':';
-  lblTabStyle.Caption := Language.Settings.TabStyle + ':';
-  grpBtnSize.Caption := Language.Settings.BtnSizes;
-  lblBtnW.Caption := Language.Settings.BtnWidth + ':';
-  lblBtnH.Caption := Language.Settings.BtnHeight + ':';
-  lblWState.Caption := Language.Settings.WState + ':';
-  lblPriority.Caption := Language.Settings.Priority + ':';
-  lblTheme.Caption := Language.Settings.Theme + ':';
-  WSBox.Items.Add(Language.Settings.WSNormal);
-  WSBox.Items.Add(Language.Settings.WSMax);
-  WSBox.Items.Add(Language.Settings.WSMin);
-  WSBox.Items.Add(Language.Settings.WSHidden);
-  WSBox.ItemIndex := WStateDef;
-  PriorityBox.Items.Add(Language.Settings.PriorityNormal);
-  PriorityBox.Items.Add(Language.Settings.PriorityHigh);
-  PriorityBox.Items.Add(Language.Settings.PriorityIdle);
-  PriorityBox.Items.Add(Language.Settings.PriorityRealTime);
-  PriorityBox.Items.Add(Language.Settings.PriorityBelowNormal);
-  PriorityBox.Items.Add(Language.Settings.PriorityAboveNormal);
-  PriorityBox.ItemIndex := PriorDef;
-  for i := Low(FLThemes) to High(FLThemes)
-    do ThemesBox.Items.Add(FLThemes[i].NameForGUI);
-  ThemesBox.ItemIndex := CurrAppTheme;
-  ReloadIconsButton.Caption := Language.Settings.ReloadIcons;
-  grpNewBtns.Caption := Language.Settings.NewBtnProperties;
   ScanLanguagesDir;
-  //loading settings
   AutorunCheckBox.Checked := (not IsPortable) and (Autorun);
   TopCheckBox.Checked := AlwaysOnTop;
   StartHideBox.Checked := StartHide;
@@ -270,8 +342,6 @@ begin
   DateTimeBox.Enabled := StatusBarBox.Checked;
   GlassCheckBox.Checked := nobgnotabs;
   ClearCheckBox.Checked := ClearONF;
-  TBarBox.ItemIndex := titlebar;
-  TabsBox.ItemIndex := tabsview;
   TabsEdit.MaxValue := TabsCountMax;
   TabsEdit.Value := FlaunchMainForm.tabscount;
   RowsEdit.MaxValue := RowsCountMax;
@@ -292,61 +362,15 @@ begin
 end;
 
 procedure TSettingsForm.OKButtonClick(Sender: TObject);
-var
-  tabnum: integer;
 begin
-  ChPos := true;
-  FlaunchMainForm.ChWinView(False);
-  Autorun := AutorunCheckBox.Checked;
-  AlwaysOnTop := TopCheckBox.Checked;
-  StartHide := StartHideBox.Checked;
-  StatusBarVis := StatusBarBox.Checked;
-  dtimeinstbar := DateTimeBox.Checked;
-  hideafterlaunch := HideCheckBox.Checked;
-  queryonlaunch := QoLCheckBox.Checked;
-  deletelnk := DelLnkCheckBox.Checked;
-  rwar := AdminCheckBox.Checked;
-  defdrop := DropCheckBox.Checked;
-  nobgnotabs := GlassCheckBox.Checked;
-  ClearONF := ClearCheckBox.Checked;
-  WStateDef := WSBox.ItemIndex;
-  PriorDef := PriorityBox.ItemIndex;
-  CurrAppTheme := ThemesBox.ItemIndex;
-  FlaunchMainForm.SetAutorun(Autorun);
-  if LanguagesBox.ItemIndex >= 0 then
-    lngfilename := LngFiles[LanguagesBox.ItemIndex];
-  tabsview := TabsBox.ItemIndex;
-  titlebar := TBarBox.ItemIndex;
-  //FlaunchMainForm.MainTabs.SetFocus;
-  tabnum := FlaunchMainForm.MainTabsNew.TabIndex;
-  FlaunchMainForm.tabscount := strtoint(TabsEdit.Text);
-  rowscount := strtoint(RowsEdit.Text);
-  colscount := strtoint(ColsEdit.Text);
-  lpadding := strtoint(PaddingEdit.Text);
-  FlaunchMainForm.GrowTabNames(FlaunchMainForm.tabscount);
-  FlaunchMainForm.SetTabNames;
-  FlaunchMainForm.FLPanel.ColsCount := colscount;
-  FlaunchMainForm.FLPanel.RowsCount := rowscount;
-  if (FlaunchMainForm.ButtonWidth <> IWEdit.Value) or
-    (FlaunchMainForm.ButtonHeight <> IHEdit.Value)
-  then
-  begin
-    FlaunchMainForm.ButtonWidth := IWEdit.Value;
-    FlaunchMainForm.ButtonHeight := IHEdit.Value;
-    FlaunchMainForm.FLPanel.ButtonWidth := FlaunchMainForm.ButtonWidth;
-    FlaunchMainForm.FLPanel.ButtonHeight := FlaunchMainForm.ButtonHeight;
-    FlaunchMainForm.ReloadIcons;
-  end;
-  FlaunchMainForm.FLPanel.Padding := lpadding;
-  if tabnum < FlaunchMainForm.tabscount then
-    FlaunchMainForm.MainTabsNew.TabIndex := tabnum
-  else
-    FlaunchMainForm.MainTabsNew.TabIndex := 0;
-  Language.Load(lngfilename);
-  FlaunchMainForm.GenerateWnd;
-  FlaunchMainForm.ChWinView(true);
-  ChPos := false;
+  ApplySettings;
   Close;
+end;
+
+procedure TSettingsForm.ApplyButtonClick(Sender: TObject);
+begin
+  ApplySettings;
+  ApplyLanguage;
 end;
 
 end.

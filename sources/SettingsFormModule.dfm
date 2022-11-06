@@ -1,6 +1,7 @@
 object SettingsForm: TSettingsForm
   Left = 0
   Top = 0
+  ActiveControl = pgc
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   ClientHeight = 431
@@ -340,21 +341,30 @@ object SettingsForm: TSettingsForm
     end
   end
   object OKButton: TButton
-    Left = 250
+    Left = 75
     Top = 400
-    Width = 75
+    Width = 100
     Height = 25
     Default = True
     TabOrder = 1
     OnClick = OKButtonClick
   end
   object CancelButton: TButton
-    Left = 350
+    Left = 325
     Top = 400
-    Width = 75
+    Width = 100
     Height = 25
     Cancel = True
-    TabOrder = 2
+    TabOrder = 3
+    TabStop = False
     OnClick = CancelButtonClick
+  end
+  object ApplyButton: TButton
+    Left = 200
+    Top = 400
+    Width = 100
+    Height = 25
+    TabOrder = 2
+    OnClick = ApplyButtonClick
   end
 end
