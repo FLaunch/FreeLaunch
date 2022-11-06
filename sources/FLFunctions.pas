@@ -28,8 +28,8 @@ unit FLFunctions;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.Classes, Vcl.Graphics,
-  Vcl.Imaging.PNGImage, Vcl.Themes, Vcl.Styles;
+  Winapi.Windows, Winapi.Messages, System.Classes,
+  Vcl.Graphics, Vcl.Imaging.PNGImage, Vcl.Themes, Vcl.Styles;
 
 type
   TFLThemeInfo = record

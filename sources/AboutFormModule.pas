@@ -23,6 +23,11 @@
   ##########################################################################
 }
 
+//define nightly build directive if DEBUG release configuration enabled
+{$IFDEF DEBUG}
+  {$DEFINE NIGHTLYBUILD}
+{$ENDIF}
+
 unit AboutFormModule;
 
 interface
@@ -105,10 +110,10 @@ begin
   //--Loading language
   Caption := Language.About.Caption;
   AppName.Caption := cr_progname;
-  if cr_nightly then
-    VerInfo.Caption := format('%s: %s %s',[Language.About.Version, FLVersion, '(nightly build)'])
-  else
-    VerInfo.Caption := format('%s: %s',[Language.About.Version, FLVersion]);
+  VerInfo.Caption := Format('%s: %s.%s (%s build: %s%s)',
+    [Language.About.Version, FlVer.Major, FlVer.Minor,
+    {$IFDEF NIGHTLYBUILD}'nightly'{$ELSE}'release'{$ENDIF}, FlVer.Release,
+    FlVer.Build]);
   Contributors.Caption := Language.About.Contributors;
   License.Caption := Language.About.License;
   License.Left := grp1.Width - license.Width - 20;

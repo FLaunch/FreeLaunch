@@ -25,8 +25,6 @@
 
 unit FLaunchMainFormModule;
 
-{$DEFINE NIGHTLYBUILD}
-
 interface
 
 uses
@@ -66,15 +64,14 @@ const
   AddKey = 46287;
 
   cr_progname = 'FreeLaunch';
-  {$IFDEF NIGHTLYBUILD}
-  cr_nightly = True;
-  {$ELSE}
-  cr_nightly = False;
-  {$ENDIF}
 
 type
   TAByte = array [0..maxInt-1] of byte;
   TPAByte = ^TAByte;
+
+  TFlVer = record
+    Major, Minor, Release, Build: string;
+  end;
 
   link = array[0..maxr - 1,0..maxc - 1] of TLink;
 
@@ -198,7 +195,7 @@ type
     function DefNameOfTab(tn: string): boolean;
     procedure SetAutorun(b: boolean);
     procedure LoadIni;
-    function GetAppVersion: string;
+    function GetAppVersion: TFlVer;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
@@ -248,6 +245,7 @@ var
   ClearONF: Boolean = True;
   nobgnotabs: Boolean = True;
   statusbarvis: Boolean = True;
+  FlVer: TFlVer;
 
 implementation
 
@@ -262,24 +260,26 @@ var
   LaunchID: Integer = 0;
 
 //getting app version from executable file of freelaunch
-function TFlaunchMainForm.GetAppVersion: string;
+function TFlaunchMainForm.GetAppVersion: TFlVer;
 var
   Dummy, VInfoSize, VValueSize: DWORD;
   VInfo: Pointer;
   VValue: PVSFixedFileInfo;
 begin
-  Result := '';
+  Result.Major := '';
+  Result.Minor := '';
+  Result.Release := '';
+  Result.Build := '';
   VInfoSize := GetFileVersionInfoSize(PChar(ParamStr(0)), Dummy);
   if VInfoSize > 0 then begin
     GetMem(VInfo, VInfoSize);
     try
       if GetFileVersionInfo(PChar(ParamStr(0)), 0, VInfoSize, VInfo) then begin
         VerQueryValue(VInfo, '\', Pointer(VValue), VValueSize);
-        Result := IntToStr(VValue^.dwFileVersionMS shr 16) + '.' + IntToStr(VValue^.dwFileVersionMS and $FFF)
-          {$IFDEF NIGHTLYBUILD}
-            + '.' + IntToStr(VValue^.dwFileVersionLS shr 16) + '.' + IntToStr(VValue^.dwFileVersionLS and $FFFF)
-          {$ENDIF}
-          ;
+        Result.Major := IntToStr(VValue^.dwFileVersionMS shr $10);
+        Result.Minor := IntToStr(VValue^.dwFileVersionMS and $FFF);
+        Result.Release := IntToStr(VValue^.dwFileVersionLS shr $10);
+        Result.Build := IntToStr(VValue^.dwFileVersionLS and $FFFF)
       end;
     finally
       FreeMem(VInfo, VInfoSize);
@@ -1259,12 +1259,10 @@ procedure TFlaunchMainForm.EndWork;
 begin
   unregisterhotkey(Handle, HotKeyID);
   DeleteFile(fl_WorkDir + '.session');
-
   //--Сохраняем настройки кнопок
   SaveLinksSettings;
   //--Сохраняем иконки кнопок в кэш
   SaveLinksIconsToCache;
-
   LaunchingButtons.Free;
   //--Удаляем список имен вкладок
   TabNames.Free;
@@ -1642,7 +1640,9 @@ end;
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
 begin
   //get app version
-  FLVersion := GetAppVersion;
+  FlVer := GetAppVersion;
+  FLVersion := FlVer.Major + '.' + FlVer.Minor + '.' + FlVer.Release + '.'
+    + FlVer.Build;
   //--Создаем список имен вкладок
   TabNames := TStringList.Create;
   //--Создаем экземпляр панели с кнопками
@@ -1698,7 +1698,7 @@ begin
     FileClose(FileCreate(fl_WorkDir + '.session'));
     SetFileAttributes(PChar(fl_WorkDir + '.session'), FILE_ATTRIBUTE_HIDDEN);
   end;
-  TrayIcon.Hint := Format('%s %s',[cr_progname, FLVersion]);
+  TrayIcon.Hint := cr_progname;
   if not StartHide then ChWinView(True) else Application.ShowMainForm := False;
   ChPos := false;
 end;
