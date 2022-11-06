@@ -1,67 +1,76 @@
-﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
-<head>
+  <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link rel="stylesheet" type="text/css" href="data/style/style.css">
+  <link rel="shortcut icon" href="data/image/favicon.ico">
 	<title>FreeLaunch help file</title>
-</head>
-<body>
-
-<div class="header">
-	<img src="data/image/logo.png" alt="FreeLaunch Logo">
-	<strong>FreeLaunch</strong>
-	<b id="title">FreeLaunch help file</b>
-</div>
-
-<div class="main">
-	<div class="toc">
-		<ul >
-			<li><a href="rus/features.html" target="iframe_main">About</a></li>
-			<li><a href="rus/about.html" target="iframe_main">Contributors</a></li>
-			<li><a href="rus/history.html" target="iframe_main">History</a></li>
-			<li>Main windows
-				<ul>
-				<li><a href="rus/main.html" target="iframe_main">Main window</a></li>
-				<li><a href="rus/settings.html" target="iframe_main">Settings</a></li>
-				</ul>
-			</li>
-			<li>Advanced windows
-				<ul>
-				<li><a href="rus/rename_tab.html" target="iframe_main">Tab name</a></li>
-				<li><a href="rus/button_opts.html" target="iframe_main">Button properties</a></li>
-				</ul>
-			</li>
-			<li>FAQ
-				<ul>
-				<li><a href="rus/hotkeys.html" target="iframe_main">Hotkeys</a></li>
-				<li><a href="rus/uknow.html" target="iframe_main">Do you know?</a></li>
-				<li><a href="rus/faq.html" target="iframe_main">Frequently asked questions</a></li>
-				</ul>
-			</li>
-		</ul> 
-	</div>
-	<div class="frame">
-		<iframe src="rus/features.html" name="iframe_main"></iframe>
-		<script type="text/javascript">
-			function resizeIframe() {
-				var contentDoc = (frameMain.contentWindow || frameMain.contentDocument);
-				if (contentDoc.document)
-					contentDoc = contentDoc.document;
-				document.getElementById('title').innerHTML = contentDoc.title;
-			}
-
-			frameMain = document.getElementsByName("iframe_main")[0];
-			if (frameMain.attachEvent) {
-				frameMain.attachEvent("onload", resizeIframe);
-			} else {
-				frameMain.onload=resizeIframe;
-			}
-		</script>
-	</div>
-</div>
-
-<div class="footer">
-<strong>2022 &copy; <a href="https://github.com/Ta2i4/FreeLaunch">FreeLaunch contributors</a></strong><br />
-</div>
-</body>
+  </head>
+  <body>
+    <div class="header">
+      <img src="data/image/logo.png" alt="FreeLaunch Logo" />
+      <strong>FreeLaunch</strong>
+      <strong id="title">FreeLaunch help file</strong>
+    </div>
+    <div class="main">
+      <div class="toc">
+        <ul>
+          <li><strong>About FreeLaunch</strong>
+            <ul>
+              <li><a href="en/features.html" target="iframe_main">Features</a></li>
+              <li><a href="en/contributors.html" target="iframe_main">Contributors</a></li>
+              <li><a href="en/changelog.html" target="iframe_main">Changelog</a></li>
+              <li><a href="license.txt" target="iframe_main">License</a></li>
+            </ul>
+          </li>
+          <li><strong>Documentation</strong>
+            <ul>
+              <li><a href="en/doc_mainwnd.html" target="iframe_main">Main window</a></li>
+              <li><a href="en/doc_settings.html" target="iframe_main">Settings window</a>
+                <ul>
+                  <li><a href="en/doc_settingstab_general.html" target="iframe_main">General</a></li>
+                  <li><a href="en/doc_settingstab_interface.html" target="iframe_main">Interface</a></li>
+                  <li><a href="en/doc_settingstab_buttons.html" target="iframe_main">Buttons</a></li>
+                </ul>
+              </li>
+              <li><a href="en/doc_btnprops.html" target="iframe_main">Button properties</a>
+                <ul>
+                  <li><a href="en/doc_btnprops_apps.html" target="iframe_main">For applications</a></li>
+                  <li><a href="en/doc_btnprops_files.html" target="iframe_main">For files and folders</a></li>
+                  <li><a href="en/doc_btnprops_iconsel.html" target="iframe_main">Icon select dialog</a></li>
+                </ul>
+              </li>
+              <li><a href="en/doc_renametab.html" target="iframe_main">Tab rename window</a></li>
+            </ul>
+          </li>
+          <li><strong>Frequently Asked Questions</strong>
+            <ul>
+              <li><a href="en/hotkeys.html" target="iframe_main">Hotkeys</a></li>
+              <li><a href="en/doyouknow.html" target="iframe_main">Do you know?</a></li>
+            </ul>
+          </li>
+        </ul> 
+      </div>
+      <div class="frame">
+        <iframe src="en/features.html" name="iframe_main"></iframe>
+          <script type="text/javascript">
+            function resizeIframe() {
+              var contentDoc = (frameMain.contentWindow || frameMain.contentDocument);
+              if (contentDoc.document)
+                contentDoc = contentDoc.document;
+              document.getElementById('title').innerHTML = contentDoc.title;
+            }
+            frameMain = document.getElementsByName("iframe_main")[0];
+            if (frameMain.attachEvent) {
+              frameMain.attachEvent("onload", resizeIframe);
+            } else {
+              frameMain.onload=resizeIframe;
+            }
+          </script>
+      </div>
+    </div>
+    <div class="footer">
+      <strong>2008-<script>document.write(new Date().getFullYear())</script> &copy; <a href="https://github.com/FLaunch/" target="_blank">FreeLaunch contributors</a></strong>
+    </div>
+  </body>
 </html>
