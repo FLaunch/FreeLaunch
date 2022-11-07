@@ -1147,47 +1147,35 @@ begin
     FLPanel.Padding := LPadding;
 
     LinkNode := PanelNode.ChildNodes.FindNode('Link');
-    while Assigned(LinkNode) and LinkNode.HasChildNodes do
-    begin
+    while Assigned(LinkNode) and LinkNode.HasChildNodes do begin
       Row := GetInt(LinkNode, 'Row') - 1;
       Column := GetInt(LinkNode, 'Column') - 1;
-      if not IsTRCInRange(TabNumber, Row, Column) then
-        Continue;
-
+      if not IsTRCInRange(TabNumber, Row, Column) then Continue;
       TempData := FLPanel.Buttons[TabNumber, Row, Column].InitializeData;
       TempData.LType := GetInt(LinkNode, 'Type');
       TempData.Exec := GetStr(LinkNode, 'Execute');
       TempData.WorkDir := GetStr(LinkNode, 'WorkingDir');
-
       IconNode := LinkNode.ChildNodes.FindNode('Icon');
-      if Assigned(IconNode) and IconNode.HasChildNodes then
-      begin
+      if Assigned(IconNode) and IconNode.HasChildNodes then begin
         TempData.Icon := GetStr(IconNode, 'File');
         TempData.IconIndex := GetInt(IconNode, 'Index');
         TempData.IconCache := GetStr(IconNode, 'Cache');
       end;
-
       TempData.Params := GetStr(LinkNode, 'Parameters');
-
       DropNode := LinkNode.ChildNodes.FindNode('Drop');
-      if Assigned(DropNode) and DropNode.HasChildNodes then
-      begin
+      if Assigned(DropNode) and DropNode.HasChildNodes then begin
         TempData.DropFiles := GetBool(DropNode, 'Allow');
         TempData.DropParams := GetStr(DropNode, 'Parameters');
       end;
-
       TempData.Descr := GetStr(LinkNode, 'Description');
       TempData.Ques := GetBool(LinkNode, 'NeedQuestion');
       TempData.Hide := GetBool(LinkNode, 'HideContainer');
       TempData.Pr := GetInt(LinkNode, 'Priority');
       TempData.WSt := GetInt(LinkNode, 'WindowState');
       TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
-
       TempData.AssignIcons;
-
       LinkNode := LinkNode.NextSibling;
     end;
-
     PanelNode := PanelNode.NextSibling;
   end;
   XMLDocument.Active := false;
@@ -1414,6 +1402,8 @@ begin
     else ClientHeight := MainHeight;
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
+  //fix for change panel size without app restart
+  FLPanel.ButtonsPopup := ButtonPopupMenu;
 end;
 
 procedure TFlaunchMainForm.GenerateWnd;
@@ -1662,7 +1652,6 @@ begin
   FLPanel.OnButtonMouseMove := FLPanelButtonMouseMove;
   FLPanel.OnButtonMouseLeave := FLPanelButtonMouseLeave;
   FLPanel.OnDropFile := FLPanelDropFile;
-  FLPanel.ButtonsPopup := ButtonPopupMenu;
   SetTabNames;
   GenerateWnd;
   //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
