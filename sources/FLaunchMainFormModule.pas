@@ -468,8 +468,7 @@ begin
   Ini := TIniFile.Create(fl_WorkDir+'FLaunch.ini');
   lngfilename := ini.ReadString(inisection, 'language', '');
   tabscount := ini.ReadInteger(inisection, 'tabs', 3);
-  if tabscount > maxt then
-    tabscount := maxt;
+  TabsCount := Min(TabsCount, maxt);
   if tabscount < mint then
     tabscount := mint;
   rowscount := ini.ReadInteger(inisection, 'rows', 2);
@@ -497,20 +496,18 @@ begin
   if (tabind < 0) or (tabind > tabscount-1) then
     tabind := 0;
   titlebar := ini.ReadInteger(inisection, 'titlebar', 0);
-  if (titlebar < 0) or (titlebar > 2) then
-    titlebar := 0;
+  if not (titlebar in [0..2]) then titlebar := 0;
   tabsview := ini.ReadInteger(inisection, 'tabsview', 0);
-  if (tabsview < 0) or (tabsview > 2) then
-    tabsview := 0;
+  if not (tabsview in [0..2]) then tabsview := 0;
   WStateDef := ini.ReadInteger(inisection, 'defwindowstate', 0);
-  if not WStateDef in [0..3] then WStateDef := 0;
+  if not (WStateDef in [0..3]) then WStateDef := 0;
   PriorDef := ini.ReadInteger(inisection, 'defpriority', 0);
-  if not PriorDef in [0..5] then PriorDef := 0;
+  if not (PriorDef in [0..5]) then PriorDef := 0;
   if ini.ReadInteger(inisection, 'currentthemeid', -1) < 0 
     then CurrAppTheme := GetAppThemeIndex(GetAppTheme)
     else begin
       CurrAppTheme := ini.ReadInteger(inisection, 'currentthemeid', 0);
-      if not CurrAppTheme in [Low(FLThemes)..High(FLThemes)]
+      if not (CurrAppTheme in [Low(FLThemes)..High(FLThemes)])
         then CurrAppTheme := 0;
     end;
   lotabinsettings := ini.ReadInteger(inisection, 'lasttabinsettings', 0);
@@ -1085,14 +1082,14 @@ begin
   ClearONF := GetBool(WindowNode, 'ClearBtnIfONF');
   WStateDef := GetInt(WindowNode, 'DefWinState');
   PriorDef := GetInt(WindowNode, 'DefPriority');
-  if not WStateDef in [0..3] then WStateDef := 0;
-  if not PriorDef in [0..5] then PriorDef := 0;
+  if not (WStateDef in [0..3]) then WStateDef := 0;
+  if not (PriorDef in [0..5]) then PriorDef := 0;
   lotabinsettings := GetInt(WindowNode, 'LastTabInSettings');
   if GetStr(WindowNode, 'CurrentThemeID') = '' then begin
     CurrAppTheme := GetAppThemeIndex(GetAppTheme);
   end else begin
     CurrAppTheme := GetInt(WindowNode, 'CurrentThemeID');
-    if not CurrAppTheme in [Low(FLThemes)..High(FLThemes)]
+    if not (CurrAppTheme in [Low(FLThemes)..High(FLThemes)])
       then CurrAppTheme := 0;
   end;
   TabsCount := 0;

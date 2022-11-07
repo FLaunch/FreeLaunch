@@ -921,7 +921,7 @@ begin
       if not reg.OpenKeyReadOnly(DarkKey) then Exit;
       if not reg.ValueExists(DarkValue) then Exit;
       rval := reg.ReadInteger(DarkValue) + 1;
-      if not rval in [0..2] then rval := 0;
+      if not (rval in [0..2]) then rval := 0;
       Result := FLThemes[rval].Name;
     end;
   finally
