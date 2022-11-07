@@ -893,10 +893,7 @@ var
   FullPath: string;
 begin
   Result := APath;
-
-  if APath = '' then
-    Exit;
-
+  if APath = '' then Exit;
   FullPath := TPath.GetFullPath(GetAbsolutePath(APath));
   if ContainsText(FullPath, fl_dir) then
     Result := ReplaceText(FullPath, fl_dir, '%FL_DIR%\')
@@ -946,7 +943,6 @@ var
   I: Integer;
 begin
   Result := 0;
-  WarningMessage(0, AName);
   for I := Low(FLThemes) to High(FLThemes) do
     if FLThemes[I].Name = AName then begin
       Result := I;
