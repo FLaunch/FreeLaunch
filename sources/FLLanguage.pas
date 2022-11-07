@@ -68,7 +68,7 @@ type
   end;
 
   TLngMain = record
-    TabName, Location, Parameters, Description: string;
+    TabName, Location, Parameters, Description, HelpFile: string;
   end;
 
   TLngMessages = record
@@ -160,6 +160,7 @@ begin
       'Parameters: %%'), '%s');
     Main.Description :=  Parse(Ini.ReadString(SctMain, 'description',
       'Description: %%'), '%s');
+    Main.HelpFile :=     Parse(Ini.ReadString(SctMain, 'help', 'index.html'));
 
     Messages.Caution :=      Parse(Ini.ReadString(SctMain, 'caution', 'Caution'));
     Messages.Confirmation := Parse(Ini.ReadString(SctMain, 'confirmation',

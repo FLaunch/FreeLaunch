@@ -191,6 +191,7 @@ type
     procedure ChangeWndSize;
     procedure GenerateWnd;
     procedure LoadLanguage;
+    procedure LaunchHelpFile;
     function DefNameOfTab(tn: string): boolean;
     procedure SetAutorun(b: boolean);
     procedure LoadIni;
@@ -356,6 +357,15 @@ begin
   TabPopupItem_Rename.Caption := Language.Menu.Rename;
   TabPopupItem_Clear.Caption := Language.Menu.ClearTab;
   TabPopupItem_Delete.Caption := Language.Menu.DeleteTab;
+end;
+
+procedure TFlaunchMainForm.LaunchHelpFile;
+var
+  AHelpFile: string;
+begin
+  AHelpFile := ExtractFilePath(ParamStr(0)) + 'help\' + Language.Main.HelpFile;
+  if FileExists(AHelpFile)
+    then ExecHelpFile(Handle, AHelpFile);
 end;
 
 //autostart with Windows
@@ -1269,10 +1279,10 @@ begin
   //--Ctrl + W -> удалить вкладку
   if ((Key = ord('W')) and (ssCtrl in Shift)) then DeleteTab(MainTabsNew.TabIndex);
   //--F2 -> переименовать вкладку
+  if key = VK_F1 then LaunchHelpFile;
   if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
   if Key = VK_TAB then ShowMessage('tab');
   if (Key = VK_TAB) and (ssShift in Shift) then ShowMessage('ShiftTab');
-
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ClearClick(Sender: TObject);

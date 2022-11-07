@@ -132,6 +132,8 @@ procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string
 //--Процедура для запуска процесса в потоке (при клике по кнопке)
 procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
   ADroppedFile: string);
+// launch help file
+procedure ExecHelpFile(AMainHandle: HWND; AHelpFileName: string);
 /// <summary> Замена всех переменных окружения их значениями </summary>
 function ExpandEnvironmentVariables(const AFileName: string): string;
 /// <summary> Добавление новой переменной окружения </summary>
@@ -689,6 +691,21 @@ begin
             StringReplace(e.Message, '%1', ExtractFileName(ALink.exec), [rfReplaceAll]));
       end;
       PostMessage(AMainHandle, UM_LaunchDone, ALink.IsAdmin.ToInteger, ALaunchID);
+    end).Start;
+end;
+
+procedure ExecHelpFile(AMainHandle: HWND; AHelpFileName: string);
+begin
+  TThread.CreateAnonymousThread(procedure
+    begin
+      try
+        ShellExecute(AMainHandle, '', GetAbsolutePath(AHelpFileName), '',
+          GetAbsolutePath(ExtractFilePath(AHelpFileName)), SW_SHOW);
+      except
+        on E: Exception do
+          WarningMessage(AMainHandle,
+            StringReplace(e.Message, '%1', ExtractFileName(AHelpFileName), [rfReplaceAll]));
+      end;
     end).Start;
 end;
 
