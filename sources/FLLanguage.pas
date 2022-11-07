@@ -52,6 +52,7 @@ type
     Caption, General, NumOfTabs, Rows, Cols, Padding, Theme,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
     ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbGlass, ChbClear,
+    ChbAlphaBlend,
     Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
     PriorityBelowNormal, PriorityRealTime,
     Titlebar, TitlebarNormal, TitlebarMini,
@@ -326,6 +327,8 @@ begin
       'Make button background transparent if there are no tabs'));
     Settings.ChbClear :=         Parse(Ini.ReadString(SctSettings, 'chb_clear',
       'When reloading buttons, delete the button if the object is not found'));
+    Settings.ChbAlphaBlend :=    Parse(Ini.ReadString(SctSettings, 'chb_ablend',
+      'Enable main window transparency'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',

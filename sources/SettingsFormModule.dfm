@@ -102,14 +102,14 @@ object SettingsForm: TSettingsForm
       ImageIndex = 1
       object lblWndTitle: TLabel
         Left = 190
-        Top = 75
+        Top = 65
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblTabStyle: TLabel
         Left = 190
-        Top = 105
+        Top = 90
         Width = 3
         Height = 13
         Alignment = taRightJustify
@@ -123,42 +123,42 @@ object SettingsForm: TSettingsForm
       end
       object lblNumofTabs: TLabel
         Left = 265
-        Top = 135
+        Top = 115
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblNumofRows: TLabel
         Left = 265
-        Top = 165
+        Top = 140
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblNumofCols: TLabel
         Left = 265
-        Top = 195
+        Top = 165
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblPadding: TLabel
         Left = 265
-        Top = 225
+        Top = 190
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object lblTheme: TLabel
         Left = 190
-        Top = 45
+        Top = 40
         Width = 3
         Height = 13
         Alignment = taRightJustify
       end
       object TBarBox: TComboBox
         Left = 200
-        Top = 70
+        Top = 60
         Width = 145
         Height = 21
         Style = csDropDownList
@@ -166,7 +166,7 @@ object SettingsForm: TSettingsForm
       end
       object TabsBox: TComboBox
         Left = 200
-        Top = 100
+        Top = 85
         Width = 145
         Height = 21
         Style = csDropDownList
@@ -184,7 +184,7 @@ object SettingsForm: TSettingsForm
       end
       object PaddingEdit: TSpinEdit
         Left = 275
-        Top = 220
+        Top = 185
         Width = 70
         Height = 22
         MaxValue = 100
@@ -194,7 +194,7 @@ object SettingsForm: TSettingsForm
       end
       object TabsEdit: TSpinEdit
         Left = 275
-        Top = 130
+        Top = 110
         Width = 70
         Height = 22
         MaxValue = 100
@@ -204,7 +204,7 @@ object SettingsForm: TSettingsForm
       end
       object RowsEdit: TSpinEdit
         Left = 275
-        Top = 160
+        Top = 135
         Width = 70
         Height = 22
         MaxValue = 100
@@ -214,7 +214,7 @@ object SettingsForm: TSettingsForm
       end
       object ColsEdit: TSpinEdit
         Left = 275
-        Top = 190
+        Top = 160
         Width = 70
         Height = 22
         MaxValue = 100
@@ -224,27 +224,27 @@ object SettingsForm: TSettingsForm
       end
       object grpBtnSize: TGroupBox
         Left = 20
-        Top = 260
+        Top = 285
         Width = 400
-        Height = 80
-        TabOrder = 8
+        Height = 70
+        TabOrder = 10
         object lblBtnW: TLabel
           Left = 245
-          Top = 20
+          Top = 15
           Width = 3
           Height = 13
           Alignment = taRightJustify
         end
         object lblBtnH: TLabel
           Left = 245
-          Top = 50
+          Top = 40
           Width = 3
           Height = 13
           Alignment = taRightJustify
         end
         object IWEdit: TSpinEdit
           Left = 255
-          Top = 15
+          Top = 10
           Width = 70
           Height = 22
           MaxValue = 256
@@ -254,7 +254,7 @@ object SettingsForm: TSettingsForm
         end
         object IHEdit: TSpinEdit
           Left = 255
-          Top = 45
+          Top = 35
           Width = 70
           Height = 22
           MaxValue = 256
@@ -265,11 +265,32 @@ object SettingsForm: TSettingsForm
       end
       object ThemesBox: TComboBox
         Left = 200
-        Top = 40
+        Top = 35
         Width = 145
         Height = 21
         Style = csDropDownList
         TabOrder = 1
+      end
+      object ABlendCheckBox: TCheckBox
+        Left = 10
+        Top = 220
+        Width = 400
+        Height = 17
+        TabOrder = 8
+        OnClick = ABlendCheckBoxClick
+      end
+      object ABlendBar: TTrackBar
+        Left = 20
+        Top = 240
+        Width = 400
+        Height = 35
+        Max = 100
+        Min = 10
+        Frequency = 10
+        Position = 100
+        PositionToolTip = ptTop
+        ShowSelRange = False
+        TabOrder = 9
       end
     end
     object TabNewButtons: TTabSheet

@@ -82,6 +82,8 @@ type
     ThemesBox: TComboBox;
     lblTheme: TLabel;
     ApplyButton: TButton;
+    ABlendCheckBox: TCheckBox;
+    ABlendBar: TTrackBar;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -93,6 +95,7 @@ type
     procedure StatusBarBoxClick(Sender: TObject);
     procedure ApplyButtonClick(Sender: TObject);
     procedure pgcChange(Sender: TObject);
+    procedure ABlendCheckBoxClick(Sender: TObject);
   public
     Langs: array of TLngInfo;
     LngFiles: array of string;
@@ -142,6 +145,7 @@ begin
   DropCheckBox.Caption := Language.Settings.ChbDrop;
   GlassCheckBox.Caption := Language.Settings.ChbGlass;
   ClearCheckBox.Caption := Language.Settings.ChbClear;
+  ABlendCheckBox.Caption := Language.Settings.ChbAlphaBlend + ':';
   lblLang.Caption := Language.Settings.Language + ':';
   lblWndTitle.Caption := Language.Settings.Titlebar + ':';
   lblTabStyle.Caption := Language.Settings.TabStyle + ':';
@@ -196,6 +200,8 @@ begin
   defdrop := DropCheckBox.Checked;
   nobgnotabs := GlassCheckBox.Checked;
   ClearONF := ClearCheckBox.Checked;
+  ABlend := ABlendCheckBox.Checked;
+  ABlendVal := Round(2.55 * ABlendBar.Position);
   WStateDef := WSBox.ItemIndex;
   PriorDef := PriorityBox.ItemIndex;
   CurrAppTheme := ThemesBox.ItemIndex;
@@ -343,6 +349,9 @@ begin
   DateTimeBox.Enabled := StatusBarBox.Checked;
   GlassCheckBox.Checked := nobgnotabs;
   ClearCheckBox.Checked := ClearONF;
+  ABlendCheckBox.Checked := ABlend;
+  ABlendBar.Enabled := ABlendCheckBox.Checked;
+  ABlendBar.Position := Round(ABlendVal / 2.55);
   TabsEdit.MaxValue := TabsCountMax;
   TabsEdit.Value := FlaunchMainForm.tabscount;
   RowsEdit.MaxValue := RowsCountMax;
@@ -368,6 +377,11 @@ procedure TSettingsForm.OKButtonClick(Sender: TObject);
 begin
   ApplySettings;
   Close;
+end;
+
+procedure TSettingsForm.ABlendCheckBoxClick(Sender: TObject);
+begin
+  ABlendBar.Enabled := ABlendCheckBox.Checked;
 end;
 
 procedure TSettingsForm.ApplyButtonClick(Sender: TObject);

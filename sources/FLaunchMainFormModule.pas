@@ -206,48 +206,50 @@ type
   end;
 
 var
-  FlaunchMainForm: TFlaunchMainForm;
-  PropertiesMode: integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
-  templinks: link;
-  links: array[0..maxt - 1] of link;
-  GlobTab: Integer = -1;
-  GlobRow: Integer = -1;
-  GlobCol: Integer = -1;
-  FocusTab: Integer = -1;
-  FocusRow: Integer = -1;
-  FocusCol: Integer = -1;
-  GlobTabNum: integer = -1;
-  CurrAppTheme: Integer = 0;
-  lotabinsettings: Integer = 0;
-  PriorDef: Integer = 0;
-  tabind: Integer = 0;
-  tabsview: Integer = 0;
-  titlebar: Integer = 0;
-  TopPer: Integer = 0;
-  WStateDef: Integer = 0;
-  lpadding: Integer = 1;
-  rowscount: Integer = 2;
-  colscount: Integer = 10;
-  LeftPer: Integer = 100;
-  Nim: TNotifyIconData;
-  nowactive: boolean;
-  lngfilename: string;
-  aboutshowing: Boolean = False;
-  AlwaysOnTop: Boolean = False;
-  Autorun: Boolean = False;
-  ChPos: Boolean = False;
-  defdrop: Boolean = False;
-  deletelnk: Boolean = False;
-  dtimeinstbar: Boolean = False;
+  nowactive:       Boolean;
+  ABlend:          Boolean = False;
+  aboutshowing:    Boolean = False;
+  AlwaysOnTop:     Boolean = False;
+  Autorun:         Boolean = False;
+  ChPos:           Boolean = False;
+  defdrop:         Boolean = False;
+  deletelnk:       Boolean = False;
+  dtimeinstbar:    Boolean = False;
   hideafterlaunch: Boolean = False;
-  queryonlaunch: Boolean = False;
-  rwar: Boolean = False;
+  queryonlaunch:   Boolean = False;
+  rwar:            Boolean = False;
   settingsshowing: Boolean = False;
-  starthide: Boolean = False;
-  ClearONF: Boolean = True;
-  nobgnotabs: Boolean = True;
-  statusbarvis: Boolean = True;
-  FlVer: TFlVer;
+  starthide:       Boolean = False;
+  ClearONF:        Boolean = True;
+  nobgnotabs:      Boolean = True;
+  statusbarvis:    Boolean = True;
+  PropertiesMode:  Integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
+  FocusCol:        Integer = -1;
+  FocusRow:        Integer = -1;
+  FocusTab:        Integer = -1;
+  GlobCol:         Integer = -1;
+  GlobRow:         Integer = -1;
+  GlobTab:         Integer = -1;
+  GlobTabNum:      Integer = -1;
+  CurrAppTheme:    Integer = 0;
+  lotabinsettings: Integer = 0;
+  PriorDef:        Integer = 0;
+  tabind:          Integer = 0;
+  tabsview:        Integer = 0;
+  titlebar:        Integer = 0;
+  TopPer:          Integer = 0;
+  WStateDef:       Integer = 0;
+  lpadding:        Integer = 1;
+  rowscount:       Integer = 2;
+  colscount:       Integer = 10;
+  LeftPer:         Integer = 100;
+  ABlendVal:       Integer = 255;
+  lngfilename:     string;
+  FlVer:           TFlVer;
+  templinks:       link;
+  links:           array[0..maxt - 1] of link;
+  Nim:             TNotifyIconData;
+  FlaunchMainForm: TFlaunchMainForm;
 
 implementation
 
@@ -510,6 +512,8 @@ begin
       if not (CurrAppTheme in [Low(FLThemes)..High(FLThemes)])
         then CurrAppTheme := 0;
     end;
+  ABlendVal := ini.ReadInteger(inisection, 'alphablendvalue', 255);
+  if not (ABlendVal in [26..255]) then ABlendVal := 255;
   lotabinsettings := ini.ReadInteger(inisection, 'lasttabinsettings', 0);
   alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
   statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
@@ -524,20 +528,18 @@ begin
   defdrop := ini.ReadBool(inisection, 'acceptdropfiles', False);
   nobgnotabs := ini.ReadBool(inisection, 'glasswithnotabs', True);
   ClearONF := ini.ReadBool(inisection, 'clearbtnifonf', True);
+  ABlend := ini.ReadBool(inisection, 'alphablend', False);
   GrowTabNames(tabscount);
   for i := 1 to tabscount do
     TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
-
   LeftPer := ini.ReadInteger(inisection, 'formleftpos', 100);
   if LeftPer < 0 then LeftPer := 0;
   if LeftPer > 100 then LeftPer := 100;
   TopPer := ini.ReadInteger(inisection, 'formtoppos', 0);
   if TopPer < 0 then TopPer := 0;
   if TopPer > 100 then TopPer := 100;
-
   MainTabsNew.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
   MainTabsNew.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
-
   ini.Free;
 end;
 
@@ -872,6 +874,8 @@ begin
   PositionNode.AddChild('Top').NodeValue := PositionToPercent(Top, false);
 
   WindowNode.AddChild('TitleBar').NodeValue := titlebar;
+  WindowNode.AddChild('AlphaBlend').NodeValue := ABlend;
+  WindowNode.AddChild('AlphaBlendValue').NodeValue := ABlendVal;
   WindowNode.AddChild('AlwaysOnTop').NodeValue := alwaysontop;
   WindowNode.AddChild('StatusBar').NodeValue := statusbarvis;
   WindowNode.AddChild('DateTimeInStatusBar').NodeValue := dtimeinstbar;
@@ -1069,6 +1073,7 @@ begin
     if TopPer > 100 then TopPer := 100;
   end;
   titlebar := GetInt(WindowNode, 'TitleBar');
+  ABlend := GetBool(WindowNode, 'AlphaBlend');
   alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
   statusbarvis := GetBool(WindowNode, 'StatusBar');
   dtimeinstbar := GetBool(WindowNode, 'DateTimeInStatusBar');
@@ -1080,8 +1085,10 @@ begin
   defdrop := GetBool(WindowNode, 'DefAcceptDropFiles');
   nobgnotabs := GetBool(WindowNode, 'GlassWhenNoTabs');
   ClearONF := GetBool(WindowNode, 'ClearBtnIfONF');
+  ABlendVal := GetInt(WindowNode, 'AlphaBlendValue');
   WStateDef := GetInt(WindowNode, 'DefWinState');
   PriorDef := GetInt(WindowNode, 'DefPriority');
+  if not (ABlendVal in [26..255]) then ABlendVal := 255;
   if not (WStateDef in [0..3]) then WStateDef := 0;
   if not (PriorDef in [0..5]) then PriorDef := 0;
   lotabinsettings := GetInt(WindowNode, 'LastTabInSettings');
@@ -1399,6 +1406,8 @@ begin
     else ClientHeight := MainHeight;
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
+  AlphaBlend := ABlend;
+  AlphaBlendValue := ABlendVal;
   //fix for change panel size without app restart
   FLPanel.ButtonsPopup := ButtonPopupMenu;
 end;
