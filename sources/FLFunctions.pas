@@ -158,6 +158,8 @@ function GetAppThemeIndex(AName: string): Integer;
 procedure SetAppTheme(AName: string);
 /// Set App visual theme by ID
 procedure SetAppThemeByIndex(AIndex: Integer);
+//getting OS user default language for app
+function FindSysUserDefLangFile: string;
 
 var
   fl_root, fl_dir, fl_WorkDir, FLVersion: string;
@@ -955,6 +957,36 @@ begin
   if AIndex in [Low(FLThemes)..High(FLThemes)]
     then SetAppTheme(FLThemes[AIndex].Name)
     else SetAppTheme(FLThemes[0].Name);
+end;
+
+function FindSysUserDefLangFile: string;
+var
+  CurrLCID: Word;
+  sRec: TSearchRec;
+  Dir: string;
+  lngfile: TIniFile;
+begin
+  Result := 'english.lng'; //default language
+  // get current user language code ID. See the for LCID: https://learn.microsoft.com/ru-ru/openspecs/windows_protocols/ms-lcid/
+  CurrLCID := GetUserDefaultUILanguage;
+  Dir := ExtractFilePath(ParamStr(0)) + 'languages\';
+  if FindFirst(Dir + '*.*', faAnyFile, sRec) = 0 then repeat
+    if (sRec.Name = '.') or (sRec.Name = '..') then Continue;
+    if ExtractFileExt(sRec.Name).ToLower = '.lng' then begin
+      lngfile := TIniFile.Create(Dir + sRec.Name);
+      try
+        if lngfile.ReadInteger('information','langid', -1) = CurrLCID
+        then begin
+          Result := sRec.Name;
+          FindClose(sRec);
+          Exit;
+        end;
+      finally
+        lngfile.Free;
+      end;
+    end;
+  until FindNext(sRec) <> 0;
+  FindClose(sRec);
 end;
 
 end.

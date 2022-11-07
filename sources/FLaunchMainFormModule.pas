@@ -154,7 +154,6 @@ type
     function LoadLinksCfgFileV121_12_11: boolean;
     function LoadLinksCfgFileV10: boolean;
     function LoadLinksCfgFile: boolean;
-    function FindSysUserDefLangFile: string;
     //--Событие генерируется при клике по кнопке на панели
     procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
     //--Событие генерируется при нажатии кнопки мыши на кнопке панели
@@ -288,37 +287,6 @@ begin
       FreeMem(VInfo, VInfoSize);
     end;
   end;
-end;
-
-//getting OS user default language for app
-function TFLaunchMainForm.FindSysUserDefLangFile: string;
-var
-  CurrLCID: Word;
-  sRec: TSearchRec;
-  Dir: string;
-  lngfile: TIniFile;
-begin
-  Result := 'english.lng'; //default language
-  // get current user language code ID. See the for LCID: https://learn.microsoft.com/ru-ru/openspecs/windows_protocols/ms-lcid/
-  CurrLCID := GetUserDefaultUILanguage;
-  Dir := ExtractFilePath(ParamStr(0)) + 'languages\';
-  if FindFirst(Dir + '*.*', faAnyFile, sRec) = 0 then repeat
-    if (sRec.Name = '.') or (sRec.Name = '..') then Continue;
-    if ExtractFileExt(sRec.Name).ToLower = '.lng' then begin
-      lngfile := TIniFile.Create(Dir + sRec.Name);
-      try
-        if lngfile.ReadInteger('information','langid', -1) = CurrLCID
-        then begin
-          Result := sRec.Name;
-          FindClose(sRec);
-          Exit;
-        end;
-      finally
-        lngfile.Free;
-      end;
-    end;
-  until FindNext(sRec) <> 0;
-  FindClose(sRec);
 end;
 
 //convert window position from pixels to percent
