@@ -647,14 +647,19 @@ end;
 procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
   ADroppedFile: string; RunAsAdmin: Boolean);
 var
+  tempexec: string;
   TempLink: TLink;
 begin
   Inc(LaunchID);
   LaunchingButtons.Add(LaunchID, AButton);
   TempLink := AButton.DataToLink;
   TempLink.AsAdminPerm := RunAsAdmin;
-  if not FileExists(TempLink.exec)
-      and (not DirectoryExists(TempLink.exec))
+  tempexec := StringReplace(TempLink.exec, '%FL_ROOT%\', fl_root,
+    [rfReplaceAll, rfIgnoreCase]);
+  tempexec := StringReplace(tempexec, '%FL_DIR%\', fl_dir,
+    [rfReplaceAll, rfIgnoreCase]);
+  if not FileExists(tempexec)
+      and (not DirectoryExists(tempexec))
     then begin
       if RequestMessage(Handle,
           Format(Language.Messages.NotFound, [TempLink.exec])) = IDYES
