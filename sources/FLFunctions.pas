@@ -159,8 +159,6 @@ function GetAppThemeIndex(AName: string): Integer;
 /// Set App visual theme
 procedure SetAppTheme(AName: string);
 /// Set App visual theme by ID
-procedure SetAppThemeByIndex(AIndex: Integer);
-//getting OS user default language for app
 function FindSysUserDefLangFile: string;
 
 var
@@ -967,13 +965,6 @@ begin
       Result := I;
       Exit;
     end;
-end;
-
-procedure SetAppThemeByIndex(AIndex: Integer);
-begin
-  if AIndex in [Low(FLThemes)..High(FLThemes)]
-    then SetAppTheme(FLThemes[AIndex].Name)
-    else SetAppTheme(FLThemes[0].Name);
 end;
 
 function FindSysUserDefLangFile: string;

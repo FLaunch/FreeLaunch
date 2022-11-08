@@ -42,7 +42,6 @@ uses
 
 const
   TCM_GETITEMRECT = $130A;
-  HotKeyID = 27071987;
 
   inisection = 'general';
 
@@ -137,6 +136,7 @@ type
   private
     //--Список имен вкладок
     TabNames: TStringList;
+    GHAtom: Word;
     /// <summary> Список кнопок в процессе запуска </summary>
     LaunchingButtons: TDictionary<Integer, TFLButton>;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
@@ -181,6 +181,8 @@ type
     procedure LoadLinksIconsFromCache;
     /// <summary> Сохранение иконок кнопок в кэш </summary>
     procedure SaveLinksIconsToCache;
+    /// setting app theme by index
+    procedure SetAppThemeByIndex(AIndex: Integer);
   public
     FLPanel: TFLPanel;
     //--Количество вкладок
@@ -1204,7 +1206,7 @@ procedure TFlaunchMainForm.WMHotKey(var Msg: TWMHotKey);
 begin
   if Msg.Msg = WM_HOTKEY then
     begin
-      if Msg.HotKey = HotKeyID then
+      if Msg.HotKey = GHAtom then
         begin
           nowactive := Active;
           ChWinView((not nowactive) or not (Showing));
@@ -1235,7 +1237,7 @@ end;
 
 procedure TFlaunchMainForm.EndWork;
 begin
-  unregisterhotkey(Handle, HotKeyID);
+  UnregisterHotKey(Handle, GHAtom);
   DeleteFile(fl_WorkDir + '.session');
   //--Сохраняем настройки кнопок
   SaveLinksSettings;
@@ -1625,6 +1627,16 @@ begin
   ChWinView(False);
 end;
 
+procedure TFlaunchMainForm.SetAppThemeByIndex(AIndex: Integer);
+begin
+  UnregisterHotKey(Handle, GHAtom);
+  if AIndex in [Low(FLThemes)..High(FLThemes)]
+    then SetAppTheme(FLThemes[AIndex].Name)
+    else SetAppTheme(FLThemes[0].Name);
+  GHAtom := GlobalAddAtom('FL_Hotkey');
+  RegisterHotKey(Handle, GHAtom, MOD_CONTROL or MOD_WIN, 0);
+end;
+
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);
 begin
   //get app version
@@ -1638,7 +1650,6 @@ begin
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   ChPos := true;
   Randomize;
-  RegisterHotKey(Handle, HotKeyID, MOD_CONTROL or MOD_WIN, 0);
   InitEnvironment;
   MESettings().BugReportFile := fl_WorkDir + 'bugReport.mbr';
   if FileExists(fl_WorkDir + 'FLaunch.xml') then
