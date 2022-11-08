@@ -277,6 +277,7 @@ begin
     until
       FindNext(SearchRec) <> 0;
   FindClose(SearchRec);
+  LanguagesBox.Enabled := LanguagesBox.Items.Count > 0;
 end;
 
 procedure TSettingsForm.StatusBarBoxClick(Sender: TObject);
