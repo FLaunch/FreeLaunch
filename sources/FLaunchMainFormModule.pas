@@ -1288,8 +1288,6 @@ begin
   //--F2 -> переименовать вкладку
   if key = VK_F1 then LaunchHelpFile;
   if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
-  if Key = VK_TAB then ShowMessage('tab');
-  if (Key = VK_TAB) and (ssShift in Shift) then ShowMessage('ShiftTab');
 end;
 
 procedure TFlaunchMainForm.ButtonPopupItem_ClearClick(Sender: TObject);
