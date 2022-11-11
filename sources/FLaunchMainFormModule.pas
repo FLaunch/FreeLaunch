@@ -717,8 +717,12 @@ begin
         LinkNode.AddChild('RequireAdmin').NodeValue := TempData.IsAdmin;
       end;
   end;
-  XMLDocument.SaveToFile(fl_WorkDir + 'FLaunch.xml');
-  XMLDocument.Active := false;
+  try
+    XMLDocument.SaveToFile(fl_WorkDir + 'FLaunch.xml');
+  except
+    {do nothing}
+  end;
+  if XMLDocument.Active then XMLDocument.Active := false;
   FLPanel.ExpandStrings := true;
 end;
 
