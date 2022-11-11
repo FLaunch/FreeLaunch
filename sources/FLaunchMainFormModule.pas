@@ -56,6 +56,7 @@ const
   maxc = 15;
 
   TabsCountMax = 50;
+  PaddingMax = 100;
   RowsCountMax = 100;
   ColsCountMax = 150;
 
@@ -150,10 +151,6 @@ type
     procedure LaunchButton(AButton: TFLButton; ADroppedFile: string = ''; RunAsAdmin: Boolean = False);
     procedure ImportButton(Button: TFLButton; FileName: string);
     procedure ExportButton(Button: TFLButton; FileName: string);
-    function LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
-    function LoadLinksCfgFileV121_12_11: boolean;
-    function LoadLinksCfgFileV10: boolean;
-    function LoadLinksCfgFile: boolean;
     //--Событие генерируется при клике по кнопке на панели
     procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
     //--Событие генерируется при нажатии кнопки мыши на кнопке панели
@@ -170,8 +167,8 @@ type
     procedure RenameTab(i: integer);
     //--Удаление вкладки
     procedure DeleteTab(i: integer);
-    /// <summary> Считывание настроек кнопок из xml-файла </summary>
-    procedure LoadLinksSettings;
+    /// <summary> Считывание настроек из xml-файла </summary>
+    procedure LoadSettings;
     /// <summary> Функция определяет, находятся ли координаты t,r,c в пределах
     /// текущего размера панели </summary>
     function IsTRCInRange(t, r, c: integer): boolean;
@@ -186,9 +183,7 @@ type
   public
     FLPanel: TFLPanel;
     //--Количество вкладок
-    TabsCount: integer;
     //--Ширина и высота кнопок
-    ButtonWidth, ButtonHeight: integer;
     procedure EndWork;
     procedure ChangeWndSize;
     procedure GenerateWnd;
@@ -196,7 +191,6 @@ type
     procedure LaunchHelpFile;
     function DefNameOfTab(tn: string): boolean;
     procedure SetAutorun(b: boolean);
-    procedure LoadIni;
     function GetAppVersion: TFlVer;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
@@ -214,7 +208,7 @@ var
   aboutshowing:    Boolean = False;
   AlwaysOnTop:     Boolean = False;
   Autorun:         Boolean = False;
-  ChPos:           Boolean = False;
+  ChPos:           Boolean = True;
   defdrop:         Boolean = False;
   deletelnk:       Boolean = False;
   dtimeinstbar:    Boolean = False;
@@ -244,10 +238,15 @@ var
   WStateDef:       Integer = 0;
   lpadding:        Integer = 1;
   rowscount:       Integer = 2;
+  TabsCount:       Integer = 3;
+  TabsFontSize:    Integer = 8;
   colscount:       Integer = 10;
+  ButtonHeight:    Integer = 32;
+  ButtonWidth:     Integer = 32;
   LeftPer:         Integer = 100;
   ABlendVal:       Integer = 255;
-  lngfilename:     string;
+  lngfilename:     string = '';
+  TabsFontName:    string = 'Tahoma';
   FlVer:           TFlVer;
   templinks:       link;
   links:           array[0..maxt - 1] of link;
@@ -473,88 +472,6 @@ begin
   if TabsCount = 1 then ChPos := False;
 end;
 
-//for compatibility with old versions
-procedure TFlaunchMainForm.LoadIni;
-var
-  i: integer;
-  Ini: TIniFile;
-begin
-  Ini := TIniFile.Create(fl_WorkDir+'FLaunch.ini');
-  lngfilename := ini.ReadString(inisection, 'language', '');
-  tabscount := ini.ReadInteger(inisection, 'tabs', 3);
-  TabsCount := Min(TabsCount, maxt);
-  if tabscount < mint then
-    tabscount := mint;
-  rowscount := ini.ReadInteger(inisection, 'rows', 2);
-  if rowscount > maxr then
-    rowscount := maxr;
-  if rowscount < minr then
-    rowscount := minr;
-  colscount := ini.ReadInteger(inisection, 'cols', 10);
-  if colscount > maxc then
-    colscount := maxc;
-  if colscount < minc then
-    colscount := minc;
-  lpadding := ini.ReadInteger(inisection, 'padding', 1);
-  if lpadding > maxp then
-    lpadding := maxp;
-  if lpadding < minp then
-    lpadding := minp;
-  ButtonWidth := ini.ReadInteger(inisection, 'iconwidth', 32);
-  if (ButtonWidth < 16) or (ButtonWidth > 256) then
-    ButtonWidth := 32;
-  ButtonHeight := ini.ReadInteger(inisection, 'iconheight', 32);
-  if (ButtonHeight < 16) or (ButtonHeight > 256) then
-    ButtonHeight := 32;
-  tabind := ini.ReadInteger(inisection, 'activetab', 0);
-  if (tabind < 0) or (tabind > tabscount-1) then
-    tabind := 0;
-  titlebar := ini.ReadInteger(inisection, 'titlebar', 0);
-  if not (titlebar in [0..2]) then titlebar := 0;
-  tabsview := ini.ReadInteger(inisection, 'tabsview', 0);
-  if not (tabsview in [0..2]) then tabsview := 0;
-  WStateDef := ini.ReadInteger(inisection, 'defwindowstate', 0);
-  if not (WStateDef in [0..3]) then WStateDef := 0;
-  PriorDef := ini.ReadInteger(inisection, 'defpriority', 0);
-  if not (PriorDef in [0..5]) then PriorDef := 0;
-  if ini.ReadInteger(inisection, 'currentthemeid', -1) < 0 
-    then CurrAppTheme := GetAppThemeIndex(GetAppTheme)
-    else begin
-      CurrAppTheme := ini.ReadInteger(inisection, 'currentthemeid', 0);
-      if not (CurrAppTheme in [Low(FLThemes)..High(FLThemes)])
-        then CurrAppTheme := 0;
-    end;
-  ABlendVal := ini.ReadInteger(inisection, 'alphablendvalue', 255);
-  if not (ABlendVal in [26..255]) then ABlendVal := 255;
-  lotabinsettings := ini.ReadInteger(inisection, 'lasttabinsettings', 0);
-  alwaysontop := ini.ReadBool(inisection, 'alwaysontop', false);
-  statusbarvis := ini.ReadBool(inisection, 'statusbar', true);
-  dtimeinstbar := ini.ReadBool(inisection, 'datetimeinstatusbar', False);
-  Timer1.Enabled := statusbarvis and dtimeinstbar;
-  autorun := ini.ReadBool(inisection, 'autorun', false);
-  starthide := ini.ReadBool(inisection, 'starthide', false);
-  hideafterlaunch := ini.ReadBool(inisection, 'hideafterlaunchbtn', False);
-  queryonlaunch := ini.ReadBool(inisection, 'queryonlaunch', False);
-  deletelnk := ini.ReadBool(inisection, 'deletelnk', False);
-  rwar := ini.ReadBool(inisection, 'runbtnasadmin', False);
-  defdrop := ini.ReadBool(inisection, 'acceptdropfiles', False);
-  nobgnotabs := ini.ReadBool(inisection, 'glasswithnotabs', True);
-  ClearONF := ini.ReadBool(inisection, 'clearbtnifonf', True);
-  ABlend := ini.ReadBool(inisection, 'alphablend', False);
-  GrowTabNames(tabscount);
-  for i := 1 to tabscount do
-    TabNames[i-1] := ini.ReadString(inisection, Format('tab%dname',[i]), '');
-  LeftPer := ini.ReadInteger(inisection, 'formleftpos', 100);
-  if LeftPer < 0 then LeftPer := 0;
-  if LeftPer > 100 then LeftPer := 100;
-  TopPer := ini.ReadInteger(inisection, 'formtoppos', 0);
-  if TopPer < 0 then TopPer := 0;
-  if TopPer > 100 then TopPer := 100;
-  MainTabsNew.Font.Name := ini.ReadString(inisection, 'tabsfontname', 'Tahoma');
-  MainTabsNew.Font.Size := ini.ReadInteger(inisection, 'tabsfontsize', 8);
-  ini.Free;
-end;
-
 procedure TFlaunchMainForm.TrayMenuPopup(Sender: TObject);
 begin
   NI_About.Enabled := not aboutshowing;
@@ -670,173 +587,6 @@ begin
       NewProcess(TempLink, Handle, LaunchID, ADroppedFile);
 end;
 
-function TFlaunchMainForm.LoadCfgFileString(AFileHandle: THandle; ALength: Integer = 0): string;
-var
-  buff: array[0..255] of Char;
-  bufflen: integer;
-begin
-  Result := '';
-
-  if ALength > 0 then
-    bufflen := ALength
-  else
-    if FileRead(AFileHandle, bufflen, sizeof(bufflen)) < sizeof(bufflen) then
-      Exit;
-  FillChar(buff, sizeof(buff), 0);
-  if FileRead(AFileHandle, buff, bufflen) < bufflen then
-    Exit;
-
-  Result := buff;
-
-  Result := StringReplace(Result, '{FL_ROOT}', '%FL_ROOT%\',
-    [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '{FL_DIR}', '%FL_DIR%\',
-    [rfReplaceAll, rfIgnoreCase]);
-end;
-
-function TFlaunchMainForm.LoadLinksCfgFileV121_12_11: boolean;
-var
-  t,r,c: integer;
-  FileName, ext: string;
-  LinksCfgFile: THandle;
-begin
-  result := false;
-  FileName := fl_WorkDir + 'FLaunch.dat';
-  LinksCfgFile := FileOpen(FileName, fmOpenRead);
-  LoadCfgFileString(LinksCfgFile, 4);
-  LoadCfgFileString(LinksCfgFile);
-  for t := 0 to maxt - 1 do
-    for r := 0 to maxr - 1 do
-      for c := 0 to maxc - 1 do
-        begin
-          FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
-          links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
-          ext := extractfileext(links[t,r,c].exec).ToLower;
-          if (not links[t,r,c].active) or IsExecutable(ext) then
-            links[t,r,c].ltype := 0
-          else
-            links[t,r,c].ltype := 1;
-          links[t,r,c].workdir := ExtractFilePath(links[t,r,c].exec);
-          links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-          links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
-          links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
-          FileRead(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
-          FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
-          FileRead(LinksCfgFile, links[t,r,c].wst, sizeof(byte));
-        end;
-  FileClose(LinksCfgFile);
-end;
-
-function TFlaunchMainForm.LoadLinksCfgFileV10: boolean;
-var
-  t,r,c: integer;
-  FileName, ext: string;
-  LinksCfgFile: THandle;
-begin
-  result := false;
-  FileName := fl_WorkDir + 'Flaunch.dat';
-  LinksCfgFile := FileOpen(FileName, fmOpenRead);
-  LoadCfgFileString(LinksCfgFile, 4);
-  LoadCfgFileString(LinksCfgFile);
-  for t := 0 to maxt - 1 do
-    for r := 0 to maxr - 1 do
-      for c := 0 to maxc - 1 do
-        begin
-          FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
-          links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
-          ext := extractfileext(links[t,r,c].exec).ToLower;
-          if (not links[t,r,c].active) or IsExecutable(ext) then
-            links[t,r,c].ltype := 0
-          else
-            links[t,r,c].ltype := 1;
-          links[t,r,c].workdir := ExtractFilePath(links[t,r,c].exec);
-          links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-          links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-          links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
-          links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
-          FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
-          links[t,r,c].hide := false;
-          FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
-          FileRead(LinksCfgFile, links[t,r,c].wst, sizeof(byte));
-        end;
-  FileClose(LinksCfgFile);
-end;
-
-function TFlaunchMainForm.LoadLinksCfgFile: boolean;
-var
-  t,r,c: integer;
-  FileName, VerStr: string;
-  LinksCfgFile: THandle;
-  Button: TFLButton;
-begin
-  result := false;
-  FileName := fl_WorkDir + 'FLaunch.dat';
-  if not (fileexists(FileName)) then exit;
-  LinksCfgFile := FileOpen(FileName, fmOpenRead);
-  if LoadCfgFileString(LinksCfgFile, 4) <> 'LCFG' then
-    begin
-      FileClose(LinksCfgFile);
-      RenameFile(FileName, fl_WorkDir + 'Flaunch_Unknown.dat');
-      exit;
-    end;
-  VerStr := LoadCfgFileString(LinksCfgFile);
-  if VerStr <> '2.0 beta 1' then
-  begin
-    FileClose(LinksCfgFile);
-    if RequestMessage(Handle, format(Language.Messages.OldSettings,
-      [VerStr])) = IDYES
-    then
-    begin
-      if (VerStr = '1.21') or (VerStr = '1.2') or ((VerStr = '1.1')) then
-        LoadLinksCfgFileV121_12_11
-      else
-        if VerStr = '1.0' then
-          LoadLinksCfgFileV10
-        else
-          RenameFile(FileName, fl_WorkDir + Format('Flaunch_%s.dat',[VerStr]));
-    end
-    else
-      RenameFile(FileName, fl_WorkDir + Format('Flaunch_%s.dat',[VerStr]));
-  end
-  else
-  begin
-    for t := 0 to maxt - 1 do
-      for r := 0 to maxr - 1 do
-        for c := 0 to maxc - 1 do
-          begin
-            FileRead(LinksCfgFile, links[t,r,c].active, sizeof(boolean));
-            FileRead(LinksCfgFile, links[t,r,c].ltype, sizeof(byte));
-            links[t,r,c].exec := LoadCfgFileString(LinksCfgFile);
-            links[t,r,c].workdir := LoadCfgFileString(LinksCfgFile);
-            links[t,r,c].icon := LoadCfgFileString(LinksCfgFile);
-            FileRead(LinksCfgFile, links[t,r,c].iconindex, sizeof(integer));
-            links[t,r,c].params := LoadCfgFileString(LinksCfgFile);
-            FileRead(LinksCfgFile, links[t,r,c].dropfiles, sizeof(boolean));
-            links[t,r,c].dropparams := LoadCfgFileString(LinksCfgFile);
-            links[t,r,c].descr := LoadCfgFileString(LinksCfgFile);
-            FileRead(LinksCfgFile, links[t,r,c].ques, sizeof(boolean));
-            FileRead(LinksCfgFile, links[t,r,c].hide, sizeof(boolean));
-            FileRead(LinksCfgFile, links[t,r,c].pr, sizeof(byte));
-            FileRead(LinksCfgFile, links[t,r,c].wst, sizeof(byte));
-          end;
-    FileClose(LinksCfgFile);
-  end;
-
-  for t := 0 to TabsCount - 1 do
-    for r := 0 to RowsCount - 1 do
-      for c := 0 to ColsCount - 1 do
-      begin
-        Button := FLPanel.Buttons[t, r, c];
-        Button.LinkToData(links[t,r,c]);
-      end;
-end;
-
 procedure TFlaunchMainForm.SaveLinksIconsToCache;
 var
   t,r,c: integer;
@@ -848,7 +598,6 @@ begin
     FilePath := fl_WorkDir + IconCacheDir + TPath.DirectorySeparatorChar;
     if not TDirectory.Exists(FilePath) then
       TDirectory.CreateDirectory(FilePath);
-
     for t := 0 to TabsCount - 1 do
       for r := 0 to RowsCount - 1 do
         for c := 0 to ColsCount - 1 do
@@ -1021,185 +770,249 @@ begin
   FLPanel.PagesCount := ACount;
 end;
 
-procedure TFlaunchMainForm.LoadLinksSettings;
+procedure TFlaunchMainForm.LoadSettings;
 var
-  RootNode, LinkNode, IconNode, TabNode, WindowNode, PositionNode,
-    TabRootNode, PanelRootNode, PanelNode, DropNode, FontNode: IXMLNode;
+  gtabscount, gthemeid: Boolean;
+
+  RootNode, WindowsNode, WindowNode, PositionNode, TabRootNode, TabFontNode,
+  LinkNode, IconNode, TabNode, IconsNode,
+  PanelRootNode, PanelNode, DropNode: IXMLNode;
   TabNumber, Row, Column: Integer;
   TempData: TFLDataItem;
   XMLDocument: IXMLDocument;
-  Version: string;
 
-  function GetStr(AParent: IXMLNode; AChildName: string): string;
+  function GetStr(AParent: IXMLNode; AChild: string;
+    DefValue: string = ''): string;
   var
     Child: IXMLNode;
   begin
-    Result := '';
-    Child := AParent.ChildNodes.FindNode(AChildName);
-    if Assigned(Child) and Child.IsTextElement then
-      Result := Child.Text;
+    Result := DefValue;
+    Child := AParent.ChildNodes.FindNode(AChild);
+    if Assigned(Child) and Child.IsTextElement
+      then Result := Child.Text;
   end;
 
-  function GetInt(AParent: IXMLNode; AChildName: string): integer;
+  function GetInt(AParent: IXMLNode; AChild: string;
+    DefValue: Integer = 0): Integer;
   var
     Child: IXMLNode;
   begin
-    Result := 0;
+    Result := DefValue;
+    Child := AParent.ChildNodes.FindNode(AChild);
+    if Assigned(Child) and (Child.NodeValue <> NULL)
+      then Result := Child.NodeValue;
+  end;
+
+  function GetBool(AParent: IXMLNode; AChildName: string;
+    DefValue: Boolean = False): Boolean;
+  var
+    Child: IXMLNode;
+  begin
+    Result := DefValue;
     Child := AParent.ChildNodes.FindNode(AChildName);
     if Assigned(Child) and (Child.NodeValue <> NULL) then
       Result := Child.NodeValue;
   end;
 
-  function GetBool(AParent: IXMLNode; AChildName: string): Boolean;
-  var
-    Child: IXMLNode;
+  function LimitInt(AInt, AMin, AMax: Integer): Integer;
   begin
-    Result := False;
-    Child := AParent.ChildNodes.FindNode(AChildName);
-    if Assigned(Child) and (Child.NodeValue <> NULL) then
-      Result := Child.NodeValue;
+    Result := Min(Max(AInt, AMin), AMax);
+  end;
+
+  function ToMinInt(AInt, AMin, AMax: Integer): Integer;
+  begin
+    Result := AInt;
+    if not (AInt in [Max(AMin, 0)..Min(AMax, 255)]) then Result := AMin;
+  end;
+
+  function ToMaxInt(AInt, AMin, AMax: Integer): Integer;
+  begin
+    Result := AInt;
+    if not (AInt in [Max(AMin, 0)..Min(AMax, 255)]) then Result := AMax;
+  end;
+
+  procedure SetSettings;
+  var
+    I: Integer;
+  begin
+    if XMLDocument.Active then XMLDocument.Active := False;
+    if not gthemeid then CurrAppTheme := GetAppThemeIndex(GetAppTheme);
+    MainTabsNew.Font.Name := TabsFontName;
+    MainTabsNew.Font.Size := TabsFontSize;
+    if not gtabscount then begin
+      TabsCount := 3;
+      GrowTabNames(TabsCount);
+      for I := 1 to TabsCount
+        do TabNames[I - 1] := '';
+    end;
+    MainTabsNew.TabIndex := tabind;
+    FLPanel.ColsCount := colscount;
+    FLPanel.RowsCount := rowscount;
+    FLPanel.ButtonHeight := ButtonHeight;
+    FLPanel.ButtonHeight := ButtonHeight;
+    FLPanel.Padding := lpadding;
   end;
 
 begin
-  if not FileExists(fl_WorkDir + 'FLaunch.xml') then
-    Exit;
+  gtabscount := False;
+  gthemeid := False;
+  if not FileExists(fl_WorkDir + 'FLaunch.xml') then Exit;
   XMLDocument := TXMLDocument.Create(Self);
   XMLDocument.Options := [doNodeAutoIndent];
-  XMLDocument.Active := true;
-  XMLDocument.LoadFromFile(fl_WorkDir + 'FLaunch.xml');
-  RootNode := XMLDocument.ChildNodes.FindNode('FLaunch');
-  if (not Assigned(RootNode)) or (not RootNode.HasChildNodes) then
+  XMLDocument.Active := True;
+  try
+    XMLDocument.LoadFromFile(fl_WorkDir + 'FLaunch.xml');
+  except
+    // if settings XML file is corrupted
+    SetSettings;
     Exit;
-  Version := GetStr(RootNode, 'Version');
-  autorun := GetBool(RootNode, 'AutoRun');
-  lngfilename := GetStr(RootNode, 'Language');
-  WindowNode := RootNode.ChildNodes.FindNode('Windows');
-  if (not Assigned(WindowNode)) or (not WindowNode.HasChildNodes) then
-    Exit;
-  WindowNode := WindowNode.ChildNodes.FindNode('Window');
-  if (not Assigned(WindowNode)) or (not WindowNode.HasChildNodes) then
-    Exit;
-  PositionNode := WindowNode.ChildNodes.FindNode('Position');
-  if Assigned(PositionNode) and PositionNode.HasChildNodes then
-  begin
-    LeftPer := GetInt(PositionNode, 'Left');
-    if LeftPer < 0 then LeftPer := 0;
-    if LeftPer > 100 then LeftPer := 100;
-    TopPer := GetInt(PositionNode, 'Top');
-    if TopPer < 0 then TopPer := 0;
-    if TopPer > 100 then TopPer := 100;
   end;
-  titlebar := GetInt(WindowNode, 'TitleBar');
-  ABlend := GetBool(WindowNode, 'AlphaBlend');
-  alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
-  statusbarvis := GetBool(WindowNode, 'StatusBar');
-  dtimeinstbar := GetBool(WindowNode, 'DateTimeInStatusBar');
-  starthide := GetBool(WindowNode, 'StartHidden');
-  hideafterlaunch := GetBool(WindowNode, 'HideAfterLaunchBtn');
-  queryonlaunch := GetBool(WindowNode, 'QueryOnLaunchBtn');
-  deletelnk := GetBool(WindowNode, 'DeleteLNK');
-  rwar := GetBool(WindowNode, 'RunBtnAsAdmin');
-  defdrop := GetBool(WindowNode, 'DefAcceptDropFiles');
-  nobgnotabs := GetBool(WindowNode, 'GlassWhenNoTabs');
-  ClearONF := GetBool(WindowNode, 'ClearBtnIfONF');
-  ABlendVal := GetInt(WindowNode, 'AlphaBlendValue');
-  WStateDef := GetInt(WindowNode, 'DefWinState');
-  PriorDef := GetInt(WindowNode, 'DefPriority');
-  if not (ABlendVal in [26..255]) then ABlendVal := 255;
-  if not (WStateDef in [0..3]) then WStateDef := 0;
-  if not (PriorDef in [0..5]) then PriorDef := 0;
-  lotabinsettings := GetInt(WindowNode, 'LastTabInSettings');
-  if GetStr(WindowNode, 'CurrentThemeID') = '' then begin
-    CurrAppTheme := GetAppThemeIndex(GetAppTheme);
-  end else begin
-    CurrAppTheme := GetInt(WindowNode, 'CurrentThemeID');
-    if not (CurrAppTheme in [Low(FLThemes)..High(FLThemes)])
-      then CurrAppTheme := 0;
-  end;
-  TabsCount := 0;
-  TabNumber := 0;
-  TabNames.Clear;
-  TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
-  if (not Assigned(TabRootNode)) or (not TabRootNode.HasChildNodes) then
-    Exit;
-  tabsview := GetInt(TabRootNode, 'View');
-  FontNode := TabRootNode.ChildNodes.FindNode('Font');
-  if Assigned(FontNode) and FontNode.HasChildNodes then
-  begin
-    MainTabsNew.Font.Name := GetStr(FontNode, 'Name');
-    MainTabsNew.Font.Size := GetInt(FontNode, 'Size');
-  end;
-  TabNode := TabRootNode.ChildNodes.FindNode('Tab');
-  while Assigned(TabNode) and TabNode.HasChildNodes do
-  begin
-    Inc(TabsCount);
-    TabNumber := TabNode.Attributes['Number'];
-    GrowTabNames(TabNumber);
-    TabNames.Strings[TabNumber - 1] := GetStr(TabNode, 'Name');
-    TabNode := TabNode.NextSibling;
-  end;
-  TabsCount := Min(TabsCount, TabsCountMax);
-  GrowTabNames(TabNumber);
-  MainTabsNew.TabIndex := GetInt(TabRootNode, 'ActiveTab') - 1;
-  PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
-  if (not Assigned(PanelRootNode)) or (not PanelRootNode.HasChildNodes) then
-    Exit;
-  PanelNode := PanelRootNode.ChildNodes.First;
-  for TabNumber := 0 to TabsCount - 1 do
-  begin
-    if (not Assigned(PanelNode)) or (not PanelNode.HasChildNodes) then
-      Exit;
-    RowsCount := GetInt(PanelNode, 'Rows');
-    ColsCount := GetInt(PanelNode, 'Columns');
-    RowsCount := Min(RowsCount, RowsCountMax);
-    ColsCount := Min(ColsCount, ColsCountMax);
-    FLPanel.RowsCount := RowsCount;
-    FLPanel.ColsCount := ColsCount;
-    IconNode := PanelNode.ChildNodes.FindNode('Icons');
-    if Assigned(IconNode) and IconNode.HasChildNodes then
-    begin
-      ButtonWidth := GetInt(IconNode, 'Width');
-      ButtonHeight := GetInt(IconNode, 'Height');
-      FLPanel.ButtonWidth := ButtonWidth;
-      FLPanel.ButtonHeight := ButtonHeight;
-    end;
-
-    LPadding := GetInt(PanelNode, 'Padding');
-    FLPanel.Padding := LPadding;
-
-    LinkNode := PanelNode.ChildNodes.FindNode('Link');
-    while Assigned(LinkNode) and LinkNode.HasChildNodes do begin
-      Row := GetInt(LinkNode, 'Row') - 1;
-      Column := GetInt(LinkNode, 'Column') - 1;
-      if not IsTRCInRange(TabNumber, Row, Column) then Continue;
-      TempData := FLPanel.Buttons[TabNumber, Row, Column].InitializeData;
-      TempData.LType := GetInt(LinkNode, 'Type');
-      TempData.Exec := GetStr(LinkNode, 'Execute');
-      TempData.WorkDir := GetStr(LinkNode, 'WorkingDir');
-      IconNode := LinkNode.ChildNodes.FindNode('Icon');
-      if Assigned(IconNode) and IconNode.HasChildNodes then begin
-        TempData.Icon := GetStr(IconNode, 'File');
-        TempData.IconIndex := GetInt(IconNode, 'Index');
-        TempData.IconCache := GetStr(IconNode, 'Cache');
+  try
+    //root node
+    RootNode := XMLDocument.ChildNodes.FindNode('FLaunch');
+    if Assigned(RootNode) and RootNode.HasChildNodes then begin
+      Autorun := GetBool(RootNode, 'AutoRun');
+      lngfilename := GetStr(RootNode, 'Language');
+      //windows node
+      WindowsNode := RootNode.ChildNodes.FindNode('Windows');
+      if Assigned(WindowsNode) and WindowsNode.HasChildNodes then begin
+        //window node
+        WindowNode := WindowsNode.ChildNodes.FindNode('Window');
+        if Assigned(WindowNode) and WindowNode.HasChildNodes then begin
+          ABlend := GetBool(WindowNode, 'AlphaBlend');
+          ABlendVal := ToMaxInt(GetInt(WindowNode, 'AlphaBlendValue', 255),
+            26, 255);
+          alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
+          ClearONF := GetBool(WindowNode, 'ClearBtnIfONF', True);
+          gthemeid := not (GetStr(WindowNode, 'CurrentThemeID') = '');
+          if gthemeid
+            then CurrAppTheme := ToMinInt(GetInt(WindowNode, 'CurrentThemeID'),
+              Low(FLThemes), High(FLThemes));
+          dtimeinstbar := GetBool(WindowNode, 'DateTimeInStatusBar');
+          defdrop := GetBool(WindowNode, 'DefAcceptDropFiles');
+          PriorDef := ToMinInt(GetInt(WindowNode, 'DefPriority'), 0, 5);
+          WStateDef := ToMinInt(GetInt(WindowNode, 'DefWinState'), 0, 3);
+          deletelnk := GetBool(WindowNode, 'DeleteLNK');
+          nobgnotabs := GetBool(WindowNode, 'GlassWhenNoTabs', True);
+          hideafterlaunch := GetBool(WindowNode, 'HideAfterLaunchBtn');
+          lotabinsettings := GetInt(WindowNode, 'LastTabInSettings');
+          //position node
+          PositionNode := WindowNode.ChildNodes.FindNode('Position');
+          if Assigned(PositionNode) and PositionNode.HasChildNodes then begin
+            LeftPer := LimitInt(GetInt(PositionNode, 'Left', 100), 0, 100);
+            TopPer := LimitInt(GetInt(PositionNode, 'Top'), 0, 100);
+          end;
+          //position node end
+          queryonlaunch := GetBool(WindowNode, 'QueryOnLaunchBtn');
+          rwar := GetBool(WindowNode, 'RunBtnAsAdmin');
+          starthide := GetBool(WindowNode, 'StartHidden');
+          statusbarvis := GetBool(WindowNode, 'StatusBar', True);
+          //tabs node
+          TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
+          if Assigned(TabRootNode) and TabRootNode.HasChildNodes then begin
+            TabNumber := 0;
+            TabsCount := 0;
+            tabind := ToMinInt(GetInt(TabRootNode, 'ActiveTab'), 0,
+              TabsCountMax) - 1;
+            TabNames.Clear;
+            //font node
+            TabFontNode := TabRootNode.ChildNodes.FindNode('Font');
+            if Assigned(TabFontNode) and TabFontNode.HasChildNodes then begin
+              TabsFontName := GetStr(TabFontNode, 'Name', 'Tahoma');
+              TabsFontSize := LimitInt(GetInt(TabFontNode, 'Size', 8), 1,
+                MaxInt);
+            end;
+            //font node end
+            //tab N node
+            TabNode := TabRootNode.ChildNodes.FindNode('Tab');
+            while Assigned(TabNode) and TabNode.HasChildNodes do begin
+              gtabscount := True;
+              Inc(TabsCount);
+              TabNumber := TabNode.Attributes['Number'];
+              GrowTabNames(TabNumber);
+              TabNames.Strings[TabNumber - 1] := GetStr(TabNode, 'Name');
+              TabNode := TabNode.NextSibling;
+            end;
+            GrowTabNames(TabNumber);
+            //tab N node end
+            tabsview := ToMinInt(GetInt(TabRootNode, 'View'), 0, 2);
+          end;
+          //tabs node end
+          titlebar := ToMinInt(GetInt(WindowNode, 'TitleBar'), 0, 2);
+        end;
       end;
-      TempData.Params := GetStr(LinkNode, 'Parameters');
-      DropNode := LinkNode.ChildNodes.FindNode('Drop');
-      if Assigned(DropNode) and DropNode.HasChildNodes then begin
-        TempData.DropFiles := GetBool(DropNode, 'Allow');
-        TempData.DropParams := GetStr(DropNode, 'Parameters');
+      //windows node end
+      //panels node
+      PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
+      if Assigned(PanelRootNode) and PanelRootNode.HasChildNodes then begin
+        //panel N node
+        //where is tabnumber value?
+        PanelNode := PanelRootNode.ChildNodes.First;
+        for TabNumber := 0 to TabsCount - 1 do begin
+          if Assigned(PanelNode) and PanelNode.HasChildNodes then begin
+            colscount := ToMaxInt(GetInt(PanelNode, 'ColsCount', 10), 0,
+              ColsCountMax);
+            rowscount := ToMaxInt(GetInt(PanelNode, 'Rows', 2), 0,
+              RowsCountMax);
+            //icons node
+            lpadding := LimitInt(GetInt(PanelNode, 'Padding', 1), 0,
+              PaddingMax);
+            IconsNode := PanelNode.ChildNodes.FindNode('Icons');
+            if Assigned(IconsNode) and IconsNode.HasChildNodes then begin
+              ButtonHeight := LimitInt(GetInt(IconsNode, 'Height', 32),
+               16, 256);
+              ButtonWidth := LimitInt(GetInt(IconsNode, 'Width', 32), 16, 256);
+            end;
+            //icons node end
+            //link node
+            LinkNode := PanelNode.ChildNodes.FindNode('Link');
+            while Assigned(LinkNode) and LinkNode.HasChildNodes do begin
+              Column := GetInt(LinkNode, 'Column') - 1;
+              Row := GetInt(LinkNode, 'Row') - 1;
+              if not IsTRCInRange(TabNumber, Row, Column) then Continue;
+              TempData :=
+                FLPanel.Buttons[TabNumber, Row, Column].InitializeData;
+              TempData.LType := GetInt(LinkNode, 'Type');
+              TempData.Exec := GetStr(LinkNode, 'Execute');
+              TempData.WorkDir := GetStr(LinkNode, 'WorkingDir');
+              //link icon node
+              IconNode := LinkNode.ChildNodes.FindNode('Icon');
+              if Assigned(IconNode) and IconNode.HasChildNodes then begin
+                TempData.Icon := GetStr(IconNode, 'File');
+                TempData.IconIndex := GetInt(IconNode, 'Index');
+                TempData.IconCache := GetStr(IconNode, 'Cache');
+              end;
+              //link icon node end
+              TempData.Params := GetStr(LinkNode, 'Parameters');
+              //link drop node
+              DropNode := LinkNode.ChildNodes.FindNode('Drop');
+              if Assigned(DropNode) and DropNode.HasChildNodes then begin
+                TempData.DropFiles := GetBool(DropNode, 'Allow');
+                TempData.DropParams := GetStr(DropNode, 'Parameters');
+              end;
+              //link drop node end
+              TempData.Descr := GetStr(LinkNode, 'Description');
+              TempData.Ques := GetBool(LinkNode, 'NeedQuestion');
+              TempData.Hide := GetBool(LinkNode, 'HideContainer');
+              TempData.Pr := GetInt(LinkNode, 'Priority');
+              TempData.WSt := GetInt(LinkNode, 'WindowState');
+              TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
+              TempData.AssignIcons;
+              LinkNode := LinkNode.NextSibling;
+            end;
+            //link node end
+            PanelNode := PanelNode.NextSibling;
+          end;
+        end;
+        //panel N node end
       end;
-      TempData.Descr := GetStr(LinkNode, 'Description');
-      TempData.Ques := GetBool(LinkNode, 'NeedQuestion');
-      TempData.Hide := GetBool(LinkNode, 'HideContainer');
-      TempData.Pr := GetInt(LinkNode, 'Priority');
-      TempData.WSt := GetInt(LinkNode, 'WindowState');
-      TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
-      TempData.AssignIcons;
-      LinkNode := LinkNode.NextSibling;
+      //panels node end
     end;
-    PanelNode := PanelNode.NextSibling;
+    //root node end
+    SetSettings;
+  except
+    SetSettings;
   end;
-  XMLDocument.Active := false;
 end;
 
 procedure TFlaunchMainForm.WMHotKey(var Msg: TWMHotKey);
@@ -1222,7 +1035,6 @@ begin
     LeftPer := PositionToPercent(Left, true);
     TopPer := PositionToPercent(Top, false);
   end;
-
   inherited;
 end;
 
@@ -1378,8 +1190,7 @@ var
   TabInternalRect: TRect;
 begin
   SetAppThemeByIndex(CurrAppTheme);
-  if TabsCount > 1 then
-  begin
+  if TabsCount > 1 then begin
     MainTabsNew.Show;
     TabInternalRect := MainTabsNew.DisplayRect;
     FLPanel.Parent := MainTabsNew;
@@ -1387,14 +1198,14 @@ begin
     FLPanel.Top := TabInternalRect.Top;
     FLPanel.DoubleBuffered := True;
     GlassFrame.Enabled := False;
-    MainTabsNew.Width := MainTabsNew.Width + FLPanel.Width - TabInternalRect.Width;
-    MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height - TabInternalRect.Height;
+    MainTabsNew.Width := MainTabsNew.Width + FLPanel.Width -
+        TabInternalRect.Width;
+    MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height -
+        TabInternalRect.Height;
     MainTabsNew.TabIndex := FLPanel.PageNumber;
     MainHeight := MainTabsNew.Height;
     MainWidth := MainTabsNew.Width;
-  end
-  else
-  begin
+  end else begin
     FLPanel.Parent := Self;
     MainTabsNew.Hide;
     FLPanel.Left := 0;
@@ -1412,7 +1223,8 @@ begin
     StatusBar.Panels[1].Width :=
       StatusBar.Canvas.TextWidth(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now)
       + Space + Space + Space + Space);
-    StatusBar.Height := StatusBar.Canvas.TextHeight(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now)) * 2;
+    StatusBar.Height := 2 *
+      StatusBar.Canvas.TextHeight(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now));
     StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width;
   end else StatusBar.Panels[0].Width := StatusBar.Width;
   ClientWidth := MainWidth;
@@ -1440,8 +1252,7 @@ begin
     1: MainTabsNew.Style := tsButtons;
     2: MainTabsNew.Style := tsFlatButtons;
   end;
-  if AlwaysOnTop then
-    FormStyle := fsStayOnTop;
+  if AlwaysOnTop then FormStyle := fsStayOnTop;
   ChangeWndSize;
 end;
 
@@ -1646,29 +1457,14 @@ begin
   //--Создаем экземпляр панели с кнопками
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
-  ChPos := true;
   Randomize;
+  //initialize environment variables
   InitEnvironment;
+  //initialize bugreport file
   MESettings().BugReportFile := fl_WorkDir + 'bugReport.mbr';
-  if FileExists(fl_WorkDir + 'FLaunch.xml') then
-  begin
-    //--Читаем настройки кнопок
-    LoadLinksSettings;
-    //--Читаем иконки кнопок из кэша
-    LoadLinksIconsFromCache;
-  end
-  else
-  begin
-    LoadIni; //compatibility with old versions
-    FLPanel.Padding := LPadding;
-    FLPanel.ButtonWidth := ButtonWidth;
-    FLPanel.ButtonHeight := ButtonHeight;
-    FLPanel.RowsCount := RowsCount;
-    FLPanel.ColsCount := ColsCount;
-    GrowTabNames(TabsCount);
-    MainTabsNew.TabIndex := tabind;
-    LoadLinksCfgFile;
-  end;
+  //loading settings
+  LoadSettings;
+  LoadLinksIconsFromCache;
   FLPanel.PageNumber := MainTabsNew.TabIndex;
   if not FileExists(ExtractFilePath(ParamStr(0)) + 'languages\' + lngfilename)
   then lngfilename := FindSysUserDefLangFile;
@@ -1845,9 +1641,10 @@ begin
   Button.LinkToData(Link);
 end;
 
-function TFlaunchMainForm.IsTRCInRange(t, r, c: integer): boolean;
+function TFlaunchMainForm.IsTRCInRange(t, r, c: integer): Boolean;
 begin
-  Result := (t >= 0) and (t < TabsCount) and (r >= 0) and (r < RowsCount) and (c >= 0) and (c < ColsCount);
+  Result := (t >= 0) and (t < TabsCount) and (r >= 0) and (r < RowsCount)
+    and (c >= 0) and (c < ColsCount);
 end;
 
 procedure TFlaunchMainForm.NI_AboutClick(Sender: TObject);

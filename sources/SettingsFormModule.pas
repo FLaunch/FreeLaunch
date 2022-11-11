@@ -186,7 +186,7 @@ procedure TSettingsForm.ApplySettings;
 var
   tabnum: integer;
 begin
-  ChPos := true;
+  ChPos := True;
   FlaunchMainForm.ChWinView(False);
   Autorun := AutorunCheckBox.Checked;
   AlwaysOnTop := TopCheckBox.Checked;
@@ -212,33 +212,32 @@ begin
   titlebar := TBarBox.ItemIndex;
   //FlaunchMainForm.MainTabs.SetFocus;
   tabnum := FlaunchMainForm.MainTabsNew.TabIndex;
-  FlaunchMainForm.tabscount := strtoint(TabsEdit.Text);
-  rowscount := strtoint(RowsEdit.Text);
-  colscount := strtoint(ColsEdit.Text);
-  lpadding := strtoint(PaddingEdit.Text);
-  FlaunchMainForm.GrowTabNames(FlaunchMainForm.tabscount);
+  tabscount := TabsEdit.Value;
+  rowscount := RowsEdit.Value;
+  colscount := ColsEdit.Value;
+  lpadding := PaddingEdit.Value;
+  FlaunchMainForm.GrowTabNames(tabscount);
   FlaunchMainForm.SetTabNames;
   FlaunchMainForm.FLPanel.ColsCount := colscount;
   FlaunchMainForm.FLPanel.RowsCount := rowscount;
-  if (FlaunchMainForm.ButtonWidth <> IWEdit.Value) or
-    (FlaunchMainForm.ButtonHeight <> IHEdit.Value)
+  if (ButtonWidth <> IWEdit.Value) or (ButtonHeight <> IHEdit.Value)
   then
   begin
-    FlaunchMainForm.ButtonWidth := IWEdit.Value;
-    FlaunchMainForm.ButtonHeight := IHEdit.Value;
-    FlaunchMainForm.FLPanel.ButtonWidth := FlaunchMainForm.ButtonWidth;
-    FlaunchMainForm.FLPanel.ButtonHeight := FlaunchMainForm.ButtonHeight;
+    ButtonWidth := IWEdit.Value;
+    ButtonHeight := IHEdit.Value;
+    FlaunchMainForm.FLPanel.ButtonWidth := ButtonWidth;
+    FlaunchMainForm.FLPanel.ButtonHeight := ButtonHeight;
     FlaunchMainForm.ReloadIcons;
   end;
   FlaunchMainForm.FLPanel.Padding := lpadding;
-  if tabnum < FlaunchMainForm.tabscount then
+  if tabnum < tabscount then
     FlaunchMainForm.MainTabsNew.TabIndex := tabnum
   else
     FlaunchMainForm.MainTabsNew.TabIndex := 0;
   Language.Load(lngfilename);
   FlaunchMainForm.GenerateWnd;
   FlaunchMainForm.ChWinView(true);
-  ChPos := false;
+  ChPos := False;
 end;
 
 procedure TSettingsForm.ProcLanguage(FileName: string);
@@ -354,14 +353,14 @@ begin
   ABlendBar.Enabled := ABlendCheckBox.Checked;
   ABlendBar.Position := Round(ABlendVal / 2.55);
   TabsEdit.MaxValue := TabsCountMax;
-  TabsEdit.Value := FlaunchMainForm.tabscount;
+  TabsEdit.Value := tabscount;
   RowsEdit.MaxValue := RowsCountMax;
   RowsEdit.Value := rowscount;
   ColsEdit.MaxValue := ColsCountMax;
   ColsEdit.Value := colscount;
   PaddingEdit.Value := lpadding;
-  IWEdit.Value := FlaunchMainForm.ButtonWidth;
-  IHEdit.Value := FlaunchMainForm.ButtonHeight;
+  IWEdit.Value := ButtonWidth;
+  IHEdit.Value := ButtonHeight;
   HideCheckBox.Checked := hideafterlaunch;
   QoLCheckBox.Checked := queryonlaunch;
   DelLnkCheckBox.Checked := deletelnk;

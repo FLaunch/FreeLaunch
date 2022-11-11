@@ -877,8 +877,9 @@ var
 begin
   fl_dir := ExtractFilePath(ParamStr(0));
   fl_root := IncludeTrailingPathDelimiter(ExtractFileDrive(fl_dir));
-
-  sini := TIniFile.Create(fl_dir + 'UseProfile.ini'); //Считываем файл первичных настроек для определения режима работы программы и места хранения настроек
+  //Считываем файл первичных настроек для определения режима работы программы
+  //и места хранения настроек
+  sini := TIniFile.Create(fl_dir + 'UseProfile.ini');
   try
     SettingsMode := sini.ReadInteger('general', 'settingsmode', 0);
     if SettingsMode > 2 then SettingsMode := 0;
@@ -893,7 +894,6 @@ begin
   finally
     sini.Free;
   end;
-
   {*--Заполняем переменные FL_*--*}
   AddEnvironmentVariable('FL_DIR', FL_DIR);
   AddEnvironmentVariable('FL_ROOT', FL_ROOT);

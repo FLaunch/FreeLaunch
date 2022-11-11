@@ -72,8 +72,8 @@ type
   end;
 
   TLngMessages = record
-    Caution, Confirmation, OldSettings, RunProgram, DeleteTab, DeleteButton,
-    ClearTab, BusyReplace, ImportButton, NotFound: string;
+    Caution, Confirmation, RunProgram, DeleteTab, DeleteButton, ClearTab,
+    BusyReplace, ImportButton, NotFound: string;
   end;
 
   TLngInfo = record
@@ -165,8 +165,6 @@ begin
     Messages.Caution :=      Parse(Ini.ReadString(SctMain, 'caution', 'Caution'));
     Messages.Confirmation := Parse(Ini.ReadString(SctMain, 'confirmation',
       'Confirmation'));
-    Messages.OldSettings :=  Parse(Ini.ReadString(SctMain, 'message1',
-      'File FLaunch.dat has an older version (%%).\nDo you wish to convert it for using?'), '%s');
     Messages.RunProgram :=   Parse(Ini.ReadString(SctMain, 'message2',
       'Do you wish to run this object?\n\n%%'), '%s');
     Messages.DeleteTab :=    Parse(Ini.ReadString(SctMain, 'message3',
