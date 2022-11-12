@@ -1449,15 +1449,51 @@ end;
 //--Метод генерируется при перетаскивании файла на кнопку
 procedure TFLPanel.WMDropFiles(var Msg: TWMDropFiles);
 var
-  buf: array[0..MAX_PATH] of char;
+  buf: array [0..MAX_PATH] of char;
   Button: TFLButton;
+  tempctrl: TControl;
+  tempcp, newcp: TPoint;
+  i: Integer;
 begin
   if Assigned(fDropFile) then
   begin
     DragQueryFile(Msg.Drop, 0, buf, SizeOf(buf));
-    Button := ControlAtPos(ScreenToClient(Mouse.CursorPos), False) as TFLButton;
+    tempcp := Mouse.CursorPos;
+    tempctrl := ControlAtPos(ScreenToClient(tempcp), False);
+    if Assigned(tempctrl as TFLButton) then begin
+      Button := tempctrl as TFLButton;
+      fDropFile(Self, Button, buf);
+    end else begin
+      //if no button under cursor - search button by the horizontal
+      for I := tempcp.X - Padding - ButtonWidth to tempcp.X + Padding
+        + ButtonWidth
+        do begin
+          newcp := tempcp;
+          newcp.X := I;
+          tempctrl := ControlAtPos(ScreenToClient(newcp), False);
+          if Assigned(tempctrl as TFLButton) then begin
+            Button := tempctrl as TFLButton;
+            fDropFile(Self, Button, buf);
+            Break;
+          end;
+        end;
+      //if not found - search button by vertical
+      if not Assigned(tempctrl as TFLButton) then begin
+        for I := tempcp.Y - Padding - ButtonHeight to tempcp.Y + Padding
+          + ButtonHeight
+          do begin
+            newcp := tempcp;
+            newcp.Y := I;
+            tempctrl := ControlAtPos(ScreenToClient(newcp), False);
+            if Assigned(tempctrl as TFLButton) then begin
+              Button := tempctrl as TFLButton;
+              fDropFile(Self, Button, buf);
+              Break;
+            end;
+          end;
+      end;
+    end;
     //--Генерируем событие родительской панели OnDropFile, передавая текущую кнопку и путь к файлу
-    fDropFile(Self, Button, buf);
     DragFinish(Msg.Drop);
   end;
 end;
