@@ -957,10 +957,12 @@ begin
         PanelNode := PanelRootNode.ChildNodes.First;
         for TabNumber := 0 to TabsCount - 1 do begin
           if Assigned(PanelNode) and PanelNode.HasChildNodes then begin
-            colscount := ToMaxInt(GetInt(PanelNode, 'ColsCount', 10), 0,
+            colscount := ToMaxInt(GetInt(PanelNode, 'Columns', 10), 0,
               ColsCountMax);
             rowscount := ToMaxInt(GetInt(PanelNode, 'Rows', 2), 0,
               RowsCountMax);
+            FLPanel.ColsCount := colscount;
+            FLPanel.RowsCount := rowscount;
             //icons node
             lpadding := LimitInt(GetInt(PanelNode, 'Padding', 1), 0,
               PaddingMax);
@@ -1190,7 +1192,7 @@ end;
 
 procedure TFlaunchMainForm.ButtonPopupMenuPopup(Sender: TObject);
 begin
-  FLPanel.LastUsedButton.MouseUp(mbLeft, [], 0, 0);
+  FLPanel.LastUsedButton.MouseUp(TMouseButton.mbLeft, [], 0, 0);
 end;
 
 procedure TFlaunchMainForm.ChangeWndSize;
@@ -1277,7 +1279,7 @@ procedure TFlaunchMainForm.FLPanelButtonMouseDown(Sender: TObject;
   MouseButton: TMouseButton; Button: TFLButton);
 begin
   //--Если была нажата правая кнопка мыши
-  if MouseButton = mbRight then
+  if MouseButton = TMouseButton.mbRight then
   begin
     {*--Активируем/деактивируем необходимые пункты контекстного меню кнопки--*}
     if Assigned(Button.Data) then
@@ -1583,10 +1585,10 @@ var
   Rect: TRect;
   MousePos: TPoint;
 begin
-  if Button = mbLeft then
+  if Button = TMouseButton.mbLeft then
     if ssCtrl in Shift then
       MainTabsNew.BeginDrag(false);
-  if Button = mbRight then
+  if Button = TMouseButton.mbRight then
   begin
     //--Перебираем все вкладки
     for i := 0 to TabsCount - 1 do
