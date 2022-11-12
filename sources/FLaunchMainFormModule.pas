@@ -448,8 +448,8 @@ procedure TFlaunchMainForm.DeleteTab(i: integer);
 begin
   if TabsCount = 1 then
     Exit;
-  if not RequestMessage(Handle, format(Language.Messages.DeleteTab,
-      [MainTabsNew.Tabs[i]])) = IDYES
+  if not (RequestMessage(Handle, format(Language.Messages.DeleteTab,
+      [MainTabsNew.Tabs[i]])) = IDYES)
     then Exit;
   //--Удаляем имя этой вкладки
   TabNames.Delete(i);
@@ -513,8 +513,8 @@ end;
 {*--Обработка пунктов контекстного меню вкладок--*}
 procedure TFlaunchMainForm.TabPopupItem_ClearClick(Sender: TObject);
 begin
-  if not RequestMessage(Handle, format(Language.Messages.ClearTab,
-      [MainTabsNew.Tabs[MainTabsNew.TabIndex]])) = IDYES
+  if not (RequestMessage(Handle, format(Language.Messages.ClearTab,
+      [MainTabsNew.Tabs[MainTabsNew.TabIndex]])) = IDYES)
     then Exit;
   FLPanel.ClearPage(MainTabsNew.TabIndex);
 end;
@@ -622,10 +622,10 @@ var
   TempData: TFLDataItem;
   XMLDocument: IXMLDocument;
 begin
-  FLPanel.ExpandStrings := false;
+  FLPanel.ExpandStrings := False;
   XMLDocument := TXMLDocument.Create(Self);
   XMLDocument.Options := [doNodeAutoIndent];
-  XMLDocument.Active := true;
+  XMLDocument.Active := True;
   RootNode := XMLDocument.AddChild('FLaunch');
   RootNode.AddChild('Version').NodeValue := FLVersion;
 
@@ -723,7 +723,7 @@ begin
     {do nothing}
   end;
   if XMLDocument.Active then XMLDocument.Active := false;
-  FLPanel.ExpandStrings := true;
+  FLPanel.ExpandStrings := True;
 end;
 
 procedure TFlaunchMainForm.LoadLinksIconsFromCache;
@@ -1099,12 +1099,13 @@ end;
 
 procedure TFlaunchMainForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if ((Key = ord('S')) and (ssCtrl in Shift)) then
-    NI_SettingsClick(NI_Settings);
-  if ((Key = ord('Q')) and (ssCtrl in Shift)) then
-    Application.Terminate;
+  if ((Key = ord('S')) and (ssCtrl in Shift))
+    then NI_SettingsClick(NI_Settings);
+  if ((Key = ord('Q')) and (ssCtrl in Shift))
+    then Application.Terminate;
   //--Ctrl + W -> удалить вкладку
-  if ((Key = ord('W')) and (ssCtrl in Shift)) then DeleteTab(MainTabsNew.TabIndex);
+  if ((Key = ord('W')) and (ssCtrl in Shift))
+    then DeleteTab(MainTabsNew.TabIndex);
   //--F2 -> переименовать вкладку
   if key = VK_F1 then LaunchHelpFile;
   if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
@@ -1340,7 +1341,7 @@ begin
   if Button.IsActive then
   begin
     Button.Highlight;
-    if not RequestMessage(Handle, Language.Messages.BusyReplace) = IDYES
+    if not (RequestMessage(Handle, Language.Messages.BusyReplace) = IDYES)
       then Exit;
   end;
   Ext := ExtractFileExt(FileName).ToLower;
