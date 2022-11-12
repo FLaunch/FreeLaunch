@@ -839,7 +839,6 @@ var
   var
     I: Integer;
   begin
-    if XMLDocument.Active then XMLDocument.Active := False;
     if not gthemeid then CurrAppTheme := GetAppThemeIndex(GetAppTheme);
     MainTabsNew.Font.Name := TabsFontName;
     MainTabsNew.Font.Size := TabsFontSize;
@@ -860,7 +859,10 @@ var
 begin
   gtabscount := False;
   gthemeid := False;
-  if not FileExists(fl_WorkDir + 'FLaunch.xml') then Exit;
+  if not FileExists(fl_WorkDir + 'FLaunch.xml') then begin
+    SetSettings;
+    Exit;
+  end;
   XMLDocument := TXMLDocument.Create(Self);
   XMLDocument.Options := [doNodeAutoIndent];
   XMLDocument.Active := True;
@@ -869,6 +871,7 @@ begin
   except
     // if settings XML file is corrupted
     SetSettings;
+    if XMLDocument.Active then XMLDocument.Active := False;
     Exit;
   end;
   try
@@ -1016,6 +1019,7 @@ begin
     SetSettings;
   except
     SetSettings;
+    if XMLDocument.Active then XMLDocument.Active := False;
   end;
 end;
 
