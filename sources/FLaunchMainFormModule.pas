@@ -321,7 +321,7 @@ begin
       for c := 0 to ColsCount - 1 do
         if FLPanel.Buttons[t,r,c].IsActive then
         begin
-          if not FileExists(FLPanel.Buttons[t,r,c].Data.Exec) and ClearONF
+          if (not FileExists(FLPanel.Buttons[t,r,c].Data.Exec)) and ClearONF
             then FLPanel.Buttons[t,r,c].FreeData
             else FLPanel.Buttons[t,r,c].Data.AssignIcons;
           FLPanel.Buttons[t,r,c].Repaint;
@@ -560,7 +560,7 @@ end;
 
 procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
 begin
-  ChWinView((not nowactive) or not (Showing));
+  ChWinView((not nowactive) or (not Showing));
 end;
 
 procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
@@ -577,7 +577,7 @@ begin
     [rfReplaceAll, rfIgnoreCase]);
   tempexec := StringReplace(tempexec, '%FL_DIR%\', fl_dir,
     [rfReplaceAll, rfIgnoreCase]);
-  if not FileExists(tempexec)
+  if (not FileExists(tempexec))
       and (not DirectoryExists(tempexec))
     then begin
       if RequestMessage(Handle,
@@ -1030,7 +1030,7 @@ begin
       if Msg.HotKey = GHAtom then
         begin
           nowactive := Active;
-          ChWinView((not nowactive) or not (Showing));
+          ChWinView((not nowactive) or (not Showing));
         end;
     end;
   inherited;
