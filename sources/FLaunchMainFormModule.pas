@@ -833,7 +833,7 @@ var
     FLPanel.ColsCount := colscount;
     FLPanel.RowsCount := rowscount;
     FLPanel.ButtonHeight := ButtonHeight;
-    FLPanel.ButtonHeight := ButtonHeight;
+    FLPanel.ButtonWidth := ButtonWidth;
     FLPanel.Padding := lpadding;
   end;
 
