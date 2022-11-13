@@ -45,35 +45,17 @@ const
 
   inisection = 'general';
 
-  //tabs and rows/cols limits
-  mint = 1;
-  minr = 1;
-  minc = 1;
-  minp = 1;
-  maxt = 8;
-  maxp = 5;
-  maxr = 5;
-  maxc = 15;
-
   TabsCountMax = 50;
   PaddingMax = 100;
   RowsCountMax = 100;
   ColsCountMax = 150;
 
-  MultKey = 13574;
-  AddKey = 46287;
-
   cr_progname = 'FreeLaunch';
 
 type
-  TAByte = array [0..maxInt-1] of byte;
-  TPAByte = ^TAByte;
-
   TFlVer = record
     Major, Minor, Release, Build: string;
   end;
-
-  link = array[0..maxr - 1,0..maxc - 1] of TLink;
 
   TFlaunchMainForm = class(TForm)
     StatusBar: TStatusBar;
@@ -248,9 +230,6 @@ var
   lngfilename:     string = '';
   TabsFontName:    string = 'Tahoma';
   FlVer:           TFlVer;
-  templinks:       link;
-  links:           array[0..maxt - 1] of link;
-  Nim:             TNotifyIconData;
   FlaunchMainForm: TFlaunchMainForm;
 
 implementation
@@ -438,7 +417,7 @@ var
 begin
   result := true;
   if tn = '' then exit;
-  for i := 1 to maxt do
+  for i := 1 to TabsCountMax do
     if tn = Format(Language.Main.TabName, [i]) then exit;
   result := false;
 end;
