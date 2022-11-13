@@ -26,7 +26,7 @@ object SettingsForm: TSettingsForm
     Top = 0
     Width = 444
     Height = 390
-    ActivePage = TabInterface
+    ActivePage = TabGeneral
     Align = alTop
     TabOrder = 0
     OnChange = pgcChange

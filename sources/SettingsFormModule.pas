@@ -287,7 +287,6 @@ end;
 
 procedure TSettingsForm.ReloadIconsButtonClick(Sender: TObject);
 begin
-  Close;
   FlaunchMainForm.ReloadIcons;
 end;
 
