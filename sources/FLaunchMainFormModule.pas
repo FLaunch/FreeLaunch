@@ -1317,19 +1317,17 @@ end;
 procedure TFlaunchMainForm.FLPanelButtonMouseMove(Sender: TObject;
   Button: TFLButton);
 begin
-  if statusbarvis then
-    if Button.IsActive then
-    begin
-      StatusBar.Panels[0].Text := Button.Data.Descr;
+  if Button.IsActive
+    then begin
+      if statusbarvis then StatusBar.Panels[0].Text := Button.Data.Descr;
       Button.Hint := Format(Language.Main.Location + #13#10 +
         Language.Main.Parameters + #13#10 + Language.Main.Description,
-        [Button.Data.Exec, Button.Data.Params, MyCutting(Button.Data.Descr, 60)]);
-    end
-    else
-    begin
-      StatusBar.Panels[0].Text := '';
+        [Button.Data.Exec, Button.Data.Params,
+          MyCutting(Button.Data.Descr, 60)]);
+    end else begin
+      if statusbarvis then StatusBar.Panels[0].Text := '';
       Button.Hint := '';
-    end;
+  end;
 end;
 
 procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
