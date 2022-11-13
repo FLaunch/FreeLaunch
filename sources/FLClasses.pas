@@ -612,36 +612,36 @@ begin
 end;
 
 //--Метод генерируется при нажатии кнопки мыши
-procedure TFLButton.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TFLButton.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
 begin
   inherited MouseDown(Button, Shift, X, Y);
   //--Если кнопка мыши - левая
-  if button = mbLeft then
+  if button = mbLeft then begin
     //--Если зажат Ctrl
-    if ssCtrl in Shift then
-      begin
-        //--Запрещаем генерацию клика по этой кнопке
-        fCanClick := false;
-        //--Начинаем перетаскивать кнопку
-        BeginDrag(false);
-        Father.fDragNow := true;
-        //--Запоминаем номер страницы, на которой начали перетаскивать кнопку
-        Father.fDraggedButtonPageNumber := Father.fCurrentDataIndex;
-        //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
-        Father.fLastUsedButton := Self;
-        //--Перерисовываем (чтобы появилась рамка)
-        FState := bsDown;
-        Invalidate;
-      end
-    else
-      begin
-        //--Если Ctrl зажат не был, делаем кноку нажатой
-        fPushed := true;
-        //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
-        Father.fLastUsedButton := Self;
-      end;
+    if (ssCtrl in Shift) then begin
+      //--Запрещаем генерацию клика по этой кнопке
+      fCanClick := false;
+      //--Начинаем перетаскивать кнопку
+      BeginDrag(false);
+      Father.fDragNow := true;
+      //--Запоминаем номер страницы, на которой начали перетаскивать кнопку
+      Father.fDraggedButtonPageNumber := Father.fCurrentDataIndex;
+      //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
+      Father.fLastUsedButton := Self;
+      //--Перерисовываем (чтобы появилась рамка)
+      FState := bsDown;
+      Invalidate;
+    end else begin
+      //--Если Ctrl зажат не был, делаем кноку нажатой
+      fPushed := true;
+      //--Устанавливаем ссылку на последнюю использованную кнопку <- текущую кнопку
+      Father.fLastUsedButton := Self;
+    end;
+  end;
   //--Генерируем событие родительской панели OnButtonMouseDown, передавая ссылку на текущую кнопку
-  if Assigned(Father.fButtonMouseDown) then Father.fButtonMouseDown(Father, Button, Self);
+  if Assigned(Father.fButtonMouseDown)
+    then Father.fButtonMouseDown(Father, Button, Self);
 end;
 
 //--Метод генерируется при "отжатии" кнопки мыши
@@ -654,7 +654,6 @@ begin
       //--Делаем кнопку отжатой
       fPushed := false;
     end;
-
   Father.FocusedButton := nil;
 end;
 
@@ -662,6 +661,13 @@ end;
 procedure TFLButton.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited MouseMove(Shift, X, Y);
+  if ssLeft in Shift then begin
+    fCanClick := False;
+    ReleaseCapture;
+    FlaunchMainForm.Perform(WM_SYSCOMMAND, $F012, 0);
+    Self.MouseUp(TMouseButton.mbLeft, Shift, X, Y);
+    fCanClick := True;
+  end;
   //--Генерируем событие родительской панели OnButtonMouseMove, передавая текущую кнопку
   if Assigned(Father.fButtonMouseMove) then Father.fButtonMouseMove(Father, Self);
 end;
