@@ -201,7 +201,7 @@ begin
   nobgnotabs := GlassCheckBox.Checked;
   ClearONF := ClearCheckBox.Checked;
   ABlend := ABlendCheckBox.Checked;
-  ABlendVal := Round(2.55 * ABlendBar.Position);
+  ABlendVal := 255 - Round(2.55 * ABlendBar.Position);
   WStateDef := WSBox.ItemIndex;
   PriorDef := PriorityBox.ItemIndex;
   CurrAppTheme := ThemesBox.ItemIndex;
@@ -359,7 +359,7 @@ begin
   ClearCheckBox.Checked := ClearONF;
   ABlendCheckBox.Checked := ABlend;
   ABlendBar.Enabled := ABlendCheckBox.Checked;
-  ABlendBar.Position := Round(ABlendVal / 2.55);
+  ABlendBar.Position := Round((255 - ABlendVal) / 2.55);
   TabsEdit.MaxValue := TabsCountMax;
   TabsEdit.Value := tabscount;
   RowsEdit.MaxValue := RowsCountMax;

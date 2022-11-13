@@ -869,7 +869,7 @@ begin
         if Assigned(WindowNode) and WindowNode.HasChildNodes then begin
           ABlend := GetBool(WindowNode, 'AlphaBlend');
           ABlendVal := ToMaxInt(GetInt(WindowNode, 'AlphaBlendValue', 255),
-            26, 255);
+            25, 255);
           alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
           ClearONF := GetBool(WindowNode, 'ClearBtnIfONF', True);
           gthemeid := not (GetStr(WindowNode, 'CurrentThemeID') = '');

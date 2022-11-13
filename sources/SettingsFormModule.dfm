@@ -284,10 +284,8 @@ object SettingsForm: TSettingsForm
         Top = 240
         Width = 400
         Height = 35
-        Max = 100
-        Min = 10
+        Max = 90
         Frequency = 10
-        Position = 100
         PositionToolTip = ptTop
         ShowSelRange = False
         TabOrder = 9
