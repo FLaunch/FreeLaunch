@@ -334,6 +334,14 @@ begin
   PaddingEdit.PopupMenu := NoPopup;
   IWEdit.PopupMenu := NoPopup;
   IHEdit.PopupMenu := NoPopup;
+  TabsEdit.MaxValue := TabsCountMax;
+  PaddingEdit.MaxValue := PaddingMax;
+  RowsEdit.MaxValue := RowsCountMax;
+  ColsEdit.MaxValue := ColsCountMax;
+  IWEdit.MinValue := MinIconParam;
+  IWEdit.MaxValue := MaxIconParam;
+  IWEdit.MinValue := MinIconParam;
+  IWEdit.MaxValue := MaxIconParam;
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);

@@ -49,6 +49,8 @@ const
   PaddingMax = 100;
   RowsCountMax = 100;
   ColsCountMax = 150;
+  MinIconParam = 16;
+  MaxIconParam = 256;
 
   cr_progname = 'FreeLaunch';
 
@@ -948,8 +950,9 @@ begin
             IconsNode := PanelNode.ChildNodes.FindNode('Icons');
             if Assigned(IconsNode) and IconsNode.HasChildNodes then begin
               ButtonHeight := LimitInt(GetInt(IconsNode, 'Height', 32),
-               16, 256);
-              ButtonWidth := LimitInt(GetInt(IconsNode, 'Width', 32), 16, 256);
+                MinIconParam, MaxIconParam);
+              ButtonWidth := LimitInt(GetInt(IconsNode, 'Width', 32),
+                MinIconParam, MaxIconParam);
             end;
             //icons node end
             //link node
