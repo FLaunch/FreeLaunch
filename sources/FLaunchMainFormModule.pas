@@ -1248,6 +1248,11 @@ begin
   AlphaBlendValue := ABlendVal;
   //fix for change panel size without app restart
   FLPanel.ButtonsPopup := ButtonPopupMenu;
+  FLPanel.OnButtonMouseDown := FLPanelButtonMouseDown;
+  FLPanel.OnButtonClick := FLPanelButtonClick;
+  FLPanel.OnButtonMouseMove := FLPanelButtonMouseMove;
+  FLPanel.OnButtonMouseLeave := FLPanelButtonMouseLeave;
+  FLPanel.OnDropFile := FLPanelDropFile;
 end;
 
 procedure TFlaunchMainForm.GenerateWnd;
@@ -1483,12 +1488,6 @@ begin
   Language.Load(lngfilename);
   //--Разрешаем/запрешаем автозагрузку
   SetAutorun(Autorun);
-  {*--Связываем события панели--*}
-  FLPanel.OnButtonMouseDown := FLPanelButtonMouseDown;
-  FLPanel.OnButtonClick := FLPanelButtonClick;
-  FLPanel.OnButtonMouseMove := FLPanelButtonMouseMove;
-  FLPanel.OnButtonMouseLeave := FLPanelButtonMouseLeave;
-  FLPanel.OnDropFile := FLPanelDropFile;
   SetTabNames;
   GenerateWnd;
   //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
