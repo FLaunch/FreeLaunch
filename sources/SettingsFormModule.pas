@@ -96,6 +96,7 @@ type
     procedure ApplyButtonClick(Sender: TObject);
     procedure pgcChange(Sender: TObject);
     procedure ABlendCheckBoxClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
     Langs: array of TLngInfo;
     LngFiles: array of string;
@@ -342,6 +343,12 @@ begin
   IWEdit.MaxValue := MaxIconParam;
   IWEdit.MinValue := MinIconParam;
   IWEdit.MaxValue := MaxIconParam;
+end;
+
+procedure TSettingsForm.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and (ssCtrl in Shift) then OKButton.Click;
 end;
 
 procedure TSettingsForm.FormShow(Sender: TObject);

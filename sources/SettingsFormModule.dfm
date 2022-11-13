@@ -17,6 +17,7 @@ object SettingsForm: TSettingsForm
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -365,7 +366,6 @@ object SettingsForm: TSettingsForm
     Top = 400
     Width = 100
     Height = 25
-    Default = True
     TabOrder = 1
     OnClick = OKButtonClick
   end
@@ -384,6 +384,7 @@ object SettingsForm: TSettingsForm
     Top = 400
     Width = 100
     Height = 25
+    Default = True
     TabOrder = 2
     OnClick = ApplyButtonClick
   end
