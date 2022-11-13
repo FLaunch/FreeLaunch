@@ -661,7 +661,7 @@ end;
 procedure TFLButton.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   inherited MouseMove(Shift, X, Y);
-  if ssLeft in Shift then begin
+  if (ssLeft in Shift) and (ssAlt in Shift) then begin
     fCanClick := False;
     ReleaseCapture;
     FlaunchMainForm.Perform(WM_SYSCOMMAND, $F012, 0);
