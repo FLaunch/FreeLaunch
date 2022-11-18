@@ -1279,7 +1279,6 @@ begin
         (not ButtonPopupItem_TypeFile.Checked)
       then
         ButtonPopupItem_TypeProgramm.Checked := True;
-
     ButtonPopupItem_Run.Enabled := Button.IsActive;
     ButtonPopupItem_RunAsAdmin.Enabled := Button.IsActive;
     ButtonPopupItem_Import.Enabled := not Button.IsActive;

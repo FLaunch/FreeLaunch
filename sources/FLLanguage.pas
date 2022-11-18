@@ -143,6 +143,7 @@ const
   SctProperties = 'properties';
   SctTabname = 'tabname';
   SctSettings = 'settings';
+  SctInfo = 'information';
 
 var
   Ini: TMemIniFile;
@@ -160,7 +161,7 @@ begin
       'Parameters: %%'), '%s');
     Main.Description :=  Parse(Ini.ReadString(SctMain, 'description',
       'Description: %%'), '%s');
-    Main.HelpFile :=     Parse(Ini.ReadString(SctMain, 'help', 'index.html'));
+    Main.HelpFile :=     Parse(Ini.ReadString(SctInfo, 'help', 'index.html'));
 
     Messages.Caution :=      Parse(Ini.ReadString(SctMain, 'caution', 'Caution'));
     Messages.Confirmation := Parse(Ini.ReadString(SctMain, 'confirmation',
