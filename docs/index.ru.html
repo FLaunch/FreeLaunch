@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" type="text/css" href="data/style/style.css">
+  <link rel="shortcut icon" href="data/image/favicon.ico">
+	<title>Файл справки FreeLaunch</title>
+  </head>
+  <body>
+    <div class="header">
+      <img src="data/image/logo.png" alt="FreeLaunch Logo" />
+      <strong>FreeLaunch</strong>
+      <strong id="title">Файл справки FreeLaunch</strong>
+    </div>
+    <div class="main">
+      <div class="toc">
+        <ul>
+            <li>
+              <table>
+                <tr>
+                  <td>
+                    <a href="index.html"><img src="data/image/en/uk_flag.png" width="48" height="48" alt="English" /></a>
+                  </td>
+                  <td>&nbsp;</td>
+                  <td>
+                    <img src="data/image/ru/ru_flag.png" width="48" height="48" alt="Русский" />
+                  </td>
+                </tr>
+              </table>
+            </li>
+        </ul>
+        <ul>
+          <li><strong>О программе FreeLaunch</strong>
+            <ul>
+              <li><a href="ru/features.html" target="iframe_main">Возможности</a></li>
+              <li><a href="ru/contributors.html" target="iframe_main">Авторы</a></li>
+              <li><a href="ru/changelog.html" target="iframe_main">Список изменений</a></li>
+            </ul>
+          </li>
+          <li><strong>Документация</strong>
+            <ul>
+              <li><a href="ru/doc_mainwnd.html" target="iframe_main">Главное окно</a></li>
+              <li><a href="ru/doc_settings.html" target="iframe_main">Окно настроек</a>
+                <ul>
+                  <li><a href="ru/doc_settingstab_general.html" target="iframe_main">Общие</a></li>
+                  <li><a href="ru/doc_settingstab_interface.html" target="iframe_main">Интерфейс</a></li>
+                  <li><a href="ru/doc_settingstab_buttons.html" target="iframe_main">Кнопки</a></li>
+                </ul>
+              </li>
+              <li><a href="ru/doc_btnprops.html" target="iframe_main">Настройки кнопки</a>
+                <ul>
+                  <li><a href="ru/doc_btnprops_apps.html" target="iframe_main">Для приложений</a></li>
+                  <li><a href="ru/doc_btnprops_files.html" target="iframe_main">Для файлов и каталогов</a></li>
+                  <li><a href="ru/doc_btnprops_iconsel.html" target="iframe_main">Диалог выбора иконки</a></li>
+                </ul>
+              </li>
+              <li><a href="ru/doc_renametab.html" target="iframe_main">Окно переименования вкладки</a></li>
+            </ul>
+          </li>
+          <li><strong>Часто задаваемые вопросы</strong>
+            <ul>
+              <li><a href="ru/hotkeys.html" target="iframe_main">Горячие клавиши</a></li>
+              <li><a href="ru/doyouknow.html" target="iframe_main">Знаете ли Вы?</a></li>
+            </ul>
+          </li>
+        </ul> 
+      </div>
+      <div class="frame">
+        <iframe src="ru/features.html" name="iframe_main"></iframe>
+          <script type="text/javascript">
+            function resizeIframe() {
+              var contentDoc = (frameMain.contentWindow || frameMain.contentDocument);
+              if (contentDoc.document)
+                contentDoc = contentDoc.document;
+              document.getElementById('title').innerHTML = contentDoc.title;
+            }
+            frameMain = document.getElementsByName("iframe_main")[0];
+            if (frameMain.attachEvent) {
+              frameMain.attachEvent("onload", resizeIframe);
+            } else {
+              frameMain.onload=resizeIframe;
+            }
+          </script>
+      </div>
+    </div>
+    <div class="footer">
+      <strong>2008-<script>document.write(new Date().getFullYear())</script> &copy; <a href="https://github.com/FLaunch/" target="_blank">Авторы FreeLaunch</a></strong>
+    </div>
+  </body>
+</html>
