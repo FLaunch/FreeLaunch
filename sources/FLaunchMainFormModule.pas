@@ -54,6 +54,10 @@ const
 
   cr_progname = 'FreeLaunch';
 
+  SC_MYSEPARATOR = WM_USER + 1;
+  SC_APPSETTINGS = WM_USER + 2;
+  SC_ABOUTAPP    = WM_USER + 3;
+
 type
   TFlVer = record
     Major, Minor, Release, Build: string;
@@ -88,6 +92,10 @@ type
     TabPopupItem_Clear: TMenuItem;
     TabPopupItem_Delete: TMenuItem;
     ButtonPopupItem_RunAsAdmin: TMenuItem;
+    TabPopupItem_Delim: TMenuItem;
+    TabPopupItem_AppSettings: TMenuItem;
+    ButtonPopupItem_Line4: TMenuItem;
+    ButtonPopupItem_AppSettings: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure NI_CloseClick(Sender: TObject);
@@ -119,32 +127,39 @@ type
     procedure MainTabsNewMouseLeave(Sender: TObject);
     procedure ButtonPopupItem_RunAsAdminClick(Sender: TObject);
   private
-    //--Список имен вкладок
-    TabNames: TStringList;
     GHAtom: Word;
+   //--Список имен вкладок
+    TabNames: TStringList;
     /// <summary> Список кнопок в процессе запуска </summary>
     LaunchingButtons: TDictionary<Integer, TFLButton>;
-    procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
-    procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging); message WM_WINDOWPOSCHANGING;
+    procedure WMSysMenuCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
+    procedure WMQueryEndSession(var Msg: TWMQueryEndSession);
+      message WM_QUERYENDSESSION;
+    procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging);
+      message WM_WINDOWPOSCHANGING;
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
-    procedure WMDisplayChange(var Msg: TWMDisplayChange); message WM_DISPLAYCHANGE;
+    procedure WMDisplayChange(var Msg: TWMDisplayChange);
+      message WM_DISPLAYCHANGE;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
     procedure UMShowMainForm(var Msg: TMessage); message UM_ShowMainForm;
     procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
     procedure UMLaunchDone(var Msg: TMessage); message UM_LaunchDone;
-    procedure LaunchButton(AButton: TFLButton; ADroppedFile: string = ''; RunAsAdmin: Boolean = False);
+    procedure LaunchButton(AButton: TFLButton; ADroppedFile: string = '';
+      RunAsAdmin: Boolean = False);
     procedure ImportButton(Button: TFLButton; FileName: string);
     procedure ExportButton(Button: TFLButton; FileName: string);
     //--Событие генерируется при клике по кнопке на панели
     procedure FLPanelButtonClick(Sender: TObject; Button: TFLButton);
     //--Событие генерируется при нажатии кнопки мыши на кнопке панели
-    procedure FLPanelButtonMouseDown(Sender: TObject; MouseButton: TMouseButton; Button: TFLButton);
+    procedure FLPanelButtonMouseDown(Sender: TObject; MouseButton: TMouseButton;
+      Button: TFLButton);
     //--Событие генерируется при движении мыши по панели
     procedure FLPanelButtonMouseMove(Sender: TObject; Button: TFLButton);
     //--Событие генерируется при покидании курсора мыши кнопки
     procedure FLPanelButtonMouseLeave(Sender: TObject; Button: TFLButton);
     //--Событие при перетаскивании файла на кнопку панели
-    procedure FLPanelDropFile(Sender: TObject; Button: TFLButton; FileName: string);
+    procedure FLPanelDropFile(Sender: TObject; Button: TFLButton;
+      FileName: string);
     //--Установка имени определенной вкладки
     procedure SetTabName(i: integer);
     //--Вызов диалога переименовывания вкладки
@@ -178,7 +193,8 @@ type
     function GetAppVersion: TFlVer;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
-    procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
+    procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string;
+      Index: integer);
     procedure ChWinView(b: boolean);
     procedure ReloadIcons;
     procedure GrowTabNames(ACount: Integer);
@@ -204,7 +220,7 @@ var
   ClearONF:        Boolean = True;
   nobgnotabs:      Boolean = True;
   statusbarvis:    Boolean = True;
-  PropertiesMode:  Integer; //Переменная содержит тип кнопки, свойства которой редактируются в данный момент
+  PropertiesMode:  Integer; //тип кнопки, свойства которой редактируются
   FocusCol:        Integer = -1;
   FocusRow:        Integer = -1;
   FocusTab:        Integer = -1;
@@ -334,11 +350,13 @@ begin
   ButtonPopupItem_Import.Caption := Language.Menu.Import;
   ButtonPopupItem_Clear.Caption := Language.Menu.Clear;
   ButtonPopupItem_Props.Caption := Language.Menu.Prop;
+  ButtonPopupItem_AppSettings.Caption := Language.Settings.Caption;
   SaveButtonDialog.Filter := Language.FlbFilter + '|*.flb';
   OpenButtonDialog.Filter := Language.FlbFilter + '|*.flb';
   TabPopupItem_Rename.Caption := Language.Menu.Rename;
   TabPopupItem_Clear.Caption := Language.Menu.ClearTab;
   TabPopupItem_Delete.Caption := Language.Menu.DeleteTab;
+  TabPopupItem_AppSettings.Caption := Language.Settings.Caption;
 end;
 
 procedure TFlaunchMainForm.LaunchHelpFile;
@@ -482,6 +500,15 @@ end;
 procedure TFlaunchMainForm.UMShowMainForm(var Msg: TMessage);
 begin
   ChWinView(True);
+end;
+
+procedure TFlaunchMainForm.WMSysMenuCommand(var Msg: TWMSysCommand);
+begin
+  case Msg.CmdType of
+    SC_APPSETTINGS: NI_Settings.Click;
+    SC_ABOUTAPP:    NI_About.Click;
+    else inherited;
+  end;
 end;
 
 procedure TFlaunchMainForm.WMQueryEndSession(var Msg: TWMQueryEndSession);
@@ -1433,10 +1460,18 @@ end;
 
 procedure TFlaunchMainForm.SetAppThemeByIndex(AIndex: Integer);
 begin
+  RemoveMenu(GetSystemMenu(Handle, False), SC_MYSEPARATOR, MF_BYCOMMAND);
+  RemoveMenu(GetSystemMenu(Handle, False), SC_APPSETTINGS, MF_BYCOMMAND);
+  RemoveMenu(GetSystemMenu(Handle, False), SC_ABOUTAPP, MF_BYCOMMAND);
   UnregisterHotKey(Handle, GHAtom);
   if AIndex in [Low(FLThemes)..High(FLThemes)]
     then SetAppTheme(FLThemes[AIndex].Name)
     else SetAppTheme(FLThemes[0].Name);
+  AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, SC_MYSEPARATOR, '');
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, SC_APPSETTINGS,
+    PChar(Language.Menu.Settings));
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, SC_ABOUTAPP,
+    PChar(Language.Menu.About));
   GHAtom := GlobalAddAtom('FL_Hotkey');
   RegisterHotKey(Handle, GHAtom, MOD_CONTROL or MOD_WIN, 0);
 end;

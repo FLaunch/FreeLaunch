@@ -58,7 +58,6 @@ object FlaunchMainForm: TFlaunchMainForm
       OnClick = NI_ShowClick
     end
     object NI_Settings: TMenuItem
-      ShortCut = 16467
       OnClick = NI_SettingsClick
     end
     object NI_L5: TMenuItem
@@ -218,6 +217,12 @@ object FlaunchMainForm: TFlaunchMainForm
     object ButtonPopupItem_Props: TMenuItem
       OnClick = ButtonPopupItem_PropsClick
     end
+    object ButtonPopupItem_Line4: TMenuItem
+      Caption = '-'
+    end
+    object ButtonPopupItem_AppSettings: TMenuItem
+      OnClick = NI_SettingsClick
+    end
   end
   object TabPopupMenu: TPopupMenu
     Left = 136
@@ -230,6 +235,12 @@ object FlaunchMainForm: TFlaunchMainForm
     end
     object TabPopupItem_Delete: TMenuItem
       OnClick = TabPopupItem_DeleteClick
+    end
+    object TabPopupItem_Delim: TMenuItem
+      Caption = '-'
+    end
+    object TabPopupItem_AppSettings: TMenuItem
+      OnClick = NI_SettingsClick
     end
   end
 end
