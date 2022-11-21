@@ -227,6 +227,9 @@ object FlaunchMainForm: TFlaunchMainForm
   object TabPopupMenu: TPopupMenu
     Left = 136
     Top = 80
+    object TabPopupItem_New: TMenuItem
+      OnClick = TabPopupItem_NewClick
+    end
     object TabPopupItem_Rename: TMenuItem
       OnClick = TabPopupItem_RenameClick
     end

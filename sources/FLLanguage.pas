@@ -64,7 +64,8 @@ type
 
   TLngMenu = record
     Show, Settings, About, Close, Run, RunAsAdmin, TypeProgramm, TypeFile,
-    ExportBtn, Import, Clear, Prop, Rename, ClearTab, DeleteTab, Group: string;
+    ExportBtn, Import, Clear, Prop, Rename, ClearTab, DeleteTab, NewTab,
+    Group: string;
   end;
 
   TLngMain = record
@@ -199,18 +200,16 @@ begin
       '&Export...'));
     Menu.Import :=       Parse(Ini.ReadString(SctMain, 'ni_import',
       '&Import...'));
-    Menu.Clear :=        Parse(Ini.ReadString(SctMain, 'ni_clear',
-      '&Clear'));
+    Menu.Clear :=        Parse(Ini.ReadString(SctMain, 'ni_clear', '&Clear'));
     Menu.Prop :=         Parse(Ini.ReadString(SctMain, 'ni_prop',
       '&Properties...'));
-    Menu.Rename :=       Parse(Ini.ReadString(SctMain, 'ni_rename',
-      '&Rename'));
+    Menu.Rename :=       Parse(Ini.ReadString(SctMain, 'ni_rename', '&Rename'));
+    Menu.NewTab :=       Parse(Ini.ReadString(SctMain, 'ni_newtab', '&Add'));
     Menu.ClearTab :=     Parse(Ini.ReadString(SctMain, 'ni_cleartab',
       '&Clear'));
     Menu.DeleteTab :=    Parse(Ini.ReadString(SctMain, 'ni_deletetab',
       '&Delete'));
-    Menu.Group :=        Parse(Ini.ReadString(SctMain, 'ni_group',
-      '&Group'));
+    Menu.Group :=        Parse(Ini.ReadString(SctMain, 'ni_group', '&Group'));
 
     FlbFilter := Parse(Ini.ReadString(SctMain, 'flbfilter',
       'FreeLaunch button file (*.flb)')) + '|*.flb';

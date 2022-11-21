@@ -96,6 +96,7 @@ type
     TabPopupItem_AppSettings: TMenuItem;
     ButtonPopupItem_Line4: TMenuItem;
     ButtonPopupItem_AppSettings: TMenuItem;
+    TabPopupItem_New: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure NI_CloseClick(Sender: TObject);
@@ -126,6 +127,7 @@ type
     procedure TabPopupItem_ClearClick(Sender: TObject);
     procedure MainTabsNewMouseLeave(Sender: TObject);
     procedure ButtonPopupItem_RunAsAdminClick(Sender: TObject);
+    procedure TabPopupItem_NewClick(Sender: TObject);
   private
     GHAtom: Word;
    //--Список имен вкладок
@@ -353,6 +355,7 @@ begin
   ButtonPopupItem_AppSettings.Caption := Language.Settings.Caption;
   SaveButtonDialog.Filter := Language.FlbFilter + '|*.flb';
   OpenButtonDialog.Filter := Language.FlbFilter + '|*.flb';
+  TabPopupItem_New.Caption := Language.Menu.NewTab;
   TabPopupItem_Rename.Caption := Language.Menu.Rename;
   TabPopupItem_Clear.Caption := Language.Menu.ClearTab;
   TabPopupItem_Delete.Caption := Language.Menu.DeleteTab;
@@ -530,6 +533,14 @@ end;
 procedure TFlaunchMainForm.TabPopupItem_DeleteClick(Sender: TObject);
 begin
   DeleteTab(MainTabsNew.TabIndex);
+end;
+
+procedure TFlaunchMainForm.TabPopupItem_NewClick(Sender: TObject);
+begin
+  Inc(TabsCount);
+  GrowTabNames(TabsCount);
+  SetTabNames;
+  GenerateWnd;
 end;
 
 procedure TFlaunchMainForm.TabPopupItem_RenameClick(Sender: TObject);
