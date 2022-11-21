@@ -1,6 +1,6 @@
 # FreeLaunch
 
-![image](https://user-images.githubusercontent.com/63456473/203092227-ec3989d2-277d-4958-a753-f7675316f884.png)
+![image](https://user-images.githubusercontent.com/63456473/203093681-11ac5134-c333-4c3e-83a6-e7d9ff74fde9.png)
 
 FreeLaunch is a free links manager for Microsoft Windows. It allows to organize shortcuts to your programs, files and folders. FreeLaunch is easy and fully configurable.
 
