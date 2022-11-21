@@ -1327,6 +1327,7 @@ procedure TFlaunchMainForm.FLPanelButtonMouseMove(Sender: TObject;
 begin
   if Button.IsActive
     then begin
+      FLPanel.SetFocus;
       if statusbarvis then StatusBar.Panels[0].Text := Button.Data.Descr;
       Button.Hint := Format(Language.Main.Location + #13#10 +
         Language.Main.Parameters + #13#10 + Language.Main.Description,
