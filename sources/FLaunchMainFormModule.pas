@@ -1121,10 +1121,13 @@ end;
 
 procedure TFlaunchMainForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if ((Key = ord('S')) and (ssCtrl in Shift))
-    then NI_SettingsClick(NI_Settings);
+  //--Ctrl + N => add new tab
+  if ((Key = ord('N')) and (ssCtrl in Shift))
+    then TabPopupItem_New.Click;
   if ((Key = ord('Q')) and (ssCtrl in Shift))
     then Application.Terminate;
+  if ((Key = ord('S')) and (ssCtrl in Shift))
+    then NI_SettingsClick(NI_Settings);
   //--Ctrl + W -> удалить вкладку
   if ((Key = ord('W')) and (ssCtrl in Shift))
     then DeleteTab(MainTabsNew.TabIndex);
