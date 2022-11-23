@@ -38,7 +38,11 @@ uses
   Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Menus,
   ProgrammPropertiesFormModule,
   FilePropertiesFormModule, RenameTabFormModule, SettingsFormModule,
-  AboutFormModule, FLFunctions, FLLanguage, FLClasses, madExcept;
+  AboutFormModule, FLFunctions, FLLanguage, FLClasses
+  {$IFDEF DEBUG}
+    , madExcept
+  {$ENDIF}
+  ;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -1505,9 +1509,11 @@ begin
   Randomize;
   //initialize environment variables
   InitEnvironment;
-  //initialize bugreport file
-  MESettings().BugReportFile := fl_WorkDir + 'bugReport.mbr';
-  //loading settings
+  {$IFDEF DEBUG}
+    //initialize bugreport file
+    MESettings().BugReportFile := fl_WorkDir + 'bugReport.mbr';
+    //loading settings
+  {$ENDIF}
   LoadSettings;
   LoadLinksIconsFromCache;
   FLPanel.PageNumber := MainTabsNew.TabIndex;

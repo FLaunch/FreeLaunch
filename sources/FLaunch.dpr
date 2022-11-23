@@ -28,11 +28,13 @@ program FLaunch;
 {$R *.dres}
 
 uses
-  madExcept,
-  madLinkDisAsm,
-  madListHardware,
-  madListProcesses,
-  madListModules,
+  {$IFDEF DEBUG}
+    madExcept,
+    madLinkDisAsm,
+    madListHardware,
+    madListProcesses,
+    madListModules,
+  {$ENDIF}
   Vcl.Forms,
   Windows,
   FLaunchMainFormModule in 'FLaunchMainFormModule.pas' {FlaunchMainForm},
