@@ -52,7 +52,7 @@ type
     Caption, General, NumOfTabs, Rows, Cols, Padding, Theme,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
     ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbGlass, ChbClear,
-    ChbAlphaBlend,
+    ChbAlphaBlend, ChbABOff,
     Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
     PriorityBelowNormal, PriorityRealTime,
     Titlebar, TitlebarNormal, TitlebarMini,
@@ -328,6 +328,8 @@ begin
       'When reloading buttons, delete the button if the object is not found'));
     Settings.ChbAlphaBlend :=    Parse(Ini.ReadString(SctSettings, 'chb_ablend',
       'Enable main window transparency'));
+    Settings.ChbABOff :=         Parse(Ini.ReadString(SctSettings, 'chb_aboff',
+      'Turn off transparency if the cursor is over the window'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',

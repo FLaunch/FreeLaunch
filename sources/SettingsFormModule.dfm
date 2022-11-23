@@ -26,7 +26,7 @@ object SettingsForm: TSettingsForm
     Top = 0
     Width = 444
     Height = 390
-    ActivePage = TabGeneral
+    ActivePage = TabInterface
     Align = alTop
     TabOrder = 0
     OnChange = pgcChange
@@ -223,47 +223,6 @@ object SettingsForm: TSettingsForm
         TabOrder = 6
         Value = 1
       end
-      object grpBtnSize: TGroupBox
-        Left = 20
-        Top = 285
-        Width = 400
-        Height = 70
-        TabOrder = 10
-        object lblBtnW: TLabel
-          Left = 245
-          Top = 15
-          Width = 3
-          Height = 13
-          Alignment = taRightJustify
-        end
-        object lblBtnH: TLabel
-          Left = 245
-          Top = 40
-          Width = 3
-          Height = 13
-          Alignment = taRightJustify
-        end
-        object IWEdit: TSpinEdit
-          Left = 255
-          Top = 10
-          Width = 70
-          Height = 22
-          MaxValue = 256
-          MinValue = 16
-          TabOrder = 0
-          Value = 32
-        end
-        object IHEdit: TSpinEdit
-          Left = 255
-          Top = 35
-          Width = 70
-          Height = 22
-          MaxValue = 256
-          MinValue = 16
-          TabOrder = 1
-          Value = 32
-        end
-      end
       object ThemesBox: TComboBox
         Left = 200
         Top = 35
@@ -281,14 +240,21 @@ object SettingsForm: TSettingsForm
         OnClick = ABlendCheckBoxClick
       end
       object ABlendBar: TTrackBar
-        Left = 20
-        Top = 240
+        Left = 10
+        Top = 270
         Width = 400
         Height = 35
         Max = 90
         Frequency = 10
         PositionToolTip = ptTop
         ShowSelRange = False
+        TabOrder = 10
+      end
+      object ABOffCheckBox: TCheckBox
+        Left = 30
+        Top = 245
+        Width = 380
+        Height = 17
         TabOrder = 9
       end
     end
@@ -298,7 +264,7 @@ object SettingsForm: TSettingsForm
         Left = 20
         Top = 20
         Width = 400
-        Height = 200
+        Height = 190
         TabOrder = 0
         object lblWState: TLabel
           Left = 230
@@ -357,6 +323,47 @@ object SettingsForm: TSettingsForm
           Width = 380
           Height = 17
           TabOrder = 3
+        end
+      end
+      object grpBtnSize: TGroupBox
+        Left = 20
+        Top = 230
+        Width = 400
+        Height = 70
+        TabOrder = 1
+        object lblBtnW: TLabel
+          Left = 245
+          Top = 15
+          Width = 3
+          Height = 13
+          Alignment = taRightJustify
+        end
+        object lblBtnH: TLabel
+          Left = 245
+          Top = 40
+          Width = 3
+          Height = 13
+          Alignment = taRightJustify
+        end
+        object IWEdit: TSpinEdit
+          Left = 255
+          Top = 10
+          Width = 70
+          Height = 22
+          MaxValue = 256
+          MinValue = 16
+          TabOrder = 0
+          Value = 32
+        end
+        object IHEdit: TSpinEdit
+          Left = 255
+          Top = 35
+          Width = 70
+          Height = 22
+          MaxValue = 256
+          MinValue = 16
+          TabOrder = 1
+          Value = 32
         end
       end
     end

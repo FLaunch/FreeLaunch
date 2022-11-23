@@ -246,4 +246,11 @@ object FlaunchMainForm: TFlaunchMainForm
       OnClick = NI_SettingsClick
     end
   end
+  object ABOffTimer: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = ABOffTimerTimer
+    Left = 184
+    Top = 80
+  end
 end

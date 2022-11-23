@@ -101,6 +101,7 @@ type
     ButtonPopupItem_Line4: TMenuItem;
     ButtonPopupItem_AppSettings: TMenuItem;
     TabPopupItem_New: TMenuItem;
+    ABOffTimer: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure NI_CloseClick(Sender: TObject);
@@ -132,6 +133,7 @@ type
     procedure MainTabsNewMouseLeave(Sender: TObject);
     procedure ButtonPopupItem_RunAsAdminClick(Sender: TObject);
     procedure TabPopupItem_NewClick(Sender: TObject);
+    procedure ABOffTimerTimer(Sender: TObject);
   private
     GHAtom: Word;
    //--Список имен вкладок
@@ -211,6 +213,7 @@ type
 var
   nowactive:       Boolean;
   ABlend:          Boolean = False;
+  ABOffOnHover:    Boolean = True;
   aboutshowing:    Boolean = False;
   AlwaysOnTop:     Boolean = False;
   Autorun:         Boolean = False;
@@ -561,6 +564,19 @@ begin
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
 end;
 
+procedure TFlaunchMainForm.ABOffTimerTimer(Sender: TObject);
+var
+  fPos: TPoint;
+begin
+  if ABlend and ABOffOnHover then begin
+    fPos := Mouse.CursorPos;
+    if (fPos.X < Left) or (fPos.X > Left + Width) or (fPos.Y < Top)
+        or (fPos.Y > Top + Height)
+      then AlphaBlendValue := ABlendVal
+      else AlphaBlendValue := 255;
+  end;
+end;
+
 procedure TFlaunchMainForm.ChWinView(b: boolean);
 begin
   if b then
@@ -662,6 +678,7 @@ begin
 
   WindowNode.AddChild('TitleBar').NodeValue := titlebar;
   WindowNode.AddChild('AlphaBlend').NodeValue := ABlend;
+  WindowNode.AddChild('AlphaBlendOffOnHover').NodeValue := ABOffOnHover;
   WindowNode.AddChild('AlphaBlendValue').NodeValue := ABlendVal;
   WindowNode.AddChild('AlwaysOnTop').NodeValue := alwaysontop;
   WindowNode.AddChild('StatusBar').NodeValue := statusbarvis;
@@ -906,6 +923,7 @@ begin
         WindowNode := WindowsNode.ChildNodes.FindNode('Window');
         if Assigned(WindowNode) and WindowNode.HasChildNodes then begin
           ABlend := GetBool(WindowNode, 'AlphaBlend');
+          ABOffOnHover := GetBool(WindowNode, 'AlphaBlendOffOnHover', True);
           ABlendVal := ToMaxInt(GetInt(WindowNode, 'AlphaBlendValue', 255),
             25, 255);
           alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
@@ -1261,8 +1279,10 @@ begin
   Top := PercentToPosition(TopPer, false);
   AlphaBlend := ABlend;
   AlphaBlendValue := ABlendVal;
+  ABOffTimer.Enabled := ABlend and ABOffOnHover;
   //fix for change panel size without app restart
   FLPanel.ButtonsPopup := ButtonPopupMenu;
+  //end fix
   FLPanel.OnButtonMouseDown := FLPanelButtonMouseDown;
   FLPanel.OnButtonClick := FLPanelButtonClick;
   FLPanel.OnButtonMouseMove := FLPanelButtonMouseMove;

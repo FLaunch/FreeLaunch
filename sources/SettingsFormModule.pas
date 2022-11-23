@@ -84,6 +84,7 @@ type
     ApplyButton: TButton;
     ABlendCheckBox: TCheckBox;
     ABlendBar: TTrackBar;
+    ABOffCheckBox: TCheckBox;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -147,6 +148,7 @@ begin
   GlassCheckBox.Caption := Language.Settings.ChbGlass;
   ClearCheckBox.Caption := Language.Settings.ChbClear;
   ABlendCheckBox.Caption := Language.Settings.ChbAlphaBlend + ':';
+  ABOffCheckBox.Caption := Language.Settings.ChbABOff;
   lblLang.Caption := Language.Settings.Language + ':';
   lblWndTitle.Caption := Language.Settings.Titlebar + ':';
   lblTabStyle.Caption := Language.Settings.TabStyle + ':';
@@ -202,6 +204,7 @@ begin
   nobgnotabs := GlassCheckBox.Checked;
   ClearONF := ClearCheckBox.Checked;
   ABlend := ABlendCheckBox.Checked;
+  ABOffOnHover := ABOffCheckBox.Checked;
   ABlendVal := 255 - Round(2.55 * ABlendBar.Position);
   WStateDef := WSBox.ItemIndex;
   PriorDef := PriorityBox.ItemIndex;
@@ -364,6 +367,8 @@ begin
   GlassCheckBox.Checked := nobgnotabs;
   ClearCheckBox.Checked := ClearONF;
   ABlendCheckBox.Checked := ABlend;
+  ABOffCheckBox.Checked := ABOffOnHover;
+  ABOffCheckBox.Enabled := ABlendCheckBox.Checked;
   ABlendBar.Enabled := ABlendCheckBox.Checked;
   ABlendBar.Position := Round((255 - ABlendVal) / 2.55);
   TabsEdit.MaxValue := TabsCountMax;
@@ -395,6 +400,7 @@ end;
 
 procedure TSettingsForm.ABlendCheckBoxClick(Sender: TObject);
 begin
+  ABOffCheckBox.Enabled := ABlendCheckBox.Checked;
   ABlendBar.Enabled := ABlendCheckBox.Checked;
 end;
 
