@@ -245,14 +245,12 @@ var
   lpadding:        Integer = 1;
   rowscount:       Integer = 2;
   TabsCount:       Integer = 3;
-  TabsFontSize:    Integer = 8;
   colscount:       Integer = 10;
   ButtonHeight:    Integer = 32;
   ButtonWidth:     Integer = 32;
   LeftPer:         Integer = 100;
   ABlendVal:       Integer = 255;
   lngfilename:     string = '';
-  TabsFontName:    string = 'Tahoma';
   FlVer:           TFlVer;
   FlaunchMainForm: TFlaunchMainForm;
 
@@ -801,7 +799,7 @@ procedure TFlaunchMainForm.LoadSettings;
 var
   gtabscount, gthemeid: Boolean;
 
-  RootNode, WindowsNode, WindowNode, PositionNode, TabRootNode, TabFontNode,
+  RootNode, WindowsNode, WindowNode, PositionNode, TabRootNode,
   LinkNode, IconNode, TabNode, IconsNode,
   PanelRootNode, PanelNode, DropNode: IXMLNode;
   TabNumber, Row, Column: Integer;
@@ -863,8 +861,6 @@ var
     I: Integer;
   begin
     if not gthemeid then CurrAppTheme := GetAppThemeIndex(GetAppTheme);
-    MainTabsNew.Font.Name := TabsFontName;
-    MainTabsNew.Font.Size := TabsFontSize;
     if not gtabscount then begin
       TabsCount := 3;
       GrowTabNames(TabsCount);
@@ -945,14 +941,6 @@ begin
             tabind := ToMinInt(GetInt(TabRootNode, 'ActiveTab'), 0,
               TabsCountMax) - 1;
             TabNames.Clear;
-            //font node
-            TabFontNode := TabRootNode.ChildNodes.FindNode('Font');
-            if Assigned(TabFontNode) and TabFontNode.HasChildNodes then begin
-              TabsFontName := GetStr(TabFontNode, 'Name', 'Tahoma');
-              TabsFontSize := LimitInt(GetInt(TabFontNode, 'Size', 8), 1,
-                MaxInt);
-            end;
-            //font node end
             //tab N node
             TabNode := TabRootNode.ChildNodes.FindNode('Tab');
             while Assigned(TabNode) and TabNode.HasChildNodes do begin
