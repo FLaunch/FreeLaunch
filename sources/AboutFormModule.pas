@@ -73,10 +73,11 @@ uses
 //loading file to credits
 procedure TAboutForm.LoadFile(FileName: string);
 begin
+  Credits.Lines.Clear;
   try
     Credits.Lines.LoadFromFile(ExtractFilePath(Application.Exename) + FileName);
-  finally
-    //do nothing
+  except
+    Credits.Lines.Text := Format(Language.Messages.FileNotFound, [FileName]);
   end;
 end;
 

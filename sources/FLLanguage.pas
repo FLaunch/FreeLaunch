@@ -74,7 +74,7 @@ type
 
   TLngMessages = record
     Caution, Confirmation, RunProgram, DeleteTab, DeleteButton, ClearTab,
-    BusyReplace, ImportButton, NotFound: string;
+    BusyReplace, ImportButton, NotFound, FileNotFound: string;
   end;
 
   TLngInfo = record
@@ -181,6 +181,8 @@ begin
       'Do you wish to import button settings from this file?\n\n%%'), '%s');
     Messages.NotFound :=     Parse(Ini.ReadString(SctMain, 'message8',
       'Object not found\n\n%%\n\nDo you wish to delete this button?'), '%s');
+    Messages.FileNotFound := Parse(Ini.ReadString(SctMain, 'message9',
+      'File ''%%'' not found.'), '%s');
 
     Menu.Show :=         Parse(Ini.ReadString(SctMain, 'ni_show',
       '&FreeLaunch'));
