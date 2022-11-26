@@ -1142,7 +1142,10 @@ begin
   if ((Key = ord('W')) and (ssCtrl in Shift))
     then DeleteTab(MainTabsNew.TabIndex);
   //--F2 -> переименовать вкладку
-  if key = VK_F1 then LaunchHelpFile;
+  if key = VK_F1 then
+    if (ssCtrl in Shift)
+      then NI_About.Click
+      else LaunchHelpFile;
   if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
 end;
 

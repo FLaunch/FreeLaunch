@@ -59,6 +59,7 @@ type
     procedure ContributorsClick(Sender: TObject);
     procedure LicenseClick(Sender: TObject);
     procedure ThanksClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     procedure LoadFile(FileName: string);
   end;
@@ -103,6 +104,12 @@ procedure TAboutForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   aboutshowing := false;
   action := CAFree;
+end;
+
+procedure TAboutForm.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then Close;
 end;
 
 procedure TAboutForm.FormShow(Sender: TObject);
