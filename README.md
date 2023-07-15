@@ -18,7 +18,7 @@ FreeLaunch is a free links manager for Microsoft Windows. It allows to organize 
 
 ## Contributors
 
-- 2022 [@Ta2i4](https://github.com/Ta2i4)
+- 2022-2023 [@Ta2i4](https://github.com/Ta2i4)
 - 2016-2021 [@Torbins](https://github.com/Torbins)
 - 2008-2010 [@Joker-jar](https://github.com/Joker-jar)
 

@@ -1,11 +1,11 @@
 During the development of FreeLaunch , the products and works of the
 following companies and developers were used:
 
-7-Zip Extra - Copyright (c) 1999-2022 Igor Pavlov, www.7-zip.org
+7-Zip Extra - Copyright (c) 1999-2023 Igor Pavlov, www.7-zip.org
   - LGPLv2.1 or later
 JclGraphics - Copyright (c) 1997-1999 Anders Melander, Alex Denissov, 
   Wim De Cleen, Mike Lischke, jcl.delphi-jedi.org - MPLv2.1
-Delphi Community Edition - Copyright (c) 2021 Embarcadero Technologies,
+Delphi Community Edition - Copyright (c) 2023 Embarcadero Technologies,
   www.embarcadero.com
 madExcept - Copyright (c) 2021 Systemsoftware Mathias Rauen,
   www.madexcept.com
