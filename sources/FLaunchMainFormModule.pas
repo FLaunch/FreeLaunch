@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -39,9 +39,6 @@ uses
   ProgrammPropertiesFormModule,
   FilePropertiesFormModule, RenameTabFormModule, SettingsFormModule,
   AboutFormModule, FLFunctions, FLLanguage, FLClasses
-  {$IFDEF DEBUG}
-    , madExcept
-  {$ENDIF}
   ;
 
 const
@@ -289,7 +286,8 @@ begin
         Result.Major := IntToStr(VValue^.dwFileVersionMS shr $10);
         Result.Minor := IntToStr(VValue^.dwFileVersionMS and $FFF);
         Result.Release := IntToStr(VValue^.dwFileVersionLS shr $10);
-        Result.Build := IntToStr(VValue^.dwFileVersionLS and $FFFF)
+        Result.Build := IntToStr(VValue^.dwFileVersionLS and $FFFF);
+        if Length(Result.Build) < 4 then Result.Build := '0' + Result.Build;
       end;
     finally
       FreeMem(VInfo, VInfoSize);
@@ -1520,11 +1518,6 @@ begin
   Randomize;
   //initialize environment variables
   InitEnvironment;
-  {$IFDEF DEBUG}
-    //initialize bugreport file
-    MESettings().BugReportFile := fl_WorkDir + 'bugReport.mbr';
-    //loading settings
-  {$ENDIF}
   LoadSettings;
   LoadLinksIconsFromCache;
   FLPanel.PageNumber := MainTabsNew.TabIndex;

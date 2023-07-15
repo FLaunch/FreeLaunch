@@ -7,8 +7,6 @@ JclGraphics - Copyright (c) 1997-1999 Anders Melander, Alex Denissov,
   Wim De Cleen, Mike Lischke, jcl.delphi-jedi.org - MPLv2.1
 Delphi Community Edition - Copyright (c) 2023 Embarcadero Technologies,
   www.embarcadero.com
-madExcept - Copyright (c) 2021 Systemsoftware Mathias Rauen,
-  www.madexcept.com
 
 
 The FreeLaunch contributors would like to thank the active members

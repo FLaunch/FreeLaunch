@@ -3,8 +3,8 @@ object FlaunchMainForm: TFlaunchMainForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  ClientHeight = 165
-  ClientWidth = 325
+  ClientHeight = 164
+  ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,7 +13,6 @@ object FlaunchMainForm: TFlaunchMainForm
   Font.Style = []
   GlassFrame.SheetOfGlass = True
   KeyPreview = True
-  OldCreateOrder = False
   ScreenSnap = True
   ShowHint = True
   OnActivate = FormActivate
@@ -22,12 +21,11 @@ object FlaunchMainForm: TFlaunchMainForm
   OnDestroy = FormDestroy
   OnDeactivate = FormActivate
   OnKeyDown = FormKeyDown
-  PixelsPerInch = 96
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 146
-    Width = 325
+    Top = 145
+    Width = 321
     Height = 19
     DoubleBuffered = True
     Panels = <

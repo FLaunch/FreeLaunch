@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -28,13 +28,6 @@ program FLaunch;
 {$R *.dres}
 
 uses
-  {$IFDEF DEBUG}
-    madExcept,
-    madLinkDisAsm,
-    madListHardware,
-    madListProcesses,
-    madListModules,
-  {$ENDIF}
   Vcl.Forms,
   Windows,
   FLaunchMainFormModule in 'FLaunchMainFormModule.pas' {FlaunchMainForm},
