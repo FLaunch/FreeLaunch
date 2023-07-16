@@ -12,14 +12,12 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
   OnShow = FormShow
   DesignSize = (
     538
     320)
-  PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 8
@@ -29,6 +27,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     ActivePage = TabSheet1
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
+    ExplicitHeight = 274
     object TabSheet1: TTabSheet
       DesignSize = (
         513
@@ -248,6 +247,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     ModalResult = 1
     TabOrder = 1
     OnClick = OKButtonClick
+    ExplicitTop = 288
   end
   object CancelButton: TButton
     Left = 454
@@ -258,5 +258,6 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Cancel = True
     ModalResult = 2
     TabOrder = 2
+    ExplicitTop = 288
   end
 end

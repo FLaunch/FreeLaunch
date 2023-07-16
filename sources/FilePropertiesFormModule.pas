@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -135,6 +135,7 @@ end;
 
 procedure TFilePropertiesForm.FormShow(Sender: TObject);
 begin
+  if AlwaysOnTop then FormStyle := fsStayOnTop;
   //--Loading language
   OKButton.Caption := Language.BtnOk;
   CancelButton.Caption := Language.BtnCancel;

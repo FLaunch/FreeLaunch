@@ -13,13 +13,11 @@ object SettingsForm: TSettingsForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object pgc: TPageControl
     Left = 0
@@ -30,6 +28,7 @@ object SettingsForm: TSettingsForm
     Align = alTop
     TabOrder = 0
     OnChange = pgcChange
+    ExplicitWidth = 440
     object TabGeneral: TTabSheet
       object AutorunCheckBox: TCheckBox
         Left = 10

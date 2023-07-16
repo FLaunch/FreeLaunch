@@ -12,14 +12,12 @@ object FilePropertiesForm: TFilePropertiesForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
   OnShow = FormShow
   DesignSize = (
     538
     258)
-  PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 8
@@ -29,6 +27,7 @@ object FilePropertiesForm: TFilePropertiesForm
     ActivePage = TabSheet1
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
+    ExplicitHeight = 212
     object TabSheet1: TTabSheet
       DesignSize = (
         513
@@ -188,6 +187,7 @@ object FilePropertiesForm: TFilePropertiesForm
     ModalResult = 1
     TabOrder = 1
     OnClick = OKButtonClick
+    ExplicitTop = 226
   end
   object CancelButton: TButton
     Left = 454
@@ -198,5 +198,6 @@ object FilePropertiesForm: TFilePropertiesForm
     Cancel = True
     ModalResult = 2
     TabOrder = 2
+    ExplicitTop = 226
   end
 end
