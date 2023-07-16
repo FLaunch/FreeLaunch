@@ -38,8 +38,7 @@ uses
   Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Menus,
   ProgrammPropertiesFormModule,
   FilePropertiesFormModule, RenameTabFormModule, SettingsFormModule,
-  AboutFormModule, FLFunctions, FLLanguage, FLClasses
-  ;
+  AboutFormModule, FLFunctions, FLLanguage, FLClasses;
 
 const
   TCM_GETITEMRECT = $130A;

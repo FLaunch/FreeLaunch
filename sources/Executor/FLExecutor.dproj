@@ -109,12 +109,12 @@
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_ExeOutput>..\..\build\bin</DCC_ExeOutput>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_MinorVer>8</VerInfo_MinorVer>
         <AppExecutionLevel>requireAdministrator</AppExecutionLevel>
-        <VerInfo_Release>2022</VerInfo_Release>
-        <VerInfo_Build>1031</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch Executor helps FreeLaunch to start applications that require Admin rights;FileVersion=1.1.2022.1031;InternalName=FreeLaunch Executor;LegalCopyright=FreeLaunch Team ©;LegalTrademarks=;OriginalFilename=FLExecutor.exe;ProductName=FreeLaunch;ProductVersion=2.7;Comments=</VerInfo_Keys>
+        <VerInfo_Release>2023</VerInfo_Release>
+        <VerInfo_Build>716</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch Executor helps FreeLaunch to start applications that require Admin rights;FileVersion=2.8.2023.716;InternalName=FreeLaunch Executor;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLExecutor.exe;ProductName=FreeLaunch;ProductVersion=2.8;Comments=</VerInfo_Keys>
+        <VerInfo_MajorVer>2</VerInfo_MajorVer>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -138,8 +138,8 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k270.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp270.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
                 <Source>
                     <Source Name="MainSource">FLExecutor.dpr</Source>
