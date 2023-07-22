@@ -106,8 +106,6 @@ function GetAbsolutePath(s: string): string;
 procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
 //--Функция делает ресайз изображения
 procedure SmoothResize(Src, Dst: TBitmap);
-//--Нахождение микса двух цветов
-function GetColorBetween(StartColor, EndColor: TColor; Pointvalue, Von, Bis: Extended): TColor;
 //--Функция извлекает описание исполняемого файла
 function GetFileDescription(FileName: string): string;
 //--Функция извлекает имя файла без разширения
@@ -281,77 +279,6 @@ begin
   Dst.PixelFormat := pf32bit;
   Stretch(Dst.Width, Dst.Height, rfMitchell, 0, Src, Dst);
   Dst.AlphaFormat := afDefined;
-end;
-
-//--Нахождение микса двух цветов
-function GetColorBetween(StartColor, EndColor: TColor; Pointvalue, Von, Bis: Extended): TColor;
-var
-  F: Extended;
-  r1, r2, r3, g1, g2, g3, b1, b2, b3: Byte; 
-
-  function CalcColorBytes(fb1, fb2: Byte): Byte;
-    begin
-      Result := fb1;
-      if fb1 < fb2 then
-        Result := FB1 + Trunc(F * (fb2 - fb1));
-      if fb1 > fb2 then
-        Result := FB1 - Trunc(F * (fb1 - fb2));
-    end;
-
-begin 
-  if Pointvalue <= Von then
-    begin
-      Result := StartColor;
-      exit;
-    end;
-  if Pointvalue >= Bis then 
-    begin
-      Result := EndColor;
-      exit;
-    end;
-  F := (Pointvalue - von) / (Bis - Von); 
-  asm
-    mov EAX, Startcolor
-    cmp EAX, EndColor
-    je @@exit
-    mov r1, AL
-    shr EAX,8
-    mov g1, AL
-    shr Eax,8
-    mov b1, AL
-    mov Eax, Endcolor
-    mov r2, AL
-    shr EAX,8
-    mov g2, AL
-    shr EAX,8
-    mov b2, AL
-    push ebp
-    mov al, r1
-    mov dl, r2
-    call CalcColorBytes
-    pop ecx
-    push ebp
-    Mov r3, al
-    mov dL, g2
-    mov al, g1
-    call CalcColorBytes
-    pop ecx
-    push ebp
-    mov g3, Al
-    mov dL, B2
-    mov Al, B1
-    call CalcColorBytes
-    pop ecx
-    mov b3, al
-    XOR EAX,EAX
-    mov AL, B3
-    SHL EAX,8
-    mov AL, G3
-    SHL EAX,8
-    mov AL, R3
-    @@Exit:
-    mov @Result, eax
-  end;
 end;
 
 //--Функция извлекает описание исполняемого файла
