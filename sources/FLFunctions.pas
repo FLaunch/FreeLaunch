@@ -193,64 +193,23 @@ end;
 
 //--Функция извлекает иконку из файла по индексу
 function GetFileIcon(FileName: string; Index, Size: integer): HIcon;
-
-  function VistaGetIcon(FileName: string; Index: integer; Size: Cardinal): HIcon;
-  var
-    Dummy: HIcon;
-  begin
-    if SHDefExtractIcon(PChar(FileName), Index, 0, Result, Dummy, Size) <> S_OK then
-      Result := 0;
-  end;
-
-  function GetShellIcon(ILSize, Index: integer; var MinSize, ReqSize: Integer): HIcon;
-  const
-    IID_IImageList: TGUID = '{46EB5926-582E-4017-9FDF-E8998DAA0950}';
-  var
-    ILHandle: HIMAGELIST;
-    CX, CY: Integer;
-  begin
-    Result := 0;
-
-    if SHGetImageList(ILSize, IID_IImageList, Pointer(ILHandle)) <> S_OK then
-      Exit;
-
-    if not ImageList_GetIconSize(ILHandle, CX, CY) then
-      Exit;
-
-    if (MinSize < ReqSize) and (ReqSize <= CX) then
-      Result := ImageList_GetIcon(ILHandle, Index, ILD_TRANSPARENT);
-
-    MinSize := CX;
-  end;
-
-type
-  TILSizes = array of Integer;
-const
-  VistaSizes: TILSizes = [SHIL_SMALL, SHIL_LARGE, SHIL_EXTRALARGE, SHIL_JUMBO];
 var
-  SFI: TShFileInfo;
-  MinSize, CurrentSize: integer;
-  ILSizes: TILSizes;
+  LIC, SIC: HICON;
 begin
   Result := 0;
-  if GetIconCount(FileName) > 0 then
-  begin
-    Result := VistaGetIcon(FileName, Index, Size);
-    Exit;
+  if GetIconCount(FileName) > 0 then begin
+    ExtractIconEx(PChar(FileName), -Index, LIC, SIC, 1);
+    Result := LIC;
+    if Result = 0 then Result := SIC;
+    if Result = 0 then begin
+      LIC := 0;
+      SIC := 0;
+      ExtractIconEx(PChar(FileName), Index, LIC, SIC, 1);
+      Result := LIC;
+      if Result = 0 then Result := SIC;
+    end;
   end;
-  FillChar(SFI, sizeof(SFI), 0);
-  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), SHGFI_ICONLOCATION);
-  if SFI.szDisplayName[0] <> #0
-    then Result := VistaGetIcon(SFI.szDisplayName, SFI.iIcon, Size);
-  ILSizes := VistaSizes;
-  FillChar(SFI, sizeof(SFI), 0);
-  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(SFI), SHGFI_SYSICONINDEX);
-  MinSize := 0;
-  for CurrentSize in ILSizes do
-  begin
-    if Result <> 0 then Exit;
-    Result := GetShellIcon(CurrentSize, SFI.iIcon, MinSize, Size);
-  end;
+  if Result = 0 then Result := LoadIcon(HInstance, 'RBLANKICON');
 end;
 
 //--Функция возвращает путь к специальным папкам в Windows
