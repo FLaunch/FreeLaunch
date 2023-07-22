@@ -191,11 +191,18 @@ begin
   Result := ExtractIconEx(PChar(FileName), -1, LIC, SIC, 1);
 end;
 
+function GetShellIcon(FileName: string): HIcon;
+var
+  SFI: TSHFileInfo;
+begin
+  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(TShFileInfo), SHGFI_ICON);
+  Result := SFI.hIcon;
+end;
+
 //--Функция извлекает иконку из файла по индексу
-function GetFileIcon(FileName: string; Index, Size: integer): HIcon;
+function GetFileIcon(FileName: string; Index, Size: Integer): HIcon;
 var
   LIC, SIC: HICON;
-  pii, pid: Word;
 begin
   Result := 0;
   if GetIconCount(FileName) > 0 then begin
@@ -210,9 +217,7 @@ begin
       if Result = 0 then Result := SIC;
     end;
   end;
-  if Result = 0 then begin
-    Result := ExtractAssociatedIconEx(HInstance, PChar(FileName), pii, pid);
-  end;
+  if Result = 0 then Result := GetShellIcon(FileName);
   if Result = 0 then Result := LoadIcon(HInstance, 'RBLANKICON');
 end;
 

@@ -3,7 +3,7 @@
         <ProjectGuid>{02D93137-42D0-4C3F-B8DB-C2FD000BD41D}</ProjectGuid>
         <MainSource>FLaunch.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
@@ -118,12 +118,12 @@
         <BRCC_Verbose>true</BRCC_Verbose>
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_Define>madExcept;$(DCC_Define)</DCC_Define>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.8.2023.716;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.8;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.9.2023.723;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.9;Comments=</VerInfo_Keys>
         <VerInfo_Release>2023</VerInfo_Release>
-        <VerInfo_Build>716</VerInfo_Build>
+        <VerInfo_Build>723</VerInfo_Build>
         <VerInfo_Debug>true</VerInfo_Debug>
         <VerInfo_PreRelease>true</VerInfo_PreRelease>
-        <VerInfo_MinorVer>8</VerInfo_MinorVer>
+        <VerInfo_MinorVer>9</VerInfo_MinorVer>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
