@@ -100,9 +100,9 @@
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
         <VerInfo_Release>2023</VerInfo_Release>
-        <VerInfo_Build>716</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.8.2023.716;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.8;Comments=</VerInfo_Keys>
-        <VerInfo_MinorVer>8</VerInfo_MinorVer>
+        <VerInfo_Build>722</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.9.2023.722;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.9;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>9</VerInfo_MinorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_RangeChecking>true</DCC_RangeChecking>

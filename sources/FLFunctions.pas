@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -184,9 +184,11 @@ begin
 end;
 
 //--Функция определяет количество иконок в файле
-function GetIconCount(FileName: string): integer;
+function GetIconCount(FileName: string): Integer;
+var
+  LIC, SIC: HICON;
 begin
-  Result := ExtractIcon(HInstance, PChar(FileName), MAXDWORD);
+  Result := ExtractIconEx(PChar(FileName), -1, LIC, SIC, 1);
 end;
 
 //--Функция извлекает иконку из файла по индексу
