@@ -102,8 +102,6 @@ function GetFileIcon(FileName: string; Index: integer; Size: integer = 32): HIco
 //--Функция возвращает путь к специальным папкам в Windows
 function GetSpecialDir(const CSIDL: byte): string;
 function GetAbsolutePath(s: string): string;
-//--Функция бреобразует строку вида 0xXXXXXX в цвет
-function ColorStrToColor(ColorStr: string): TColor;
 /// <summary> Преобразование битмапа в PNG с сохранением альфы </summary>
 procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
 //--Функция делает ресайз изображения
@@ -247,20 +245,6 @@ end;
 function GetAbsolutePath(s: string): string;
 begin
   result := ExpandEnvironmentVariables(s);
-end;
-
-//--Функция бреобразует строку вида 0xXXXXXX в цвет
-function ColorStrToColor(ColorStr: string): TColor;
-var
-  e: integer;
-begin
-  //--Удаляем из строки 0x
-  delete(ColorStr, 1, 2);
-  //--Пытаемся перевести в десятичный вид
-  val('$' + ColorStr, Result, e);
-  //--Если не получилось, используем стандартный цвет
-  if e <> 0 then
-    Result := clBtnFace;
 end;
 
 type
