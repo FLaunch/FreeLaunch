@@ -202,16 +202,9 @@ var
 begin
   Result := 0;
   if GetIconCount(FileName) > 0 then begin
-    ExtractIconEx(PChar(FileName), -Index, LIC, SIC, 1);
+    ExtractIconEx(PChar(FileName), Index, LIC, SIC, 1);
     Result := LIC;
     if Result = 0 then Result := SIC;
-    if Result = 0 then begin
-      LIC := 0;
-      SIC := 0;
-      ExtractIconEx(PChar(FileName), Index, LIC, SIC, 1);
-      Result := LIC;
-      if Result = 0 then Result := SIC;
-    end;
   end;
   if Result = 0 then Result := GetShellIcon(FileName);
   if Result = 0 then Result := LoadIcon(HInstance, 'RBLANKICON');
