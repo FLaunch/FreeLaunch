@@ -225,6 +225,7 @@ var
   ClearONF:        Boolean = True;
   nobgnotabs:      Boolean = True;
   statusbarvis:    Boolean = True;
+  taskbarvis:      Boolean = False;
   PropertiesMode:  Integer; //тип кнопки, свойства которой редактируются
   FocusCol:        Integer = -1;
   FocusRow:        Integer = -1;
@@ -580,7 +581,8 @@ begin
     begin
       Visible := true;
       Timer1.Enabled := statusbarvis and dtimeinstbar;
-      ShowWindow(Application.Handle, SW_HIDE);
+      if taskbarvis then ShowWindow(Application.Handle, SW_SHOW)
+        else ShowWindow(Application.Handle, SW_HIDE);
       SetForegroundWindow(Application.Handle);
     end
   else
@@ -679,6 +681,7 @@ begin
   WindowNode.AddChild('AlphaBlendValue').NodeValue := ABlendVal;
   WindowNode.AddChild('AlwaysOnTop').NodeValue := alwaysontop;
   WindowNode.AddChild('StatusBar').NodeValue := statusbarvis;
+  WindowNode.AddChild('TaskBarVisible').NodeValue := taskbarvis;
   WindowNode.AddChild('DateTimeInStatusBar').NodeValue := dtimeinstbar;
   WindowNode.AddChild('StartHidden').NodeValue := starthide;
   WindowNode.AddChild('HideAfterLaunchBtn').NodeValue := hideafterlaunch;
@@ -948,6 +951,7 @@ begin
           rwar := GetBool(WindowNode, 'RunBtnAsAdmin');
           starthide := GetBool(WindowNode, 'StartHidden');
           statusbarvis := GetBool(WindowNode, 'StatusBar', True);
+          taskbarvis := GetBool(WindowNode, 'TaskBarVisible');
           //tabs node
           TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
           if Assigned(TabRootNode) and TabRootNode.HasChildNodes then begin

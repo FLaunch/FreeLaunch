@@ -85,6 +85,7 @@ type
     ABlendCheckBox: TCheckBox;
     ABlendBar: TTrackBar;
     ABOffCheckBox: TCheckBox;
+    TaskBarBox: TCheckBox;
     procedure OKButtonClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -137,6 +138,7 @@ begin
   lblPadding.Caption := Language.Settings.Padding + ':';
   AutorunCheckBox.Caption := Language.Settings.ChbAutorun;
   TopCheckBox.Caption := Language.Settings.ChbAlwaysOnTop;
+  TaskBarBox.Caption := Language.Settings.ChbTaskbar;
   StartHideBox.Caption := Language.Settings.ChbStartHide;
   StatusBarBox.Caption := Language.Settings.ChbStatusbar;
   DateTimeBox.Caption := Language.Settings.ChbDateTime;
@@ -195,6 +197,7 @@ begin
   AlwaysOnTop := TopCheckBox.Checked;
   StartHide := StartHideBox.Checked;
   StatusBarVis := StatusBarBox.Checked;
+  taskbarvis := TaskBarBox.Checked;
   dtimeinstbar := DateTimeBox.Checked;
   hideafterlaunch := HideCheckBox.Checked;
   queryonlaunch := QoLCheckBox.Checked;
@@ -363,6 +366,7 @@ begin
   TopCheckBox.Checked := AlwaysOnTop;
   StartHideBox.Checked := StartHide;
   StatusBarBox.Checked := StatusBarVis;
+  TaskBarBox.Checked := taskbarvis;
   DateTimeBox.Checked := dtimeinstbar;
   DateTimeBox.Enabled := StatusBarBox.Checked;
   GlassCheckBox.Checked := nobgnotabs;

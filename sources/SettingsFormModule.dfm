@@ -4,8 +4,8 @@ object SettingsForm: TSettingsForm
   ActiveControl = pgc
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  ClientHeight = 431
-  ClientWidth = 444
+  ClientHeight = 432
+  ClientWidth = 448
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,7 +22,7 @@ object SettingsForm: TSettingsForm
   object pgc: TPageControl
     Left = 0
     Top = 0
-    Width = 444
+    Width = 448
     Height = 390
     ActivePage = TabGeneral
     Align = alTop
@@ -49,53 +49,58 @@ object SettingsForm: TSettingsForm
         Top = 325
         Width = 145
         Height = 25
-        TabOrder = 8
+        TabOrder = 9
         OnClick = ReloadIconsButtonClick
       end
       object StartHideBox: TCheckBox
         Left = 10
-        Top = 60
-        Width = 420
-        Height = 17
-        TabOrder = 2
-      end
-      object StatusBarBox: TCheckBox
-        Left = 10
         Top = 85
         Width = 420
         Height = 17
-        Checked = True
-        State = cbChecked
         TabOrder = 3
+      end
+      object StatusBarBox: TCheckBox
+        Left = 10
+        Top = 110
+        Width = 420
+        Height = 17
+        TabOrder = 4
         OnClick = StatusBarBoxClick
       end
       object DateTimeBox: TCheckBox
         Left = 30
-        Top = 110
-        Width = 400
-        Height = 17
-        TabOrder = 4
-      end
-      object GlassCheckBox: TCheckBox
-        Left = 10
         Top = 135
-        Width = 420
+        Width = 400
         Height = 17
         TabOrder = 5
       end
-      object DelLnkCheckBox: TCheckBox
+      object GlassCheckBox: TCheckBox
         Left = 10
         Top = 160
         Width = 420
         Height = 17
         TabOrder = 6
       end
-      object ClearCheckBox: TCheckBox
+      object DelLnkCheckBox: TCheckBox
         Left = 10
         Top = 185
         Width = 420
         Height = 17
         TabOrder = 7
+      end
+      object ClearCheckBox: TCheckBox
+        Left = 10
+        Top = 210
+        Width = 420
+        Height = 17
+        TabOrder = 8
+      end
+      object TaskBarBox: TCheckBox
+        Left = 10
+        Top = 60
+        Width = 420
+        Height = 17
+        TabOrder = 2
       end
     end
     object TabInterface: TTabSheet

@@ -60,7 +60,7 @@ begin
       Application.Initialize;
       SetAppTheme(WinThemeDetect);
       Application.CreateForm(TData, Data);
-  Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
-  Application.Run;
+      Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
+      Application.Run;
     end;
 end.

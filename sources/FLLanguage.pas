@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko                                     #
+  #  Copyright (C) 2023 Alexey Tatuyko                                     #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -52,7 +52,7 @@ type
     Caption, General, NumOfTabs, Rows, Cols, Padding, Theme,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
     ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbGlass, ChbClear,
-    ChbAlphaBlend, ChbABOff,
+    ChbAlphaBlend, ChbABOff, ChbTaskbar,
     Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
     PriorityBelowNormal, PriorityRealTime,
     Titlebar, TitlebarNormal, TitlebarMini,
@@ -332,6 +332,8 @@ begin
       'Enable main window transparency'));
     Settings.ChbABOff :=         Parse(Ini.ReadString(SctSettings, 'chb_aboff',
       'Turn off transparency if the cursor is over the window'));
+    Settings.ChbTaskbar :=       Parse(Ini.ReadString(SctSettings, 'chb_taskbar'
+      , 'Show on taskbar'));
     Settings.Titlebar :=         Parse(Ini.ReadString(SctSettings, 'titlebar',
       'Window title style'));
     Settings.TitlebarNormal :=   Parse(Ini.ReadString(SctSettings, 'titlebar_normal',
