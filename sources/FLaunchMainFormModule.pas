@@ -1275,9 +1275,7 @@ begin
     StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width;
   end else StatusBar.Panels[0].Width := StatusBar.Width;
   ClientWidth := MainWidth;
-  if statusbarvis
-    then ClientHeight := MainHeight + StatusBar.Height
-    else ClientHeight := MainHeight;
+  ClientHeight := MainHeight + IfThen(statusbarvis, StatusBar.Height);
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
   AlphaBlend := ABlend;
