@@ -299,9 +299,9 @@ end;
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 begin
   if iswidth then
-    result := round(p / (Screen.DesktopWidth - Width) * 100)
+    Result := round(p / (Screen.DesktopWidth - Width) * 100)
   else
-    result := round(p / (Screen.DesktopHeight - Height) * 100);
+    Result := round(p / (Screen.DesktopHeight - Height) * 100);
 end;
 
 //convert window position from percent to pixels
@@ -581,8 +581,7 @@ begin
     begin
       Visible := true;
       Timer1.Enabled := statusbarvis and dtimeinstbar;
-      if taskbarvis then ShowWindow(Application.Handle, SW_SHOW)
-        else ShowWindow(Application.Handle, SW_HIDE);
+      ShowWindow(Application.Handle, IfThen(taskbarvis, SW_SHOW, SW_HIDE));
       SetForegroundWindow(Application.Handle);
     end
   else
