@@ -1105,12 +1105,7 @@ var
   icon: TIcon;
 begin
   icon := TIcon.Create;
-  if (not fileexists(FileName)) and (not directoryexists(FileName)) then
-    icon.Handle := LoadIcon(hinstance, 'RBLANKICON')
-  else
-    icon.Handle := GetFileIcon(FileName, Index, Im.Height);
-  if icon.Handle = 0 then
-    icon.Handle := LoadIcon(hinstance, 'RBLANKICON');
+  icon.Handle := GetFileIcon(FileName, Index, Im.Height);
   Im.Picture.Assign(icon);
   icon.Free;
 end;
