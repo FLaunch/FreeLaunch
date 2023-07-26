@@ -3,8 +3,8 @@ object ChangeIconForm: TChangeIconForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  ClientHeight = 144
-  ClientWidth = 383
+  ClientHeight = 142
+  ClientWidth = 378
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,41 +17,42 @@ object ChangeIconForm: TChangeIconForm
   OnShow = FormShow
   TextHeight = 13
   object GroupBox1: TGroupBox
-    Left = 8
-    Top = 8
-    Width = 367
-    Height = 97
+    Left = 0
+    Top = 0
+    Width = 378
+    Height = 100
+    Align = alTop
     TabOrder = 0
     object Label1: TLabel
-      Left = 53
-      Top = 23
+      Left = 50
+      Top = 25
       Width = 3
       Height = 13
       Alignment = taRightJustify
     end
     object Label2: TLabel
-      Left = 53
-      Top = 53
+      Left = 50
+      Top = 55
       Width = 3
       Height = 13
       Alignment = taRightJustify
     end
     object IcImage: TImage
-      Left = 303
-      Top = 49
+      Left = 328
+      Top = 50
       Width = 32
       Height = 32
     end
     object Label3: TLabel
-      Left = 131
-      Top = 53
+      Left = 135
+      Top = 55
       Width = 3
       Height = 13
     end
     object IndexEdit: TSpinEdit
-      Left = 62
+      Left = 60
       Top = 50
-      Width = 64
+      Width = 65
       Height = 22
       MaxValue = 1
       MinValue = 1
@@ -60,10 +61,10 @@ object ChangeIconForm: TChangeIconForm
       OnChange = IndexEditChange
     end
     object RefProps: TButton
-      Left = 314
+      Left = 340
       Top = 20
-      Width = 21
-      Height = 21
+      Width = 20
+      Height = 20
       HotImageIndex = 3
       ImageAlignment = iaCenter
       ImageIndex = 2
@@ -72,9 +73,9 @@ object ChangeIconForm: TChangeIconForm
       OnClick = RefPropsClick
     end
     object IconEdit: TButtonedEdit
-      Left = 62
+      Left = 60
       Top = 20
-      Width = 246
+      Width = 250
       Height = 21
       Images = Data.Images
       RightButton.HotImageIndex = 1
@@ -86,7 +87,7 @@ object ChangeIconForm: TChangeIconForm
   end
   object CancelButton: TButton
     Left = 300
-    Top = 111
+    Top = 110
     Width = 75
     Height = 25
     Cancel = True
@@ -94,8 +95,8 @@ object ChangeIconForm: TChangeIconForm
     OnClick = CancelButtonClick
   end
   object OKButton: TButton
-    Left = 219
-    Top = 111
+    Left = 210
+    Top = 110
     Width = 75
     Height = 25
     Default = True
