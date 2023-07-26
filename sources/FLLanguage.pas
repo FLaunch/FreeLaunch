@@ -36,7 +36,7 @@ type
   end;
 
   TLngIconSelect = record
-    Caption, FileName, Index, LblOf: string;
+    Caption, FileName, Index, LblOf, Negative: string;
   end;
 
   TLngProperties = record
@@ -230,6 +230,8 @@ begin
     IconSelect.FileName := Parse(Ini.ReadString(SctIconSelect, 'file', 'File'));
     IconSelect.Index :=    Parse(Ini.ReadString(SctIconSelect, 'index', 'Index'));
     IconSelect.LblOf :=    Parse(Ini.ReadString(SctIconSelect, 'of', 'of %%'),  '%d');
+    IconSelect.Negative := Parse(Ini.ReadString(SctIconSelect, 'negative',
+      'Use negative index'));
 
     Properties.Caption :=        Parse(Ini.ReadString(SctProperties, 'properties',
       'Properties'));

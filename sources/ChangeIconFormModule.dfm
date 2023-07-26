@@ -3,7 +3,7 @@ object ChangeIconForm: TChangeIconForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  ClientHeight = 142
+  ClientHeight = 172
   ClientWidth = 378
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object ChangeIconForm: TChangeIconForm
     Left = 0
     Top = 0
     Width = 378
-    Height = 100
+    Height = 130
     Align = alTop
     TabOrder = 0
     object Label1: TLabel
@@ -84,10 +84,18 @@ object ChangeIconForm: TChangeIconForm
       TabOrder = 0
       OnRightButtonClick = BrowseIconClick
     end
+    object NegativeBox: TCheckBox
+      Left = 60
+      Top = 100
+      Width = 250
+      Height = 17
+      TabOrder = 3
+      OnClick = IndexEditChange
+    end
   end
   object CancelButton: TButton
     Left = 300
-    Top = 110
+    Top = 140
     Width = 75
     Height = 25
     Cancel = True
@@ -96,7 +104,7 @@ object ChangeIconForm: TChangeIconForm
   end
   object OKButton: TButton
     Left = 210
-    Top = 110
+    Top = 140
     Width = 75
     Height = 25
     Default = True

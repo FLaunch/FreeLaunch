@@ -97,6 +97,7 @@ type
 function InRange(Value, FromV, ToV: byte): byte;
 //--Функция определяет количество иконок в файле
 function GetIconCount(FileName: string): integer;
+function GetNegativeCount(FileName: string): Integer;
 //--Функция извлекает иконку из файла по индексу
 function GetFileIcon(FileName: string; Index: integer; Size: integer = 32): HIcon;
 //--Функция возвращает путь к специальным папкам в Windows
@@ -185,6 +186,25 @@ var
   LIC, SIC: HICON;
 begin
   Result := ExtractIconEx(PChar(FileName), -1, LIC, SIC, 1);
+end;
+
+function GetNegativeCount(FileName: string): Integer;
+var
+  LIC, SIC: HICON;
+  icount, I: Integer;
+begin
+  Result := 0;
+  icount := GetIconCount(FileName);
+  LIC := 0;
+  SIC := 0;
+  for I := -icount + 1 to 0 do begin
+    LIC := 0;
+    SIC := 0;
+    if ExtractIconEx(PChar(FileName), I, LIC, SIC, 1) <> 0 then begin
+      Result := -I + 1;
+      Break;
+    end;
+  end;
 end;
 
 function GetShellIcon(FileName: string): HIcon;

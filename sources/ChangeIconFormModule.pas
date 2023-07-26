@@ -28,7 +28,7 @@ unit ChangeIconFormModule;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages,
+  Winapi.Windows, Winapi.Messages, System.Math,
   System.SysUtils, System.Variants, System.Classes, System.IniFiles,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls,
   Vcl.StdCtrls, Vcl.ComCtrls,
@@ -47,6 +47,7 @@ type
     IndexEdit: TSpinEdit;
     RefProps: TButton;
     IconEdit: TButtonedEdit;
+    NegativeBox: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure BrowseIconClick(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -55,10 +56,13 @@ type
     procedure RefPropsClick(Sender: TObject);
     procedure IndexEditChange(Sender: TObject);
   private
-    icindex, iconcount: integer;
+    icindex, iconcount, ncount: integer;
   public
     procedure RefreshProps;
   end;
+
+var
+  showform: Boolean = True;
 
 implementation
 
@@ -72,11 +76,14 @@ procedure TChangeIconForm.RefreshProps;
 begin
   icindex := 1;
   iconcount := GetIconCount(GetAbsolutePath(IconEdit.Text));
+  ncount := GetNegativeCount(IconEdit.Text);
   if iconcount = 0 then iconcount := 1;
   Label3.Caption := Format(Language.IconSelect.LblOf, [iconcount]);
   IndexEdit.Value := icindex;
-  IndexEdit.Enabled := iconcount > 1;
   IndexEdit.MaxValue := iconcount;
+  IndexEdit.Enabled := iconcount > 1;
+  NegativeBox.Enabled := (iconcount > 1) and (ncount > 1);
+  NegativeBox.Checked := False;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex - 1);
 end;
 
@@ -97,12 +104,12 @@ begin
   if PropertiesMode = 0 then
     begin
       ProgrammPropertiesFormModule.ic := IconEdit.Text;
-      ProgrammPropertiesFormModule.iconindex := icindex - 1;
+      ProgrammPropertiesFormModule.iconindex := icindex + IfThen(icindex < 0, 1, -1);
     end;
   if PropertiesMode = 1 then
     begin
       FilePropertiesFormModule.ic := IconEdit.Text;
-      FilePropertiesFormModule.iconindex := icindex - 1;
+      FilePropertiesFormModule.iconindex := icindex + IfThen(icindex < 0, 1, -1);
     end;
   Close;
 end;
@@ -119,7 +126,8 @@ end;
 
 procedure TChangeIconForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  action := CAFree;
+  showform := True;
+  Action := CAFree;
 end;
 
 procedure TChangeIconForm.FormShow(Sender: TObject);
@@ -131,33 +139,48 @@ begin
   Caption := Language.IconSelect.Caption;
   Label1.Caption := Language.IconSelect.FileName + ':';
   Label2.Caption := Language.IconSelect.Index + ':';
-
+  NegativeBox.Caption := Language.IconSelect.Negative;
+  //---------------------------
   if PropertiesMode = 0 then
     begin
       IconEdit.Text := ProgrammPropertiesFormModule.ic;
       iconcount := GetIconCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
-      icindex := ProgrammPropertiesFormModule.iconindex + 1;
+      icindex := ProgrammPropertiesFormModule.iconindex + IfThen(ProgrammPropertiesFormModule.iconindex < 0, -1, 1);
+      ncount := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
     end;
   if PropertiesMode = 1 then
     begin
       IconEdit.Text := FilePropertiesFormModule.ic;
       iconcount := GetIconCount(GetAbsolutePath(FilePropertiesFormModule.Ic));
-      icindex := FilePropertiesFormModule.iconindex + 1;
+      icindex := FilePropertiesFormModule.iconindex + IfThen(FilePropertiesFormModule.iconindex < 0, -1, 1);
+      ncount := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
     end;
-
+  NegativeBox.Enabled := (iconcount > 1) and (ncount > 1);
   if iconcount = 0 then iconcount := 1;
-  Label3.Caption := Format(Language.IconSelect.LblOf, [iconcount]);
-  IndexEdit.Value := icindex;
-  IndexEdit.Enabled := iconcount > 1;
-  IndexEdit.MaxValue := iconcount;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex - 1);
+  NegativeBox.Checked := (icindex < -1) and (ncount >= -icindex);
+  Label3.Caption := Format(Language.IconSelect.LblOf, [IfThen(NegativeBox.Checked, ncount, iconcount)]);
+  IndexEdit.Value := IfThen(icindex < 0, -icindex, icindex);
+  if NegativeBox.Checked
+    then IndexEdit.Enabled := ncount > 1
+    else IndexEdit.Enabled := iconcount > 1;
+  IndexEdit.MaxValue := IfThen(NegativeBox.Checked, ncount, iconcount);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
   IconEdit.SetFocus;
+  showform := False;
 end;
 
 procedure TChangeIconForm.IndexEditChange(Sender: TObject);
 begin
-  icindex := IndexEdit.Value;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex - 1);
+  if showform then Exit;
+  Label3.Caption := Format(Language.IconSelect.LblOf, [IfThen(NegativeBox.Checked, ncount, iconcount)]);
+  IndexEdit.MaxValue := IfThen(NegativeBox.Checked, ncount, iconcount);
+  if NegativeBox.Checked and (IndexEdit.Value > ncount)
+    then begin
+      IndexEdit.Value := 1;
+      IndexEdit.Enabled := ncount > 1;
+    end;
+  icindex := IfThen(NegativeBox.Checked, -IndexEdit.Value, IndexEdit.Value);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
 end;
 
 end.
