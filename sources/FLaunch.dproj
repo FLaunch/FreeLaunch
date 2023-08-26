@@ -3,7 +3,7 @@
         <ProjectGuid>{02D93137-42D0-4C3F-B8DB-C2FD000BD41D}</ProjectGuid>
         <MainSource>FLaunch.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
@@ -100,8 +100,8 @@
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
         <VerInfo_Release>2023</VerInfo_Release>
-        <VerInfo_Build>722</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.9.2023.722;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.9;Comments=</VerInfo_Keys>
+        <VerInfo_Build>826</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.9.2023.826;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.9;Comments=</VerInfo_Keys>
         <VerInfo_MinorVer>9</VerInfo_MinorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">

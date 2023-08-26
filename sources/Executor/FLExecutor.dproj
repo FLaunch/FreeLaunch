@@ -109,11 +109,11 @@
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_ExeOutput>..\..\build\bin</DCC_ExeOutput>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <VerInfo_MinorVer>8</VerInfo_MinorVer>
+        <VerInfo_MinorVer>9</VerInfo_MinorVer>
         <AppExecutionLevel>requireAdministrator</AppExecutionLevel>
         <VerInfo_Release>2023</VerInfo_Release>
-        <VerInfo_Build>716</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch Executor helps FreeLaunch to start applications that require Admin rights;FileVersion=2.8.2023.716;InternalName=FreeLaunch Executor;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLExecutor.exe;ProductName=FreeLaunch;ProductVersion=2.8;Comments=</VerInfo_Keys>
+        <VerInfo_Build>826</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch Executor helps FreeLaunch to start applications that require Admin rights;FileVersion=2.9.2023.826;InternalName=FreeLaunch Executor;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLExecutor.exe;ProductName=FreeLaunch;ProductVersion=2.9;Comments=</VerInfo_Keys>
         <VerInfo_MajorVer>2</VerInfo_MajorVer>
     </PropertyGroup>
     <ItemGroup>
