@@ -96,49 +96,49 @@ type
   end;
   PShellLinkInfoStruct = ^TShellLinkInfoStruct;
 
-//--Функция не позволяет уйти значению за пределы допустимых
+// Функция не позволяет уйти значению за пределы допустимых
 function InRange(Value, FromV, ToV: byte): byte;
-//--Функция определяет количество иконок в файле
+// Функции определяют количество иконок в файле
 function GetIconCount(FileName: string): integer;
 function GetNegativeCount(FileName: string): Integer;
-//--Функция извлекает иконку из файла по индексу
-function GetFileIcon(FileName: string; Index: integer; Size: integer = 32): HIcon;
-//--Функция возвращает путь к специальным папкам в Windows
-function GetSpecialDir(const CSIDL: byte): string;
+// Функция извлекает иконку из файла по индексу
+function GetFileIcon(FileName: string; Index: integer; Size: Integer = 32): HIcon;
+// Функция возвращает путь к специальным папкам в Windows
+function GetSpecialDir(const CSIDL: Byte): string;
 function GetAbsolutePath(s: string): string;
-/// <summary> Преобразование битмапа в PNG с сохранением альфы </summary>
+// Преобразование битмапа в PNG с сохранением альфы
 procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
-//--Функция делает ресайз изображения
+// Функция делает ресайз изображения
 procedure SmoothResize(Src, Dst: TBitmap);
-//--Функция извлекает описание исполняемого файла
+// Функция извлекает описание исполняемого файла
 function GetFileDescription(FileName: string): string;
-//--Функция извлекает имя файла без разширения
+// Функция извлекает имя файла без разширения
 function ExtractFileNameNoExt(FileName: string): string;
-//--Функция извлекает информацию из ярлыка (*.lnk)
+// Функция извлекает информацию из ярлыка (*.lnk)
 procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
-//--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
+// Обрезает строку Str до длины Len с добавлением троеточия в конец
 function MyCutting(Str: string; Len: byte): string;
-/// <summary> Простая обертка над MessageBox </summary>
+// Простая обертка над MessageBox
 procedure WarningMessage(AHandle: HWND; AText: string);
 /// MessageBox with YES and NO buttons
 function RequestMessage(AHandle: HWND; AText: string): Integer;
-/// <summary> Определение типа файла </summary>
+// Определение типа файла
 function IsExecutable(Ext: string): Boolean;
-/// <summary> Обертка над CreateProcess </summary>
-function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
+// Обертка над CreateProcess
+function CreateProcessFL(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
-/// <summary> Запуск процесса внутри потока </summary>
+// Запуск процесса внутри потока
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
-//--Процедура для запуска процесса в потоке (при клике по кнопке)
+// Процедура для запуска процесса в потоке (при клике по кнопке)
 procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
   ADroppedFile: string);
 // launch help file
 procedure ExecHelpFile(AMainHandle: HWND; AHelpFileName: string);
-/// <summary> Замена всех переменных окружения их значениями </summary>
+// Замена всех переменных окружения их значениями
 function ExpandEnvironmentVariables(const AFileName: string): string;
-/// <summary> Добавление новой переменной окружения </summary>
+// Добавление новой переменной окружения
 procedure AddEnvironmentVariable(const AName, AValue: string);
-/// <summary> Конвертация линка в набор строк </summary>
+// Конвертация линка в набор строк
 procedure LinkToStrings(ALink: TLink; AStrings: TStrings);
 /// <summary> Конвертация набора строк в линк </summary>
 function StringsToLink(AStrings: TStrings): TLink;
@@ -725,7 +725,7 @@ begin
   Result := Ext.EndsWith('.exe', True) or Ext.EndsWith('.bat', True);
 end;
 
-procedure ShellExecute(const AWnd: HWND; const AOperation, AFileName: String;
+procedure ShellExecuteFL(const AWnd: HWND; const AOperation, AFileName: String;
   const AParameters: String = ''; const ADirectory: String = ''; const AShowCmd: Integer = SW_SHOWNORMAL);
 var
   ExecInfo: TShellExecuteInfo;
@@ -760,7 +760,7 @@ begin
   end;
 end;
 
-function CreateProcess(AExecutable, AParameters, APath: string; AWindowState,
+function CreateProcessFL(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
 var
   pi: TProcessInformation;
@@ -809,7 +809,7 @@ begin
   Parameters := Parameters + ' ' + AnsiQuotedStr(Language.FileName, '"');
   Parameters := Parameters + ' ' + AnsiQuotedStr(ADroppedFile, '"');
 
-  ShellExecute(AMainHandle, '', Executor, Parameters);
+  ShellExecuteFL(AMainHandle, '', Executor, Parameters);
 end;
 
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
@@ -827,7 +827,7 @@ var
   procedure RunElevated;
   begin
     if RunasCanBeUsed then
-      ShellExecute(AMainHandle, 'runas', exec, execparams, path, WinType)
+      ShellExecuteFL(AMainHandle, 'runas', exec, execparams, path, WinType)
     else
       LaunchInExecutor(ALink, AMainHandle, ADroppedFile);
   end;
@@ -868,8 +868,8 @@ begin
     if (ALink.IsAdmin or ALink.AsAdminPerm) and (not ParamStr(0).Contains('FLExecutor.exe')) then
       RunElevated
     else
-      if not CreateProcess(exec, execparams, path, WinType, Prior, ErrorCode) then
-      begin
+      if not CreateProcessFL(exec, execparams, path, WinType, Prior, ErrorCode)
+      then begin
         if ErrorCode = ERROR_ELEVATION_REQUIRED then
         begin
           ALink.IsAdmin := True;
@@ -880,7 +880,7 @@ begin
       end;
   end
   else
-    ShellExecute(AMainHandle, '', exec, '', path, WinType);
+    ShellExecuteFL(AMainHandle, '', exec, '', path, WinType);
   if ALink.hide then
     PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
 end;
@@ -910,7 +910,7 @@ begin
   TThread.CreateAnonymousThread(procedure
     begin
       try
-        ShellExecute(AMainHandle, '', GetAbsolutePath(AHelpFileName), '',
+        ShellExecuteFL(AMainHandle, '', GetAbsolutePath(AHelpFileName), '',
           GetAbsolutePath(ExtractFilePath(AHelpFileName)), SW_SHOW);
       except
         on E: Exception do

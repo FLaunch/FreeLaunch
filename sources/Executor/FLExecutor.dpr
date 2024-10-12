@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #                                                                        #
   #  This file is part of FreeLaunch.                                      #
@@ -27,7 +27,7 @@ program FLExecutor;
 {$R *.res}
 
 uses
-  System.SysUtils, Winapi.Windows, FLFunctions, FLLanguage, System.Classes;
+  System.SysUtils, System.Classes, Winapi.Windows, FLFunctions, FLLanguage;
 
 var
   WinHandle: HWND = 0;
@@ -40,7 +40,7 @@ begin
     InitEnvironment;
     if ParamCount = 0 then
     begin
-      if not CreateProcess(fl_dir + 'FLaunch.exe', '', fl_dir, SW_NORMAL,
+      if not CreateProcessFL(fl_dir + 'FLaunch.exe', '', fl_dir, SW_NORMAL,
         NORMAL_PRIORITY_CLASS, ErrorCode)
       then
         RaiseLastOSError(ErrorCode);
