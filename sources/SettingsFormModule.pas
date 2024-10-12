@@ -30,6 +30,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages,
   System.SysUtils, System.Variants, System.Classes, System.IniFiles,
+  System.Math,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Menus, Vcl.Samples.Spin,
   FLLanguage, FLFunctions;
@@ -261,7 +262,7 @@ begin
     Langs[LangCount].Load(lngfile);
     LanguagesBox.Items.Add(Langs[LangCount].Name);
     if Language.Info.Name = Langs[LangCount].Name then
-      LanguagesBox.ItemIndex := LanguagesBox.Items.Count - 1;
+      LanguagesBox.ItemIndex := Pred(LanguagesBox.Items.Count);
   finally
     lngfile.Free;
   end;
@@ -391,9 +392,8 @@ begin
   AdminCheckBox.Checked := rwar;
   DropCheckBox.Checked := defdrop;
   AutoRunCheckBox.Enabled := not IsPortable;
-  if lotabinsettings in [0..pgc.PageCount - 1]
-    then pgc.ActivePageIndex := lotabinsettings
-    else pgc.ActivePageIndex := 0;
+  pgc.ActivePageIndex := IfThen(lotabinsettings in [0..Pred(pgc.PageCount)],
+                                  lotabinsettings, 0);
   pgc.ActivePage.SetFocus;
 end;
 

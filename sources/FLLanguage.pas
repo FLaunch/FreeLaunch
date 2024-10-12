@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko                                     #
+  #  Copyright (C) 2024 Alexey Tatuyko                                     #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -28,7 +28,7 @@ unit FLLanguage;
 interface
 
 uses
-  System.IniFiles, Vcl.Graphics;
+  System.IniFiles, System.Math, Vcl.Graphics;
 
 type
   TLngAbout = record
@@ -411,45 +411,29 @@ type
 
 function DecodeBase64(StringValue: string): TBase64;
 var
-  M,N: Integer;
-  Dest,Sour: Byte;
-  NextNum: Byte;
-  CurPos: Byte;
+  M, N:       Integer;
+  Dest, Sour: Byte;
+  NextNum:    Byte;
+  CurPos:     Byte;
 begin
-  CurPos := 0;
-  Dest := 0;
+  CurPos  := 0;
+  Dest    := 0;
   NextNum := 1;
   FillChar(Result, SizeOf(Result), 0);
-
-  for N := 1 to 4 do
-  begin
-    for M := 0 to 5 do
-    begin
-      if StringValue[N] = '=' then
-        Sour := 0
-      else
-        Sour := Pos(StringValue[N],base64ABC) - 1;
-
-      Sour := (Sour shl M) and 255;
+  for N := 1 to 4 do begin
+    for M := 0 to 5 do begin
+      Sour := (IfThen(StringValue[N] = '=', 0, Pred(Pos(StringValue[N],
+                base64ABC))) shl M) and 255;
       Dest := (Dest shl 1) and 255;
-
-      if (Sour and 32)=32 then
-        Dest := Dest or 1;
-
+      if (Sour and 32) = 32 then Dest := Dest or 1;
       Inc(NextNum);
-
-      if NextNum > 8 then
-      begin
+      if NextNum > 8 then begin
         NextNum := 1;
         Result.ByteArr[CurPos] := Dest;
-
-        if StringValue[N] = '=' then
-          Result.ByteArr[CurPos] := 0
-        else
-          Result.ByteCount := CurPos + 1;
-
+        if StringValue[N] = '=' then Result.ByteArr[CurPos] := 0
+        else Result.ByteCount := CurPos + 1;
         Inc(CurPos);
-        Dest:=0;
+        Dest := 0;
       end;
     end;
   end;
@@ -464,13 +448,11 @@ var
 begin
   Stream := TMemoryStream.Create;
   try
-    for i := 1 to (Length(AStr) div 4) do
-    begin
+    for i := 1 to (Length(AStr) div 4) do begin
       Str := Copy(AStr, i * 4 - 3, 4);
       Base64 := DecodeBase64(Str);
       Stream.WriteBuffer(Base64.ByteArr, Base64.ByteCount);
     end;
-
     Stream.Position := 0;
     ABitmap.LoadFromStream(Stream);
   finally

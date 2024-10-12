@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -84,7 +84,8 @@ begin
   IndexEdit.Enabled := iconcount > 1;
   NegativeBox.Enabled := (iconcount > 1) and (ncount > 1);
   NegativeBox.Checked := False;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex - 1);
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text),
+                                          Pred(icindex));
 end;
 
 procedure TChangeIconForm.BrowseIconClick(Sender: TObject);
@@ -103,13 +104,15 @@ procedure TChangeIconForm.OKButtonClick(Sender: TObject);
 begin
   if PropertiesMode = 0 then
     begin
-      ProgrammPropertiesFormModule.ic := IconEdit.Text;
-      ProgrammPropertiesFormModule.iconindex := icindex + IfThen(icindex < 0, 1, -1);
+      ProgrammPropertiesFormModule.ic         := IconEdit.Text;
+      ProgrammPropertiesFormModule.iconindex  := icindex +
+                                                  IfThen(icindex < 0, 1, -1);
     end;
   if PropertiesMode = 1 then
     begin
-      FilePropertiesFormModule.ic := IconEdit.Text;
-      FilePropertiesFormModule.iconindex := icindex + IfThen(icindex < 0, 1, -1);
+      FilePropertiesFormModule.ic         := IconEdit.Text;
+      FilePropertiesFormModule.iconindex  := icindex +
+                                              IfThen(icindex < 0, 1, -1);
     end;
   Close;
 end;
@@ -126,35 +129,35 @@ end;
 
 procedure TChangeIconForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  showform := True;
-  Action := CAFree;
+  showform  := True;
+  Action    := CAFree;
 end;
 
 procedure TChangeIconForm.FormShow(Sender: TObject);
 begin
   if AlwaysOnTop then FormStyle := fsStayOnTop;
   //--Loading language
-  OKButton.Caption := Language.BtnOk;
+  OKButton.Caption     := Language.BtnOk;
   CancelButton.Caption := Language.BtnCancel;
-  Caption := Language.IconSelect.Caption;
-  Label1.Caption := Language.IconSelect.FileName + ':';
-  Label2.Caption := Language.IconSelect.Index + ':';
-  NegativeBox.Caption := Language.IconSelect.Negative;
+  Caption              := Language.IconSelect.Caption;
+  Label1.Caption       := Language.IconSelect.FileName + ':';
+  Label2.Caption       := Language.IconSelect.Index + ':';
+  NegativeBox.Caption  := Language.IconSelect.Negative;
   //---------------------------
-  if PropertiesMode = 0 then
-    begin
+  if PropertiesMode = 0 then begin
       IconEdit.Text := ProgrammPropertiesFormModule.ic;
-      iconcount := GetIconCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
-      icindex := ProgrammPropertiesFormModule.iconindex + IfThen(ProgrammPropertiesFormModule.iconindex < 0, -1, 1);
-      ncount := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
-    end;
-  if PropertiesMode = 1 then
-    begin
+      iconcount     := GetIconCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+      icindex       := ProgrammPropertiesFormModule.iconindex +
+                      IfThen(ProgrammPropertiesFormModule.iconindex < 0, -1, 1);
+      ncount        := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+  end;
+  if PropertiesMode = 1 then begin
       IconEdit.Text := FilePropertiesFormModule.ic;
-      iconcount := GetIconCount(GetAbsolutePath(FilePropertiesFormModule.Ic));
-      icindex := FilePropertiesFormModule.iconindex + IfThen(FilePropertiesFormModule.iconindex < 0, -1, 1);
-      ncount := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
-    end;
+      iconcount     := GetIconCount(GetAbsolutePath(FilePropertiesFormModule.Ic));
+      icindex       := FilePropertiesFormModule.iconindex +
+                          IfThen(FilePropertiesFormModule.iconindex < 0, -1, 1);
+      ncount        := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+  end;
   NegativeBox.Enabled := (iconcount > 1) and (ncount > 1);
   if iconcount = 0 then iconcount := 1;
   NegativeBox.Checked := (icindex < -1) and (ncount >= -icindex);

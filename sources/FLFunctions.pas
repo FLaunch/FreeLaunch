@@ -345,13 +345,13 @@ begin
     Work.Height := SourceHeight;
     Work.Width := TargetWidth;
     ScaleX := IfThen(SourceWidth = 1, TargetWidth / SourceWidth,
-                      (TargetWidth - 1) / (SourceWidth - 1));
+                      Pred(TargetWidth) / Pred(SourceWidth));
     ScaleY := IfThen(SourceHeight = 1, TargetHeight / SourceHeight,
-                      (TargetHeight - 1) / (SourceHeight - 1));
+                      Pred(TargetHeight) / Pred(SourceHeight));
     SetLength(ContributorList, TargetWidth);
     if ScaleX < 1 then begin
       Width := 2.0 / ScaleX;
-      for I := 0 to TargetWidth - 1 do begin
+      for I := 0 to Pred(TargetWidth) do begin
         ContributorList[I].N := 0;
         Center := I / ScaleX;
         Left := System.Math.Floor(Center - Width);
@@ -370,7 +370,7 @@ begin
         end;
       end;
     end else begin
-      for I := 0 to TargetWidth - 1 do begin
+      for I := 0 to Pred(TargetWidth) do begin
         ContributorList[I].N := 0;
         Center := I / ScaleX;
         Left := System.Math.Floor(Center - 2.0);
@@ -391,21 +391,21 @@ begin
     end;
     if SourceWidth > SourceHeight then SetLength(CurrentLine, SourceWidth)
     else SetLength(CurrentLine, SourceHeight);
-    for K := 0 to SourceHeight - 1 do begin
+    for K := 0 to Pred(SourceHeight) do begin
       SourceLine := Source.ScanLine[K];
       FillLineCacheHorz(SourceWidth, SourceLine, CurrentLine);
       DestPixel := Work.ScanLine[K];
-      for I := 0 to TargetWidth - 1 do begin
+      for I := 0 to Pred(TargetWidth) do begin
         DestPixel^ := ApplyContributors(@ContributorList[I], CurrentLine);
         Inc(DestPixel);
       end;
     end;
-    for I := 0 to TargetWidth - 1 do ContributorList[I].Contributors := nil;
+    for I := 0 to Pred(TargetWidth) do ContributorList[I].Contributors := nil;
     ContributorList := nil;
     SetLength(ContributorList, TargetHeight);
     if ScaleY < 1 then begin
       Width := 2.0 / ScaleY;
-      for I := 0 to TargetHeight - 1 do begin
+      for I := 0 to Pred(TargetHeight) do begin
         ContributorList[I].N := 0;
         Center := I / ScaleY;
         Left := System.Math.Floor(Center - Width);
@@ -425,7 +425,7 @@ begin
         end;
       end;
     end else begin
-      for I := 0 to TargetHeight - 1 do begin
+      for I := 0 to Pred(TargetHeight) do begin
         ContributorList[I].N := 0;
         Center := I / ScaleY;
         Left := System.Math.Floor(Center - 2.0);
@@ -448,17 +448,17 @@ begin
     Delta := PAnsiChar(Work.ScanLine[1]) - PAnsiChar(SourceLine);
     DestLine := Target.ScanLine[0];
     DestDelta := PAnsiChar(Target.ScanLine[1]) - PAnsiChar(DestLine);
-    for K := 0 to TargetWidth - 1 do begin
+    for K := 0 to Pred(TargetWidth) do begin
       DestPixel := Pointer(DestLine);
       FillLineCacheVert(SourceHeight, Delta, SourceLine, CurrentLine);
-      for I := 0 to TargetHeight - 1 do begin
+      for I := 0 to Pred(TargetHeight) do begin
         DestPixel^ := ApplyContributors(@ContributorList[I], CurrentLine);
         Inc(Integer(DestPixel), DestDelta);
       end;
       Inc(SourceLine);
       Inc(DestLine);
     end;
-    for I := 0 to TargetHeight - 1 do ContributorList[I].Contributors := nil;
+    for I := 0 to Pred(TargetHeight) do ContributorList[I].Contributors := nil;
     ContributorList := nil;
   finally
     Work.Free;
@@ -515,7 +515,7 @@ begin
   icount := GetIconCount(FileName);
   LIC := 0;
   SIC := 0;
-  for I := -icount + 1 to 0 do begin
+  for I := - icount + 1 to 0 do begin
     LIC := 0;
     SIC := 0;
     if ExtractIconEx(PChar(FileName), I, LIC, SIC, 1) <> 0 then begin
@@ -591,12 +591,12 @@ begin
   Dest.Assign(Src);
   Dest.CreateAlpha;
 
-  for Y := 0 to Src.Height - 1 do
+  for Y := 0 to Pred(Src.Height) do
   begin
     LineS  := Src.ScanLine[Y];
     ALineD := Dest.AlphaScanline[Y];
 
-    for X := 0 to Src.Width - 1 do
+    for X := 0 to Pred(Src.Width) do
       ALineD[X] := LineS[X].rgbReserved;
   end;
 
@@ -1196,7 +1196,7 @@ begin
     if ExtractFileExt(sRec.Name).ToLower = '.lng' then begin
       lngfile := TIniFile.Create(Dir + sRec.Name);
       try
-        if lngfile.ReadInteger('information','langid', -1) = CurrLCID
+        if lngfile.ReadInteger('information','langid', - 1) = CurrLCID
         then begin
           Result := sRec.Name;
           FindClose(sRec);

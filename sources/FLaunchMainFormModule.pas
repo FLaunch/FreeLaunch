@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -318,9 +318,9 @@ procedure TFlaunchMainForm.ReloadIcons;
 var
   t, r, c: Integer;
 begin
-  for t := 0 to TabsCount - 1 do
-    for r := 0 to RowsCount - 1 do
-      for c := 0 to ColsCount - 1 do
+  for t := 0 to Pred(TabsCount) do
+    for r := 0 to Pred(RowsCount) do
+      for c := 0 to Pred(ColsCount) do
         if FLPanel.Buttons[t,r,c].IsActive then
         begin
           if (not FileExists(FLPanel.Buttons[t,r,c].Data.Exec)) and ClearONF
@@ -430,7 +430,7 @@ begin
   if TabsCount > 1 then
   begin
     {*--Задаем имена вкладок--*}
-    for i := 0 to TabsCount - 1 do
+    for i := 0 to Pred(TabsCount) do
       SetTabName(i);
   end
   else
@@ -633,9 +633,9 @@ begin
     FilePath := fl_WorkDir + IconCacheDir + TPath.DirectorySeparatorChar;
     if not TDirectory.Exists(FilePath) then
       TDirectory.CreateDirectory(FilePath);
-    for t := 0 to TabsCount - 1 do
-      for r := 0 to RowsCount - 1 do
-        for c := 0 to ColsCount - 1 do
+    for t := 0 to Pred(TabsCount) do
+      for r := 0 to Pred(RowsCount) do
+        for c := 0 to Pred(ColsCount) do
           //--Если кнопка активна и у нее есть иконка
           if (FLPanel.Buttons[t,r,c].IsActive) and (FLPanel.Buttons[t,r,c].HasIcon) then
           begin
@@ -722,8 +722,8 @@ begin
 
     PanelNode.AddChild('Padding').NodeValue := LPadding;
 
-    for r := 0 to RowsCount - 1 do
-      for c := 0 to ColsCount - 1 do
+    for r := 0 to Pred(RowsCount) do
+      for c := 0 to Pred(ColsCount) do
       begin
         if not FLPanel.Buttons[t,r,c].IsActive then
           Continue;
@@ -771,9 +771,9 @@ begin
   PngImg := TPngImage.Create;
   try
     //--Пробегаем по всем кнопкам
-    for t := 0 to TabsCount - 1 do
-      for r := 0 to RowsCount - 1 do
-        for c := 0 to ColsCount - 1 do
+    for t := 0 to Pred(TabsCount) do
+      for r := 0 to Pred(RowsCount) do
+        for c := 0 to Pred(ColsCount) do
           if FLPanel.Buttons[t,r,c].IsActive then
           begin
             if (FLPanel.Buttons[t,r,c].Data.IconCache <> '') and
@@ -803,11 +803,11 @@ begin
   while TabNames.Count < ACount do
     TabNames.Add('');
   while TabNames.Count > ACount do
-    TabNames.Delete(TabNames.Count - 1);
+    TabNames.Delete(Pred(TabNames.Count));
   while MainTabsNew.Tabs.Count < ACount do
     MainTabsNew.Tabs.Add('');
   while MainTabsNew.Tabs.Count > ACount do
-    MainTabsNew.Tabs.Delete(MainTabsNew.Tabs.Count - 1);
+    MainTabsNew.Tabs.Delete(Pred(MainTabsNew.Tabs.Count));
   FLPanel.PagesCount := ACount;
 end;
 
@@ -880,8 +880,7 @@ var
     if not gtabscount then begin
       TabsCount := 3;
       GrowTabNames(TabsCount);
-      for I := 1 to TabsCount
-        do TabNames[I - 1] := '';
+      for I := 0 to Pred(TabsCount) do TabNames[I] := '';
     end;
     MainTabsNew.TabIndex := tabind;
     FLPanel.ColsCount := colscount;
@@ -1560,7 +1559,7 @@ begin
   if (Source is TTabControl) then
   begin
     //--Перебираем все вкладки
-    for i := 0 to TabsCount - 1 do
+    for i := 0 to Pred(TabsCount) do
     begin
       //--Определяем регион вкладки
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
@@ -1594,7 +1593,7 @@ begin
     if not Accept then
       Exit;
     //--Перебираем все вкладки
-    for i := 0 to TabsCount - 1 do
+    for i := 0 to Pred(TabsCount) do
     begin
       //--Определяем регион вкладки
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
@@ -1624,7 +1623,7 @@ begin
   if Button = TMouseButton.mbRight then
   begin
     //--Перебираем все вкладки
-    for i := 0 to TabsCount - 1 do
+    for i := 0 to Pred(TabsCount) do
     begin
       //--Определяем регион вкладки
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
