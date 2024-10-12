@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -31,7 +31,10 @@ uses
   Winapi.Windows, Winapi.Messages, System.Classes,
   Vcl.Graphics, Vcl.Imaging.PNGImage, Vcl.Themes, Vcl.Styles;
 
+
+
 type
+
   TFLThemeInfo = record
     ID: Integer;
     Name: string;
@@ -41,7 +44,7 @@ type
 const
   UM_ShowMainForm = WM_USER + 1;
   UM_HideMainForm = WM_USER + 2;
-  UM_LaunchDone = WM_USER + 3;
+  UM_LaunchDone   = WM_USER + 3;
   //default themes (integrated in exe)
   FLThemes : array [0..2] of TFLThemeInfo = (
       /// first theme is always classic
@@ -167,9 +170,324 @@ var
 implementation
 
 uses
-  ShellApi, ShFolder, SysUtils, ActiveX, ComObj, ShlObj, FLLanguage,
-  System.IniFiles, Winapi.CommCtrl, jclGraphics, System.IOUtils,
-  System.StrUtils, System.Win.Registry;
+  System.SysUtils, System.IniFiles, System.IOUtils, System.StrUtils,
+  System.Win.ComObj, System.Win.Registry, System.Math,
+  Winapi.CommCtrl, Winapi.ShellApi, Winapi.ShFolder, Winapi.ActiveX,
+  Winapi.ShlObj,
+  FLLanguage;
+
+type
+
+  PBGRAInt = ^TBGRAInt;
+
+  TBGRAInt = record
+    R: Integer;
+    G: Integer;
+    B: Integer;
+    A: Integer;
+  end;
+
+  PBGRA = ^TBGRA;
+
+  TBGRA = packed record
+    B: Byte;
+    G: Byte;
+    R: Byte;
+    A: Byte;
+  end;
+
+
+  PContributor = ^TContributor;
+
+  TContributor = record
+    Weight:  Integer;
+    Pixel:   Integer;
+  end;
+
+  TContributors = array of TContributor;
+
+  PContributorEntry = ^TContributorEntry;
+  TContributorEntry = record
+    N:            Integer;
+    Contributors: TContributors;
+  end;
+
+  TContributorList = array of TContributorEntry;
+
+  TBGRAIntArray = array of TBGRAInt;
+
+procedure FillLineCacheHorz(N: Integer; Line: Pointer;
+                              const ACurrentLine: TBGRAIntArray);
+var
+  Run:  PBGRA;
+  Data: PBGRAInt;
+begin
+  Run := Line;
+  Data := @ACurrentLine[0];
+  Dec(N);
+  while N >= 0 do begin
+    Data.B := Run.B;
+    Data.G := Run.G;
+    Data.R := Run.R;
+    Data.A := Run.A;
+    Inc(Run);
+    Inc(Data);
+    Dec(N);
+  end;
+end;
+
+function IntToByte(Value: Integer): Byte;
+begin
+  Result := 255;
+  if Value >= 0 then begin
+    if Value <= 255 then Result := Value;
+  end else Result := 0;
+end;
+
+function BitmapFilter(Value: Single): Single;
+const
+  B = 1.0 / 3.0;
+  C = 1.0 / 3.0;
+  OneSixth = 1.0 / 6.0;
+var
+  Temp: Single;
+begin
+  if Value < 0.0 then Value := - Value;
+  Temp := Sqr(Value);
+  if Value < 1.0 then begin
+    Value := (((12.0 - 9.0 * B - 6.0 * C) * (Value * Temp)) +
+              ((-18.0 + 12.0 * B + 6.0 * C) * Temp) + (6.0 - 2.0 * B));
+    Result := Value * OneSixth;
+  end else
+    if Value < 2.0 then begin
+      Value := (((-B - 6.0 * C) * (Value * Temp)) +
+                ((6.0 * B + 30.0 * C) * Temp) +
+                ((-12.0 * B - 48.0 * C) * Value) +
+                (8.0 * B + 24.0 * C));
+      Result := Value * OneSixth;
+    end else Result := 0.0;
+end;
+
+procedure FillLineCacheVert(N, Delta: Integer; Line: Pointer;
+                              const ACurrentLine: TBGRAIntArray);
+var
+  Run: PBGRA;
+  Data: PBGRAInt;
+begin
+  Run := Line;
+  Data := @ACurrentLine[0];
+  Dec(N);
+  while N >= 0 do begin
+    Data.B := Run.B;
+    Data.G := Run.G;
+    Data.R := Run.R;
+    Data.A := Run.A;
+    Inc(PByte(Run), Delta);
+    Inc(Data);
+    Dec(N);
+  end;
+end;
+
+function ApplyContributors(Contributor: PContributorEntry;
+                            const ACurrentLine: TBGRAIntArray): TBGRA;
+var
+  J, Total, Weight: Integer;
+  RGB:              TBGRAInt;
+  Contr:            PContributor;
+  Data:             PBGRAInt;
+begin
+  Total := 0;
+  RGB.B := Total;
+  RGB.G := Total;
+  RGB.R := Total;
+  RGB.A := Total;
+  Contr := @Contributor.Contributors[0];
+  for J := 0 to Contributor.N - 1 do begin
+    Weight := Contr.Weight;
+    Inc(Total, Weight);
+    Data := @ACurrentLine[Contr.Pixel];
+    Inc(RGB.R, Data.R * Weight);
+    Inc(RGB.G, Data.G * Weight);
+    Inc(RGB.B, Data.B * Weight);
+    Inc(RGB.A, Data.A * Weight);
+    Inc(Contr);
+  end;
+  Result.B := IntToByte(IfThen(Total <> 0, RGB.B div Total, RGB.B shr 8));
+  Result.G := IntToByte(IfThen(Total <> 0, RGB.G div Total, RGB.G shr 8));
+  Result.R := IntToByte(IfThen(Total <> 0, RGB.R div Total, RGB.R shr 8));
+  Result.A := IntToByte(IfThen(Total <> 0, RGB.A div Total, RGB.A shr 8));
+end;
+
+procedure DoStretch(Source, Target: TBitmap);
+var
+  ScaleX, ScaleY: Single;
+  I, J, K, N: Integer;
+  Center: Single;
+  Width: Single;
+  Weight: Integer;
+  Left, Right: Integer;
+  Work: TBitmap;
+  ContributorList: TContributorList;
+  SourceLine, DestLine: PBGRA;
+  DestPixel: PBGRA;
+  Delta, DestDelta: Integer;
+  SourceHeight, SourceWidth: Integer;
+  TargetHeight, TargetWidth: Integer;
+  CurrentLine: TBGRAIntArray;
+begin
+  SourceHeight := Source.Height;
+  SourceWidth := Source.Width;
+  TargetHeight := Target.Height;
+  TargetWidth := Target.Width;
+  Work := TBitmap.Create;
+  try
+    Work.PixelFormat := pf32bit;
+    Work.Height := SourceHeight;
+    Work.Width := TargetWidth;
+    ScaleX := IfThen(SourceWidth = 1, TargetWidth / SourceWidth,
+                      (TargetWidth - 1) / (SourceWidth - 1));
+    ScaleY := IfThen(SourceHeight = 1, TargetHeight / SourceHeight,
+                      (TargetHeight - 1) / (SourceHeight - 1));
+    SetLength(ContributorList, TargetWidth);
+    if ScaleX < 1 then begin
+      Width := 2.0 / ScaleX;
+      for I := 0 to TargetWidth - 1 do begin
+        ContributorList[I].N := 0;
+        Center := I / ScaleX;
+        Left := System.Math.Floor(Center - Width);
+        Right := System.Math.Ceil(Center + Width);
+        SetLength(ContributorList[I].Contributors, Right - Left + 1);
+        for J := Left to Right do begin
+          Weight := Round(BitmapFilter((Center - J) * ScaleX) * ScaleX * 256);
+          if Weight <> 0 then begin
+            if J < 0 then N := -J
+            else  N := IfThen(J >= SourceWidth, 2 * SourceWidth - J - 1, J);
+            K := ContributorList[I].N;
+            Inc(ContributorList[I].N);
+            ContributorList[I].Contributors[K].Pixel := N;
+            ContributorList[I].Contributors[K].Weight := Weight;
+          end;
+        end;
+      end;
+    end else begin
+      for I := 0 to TargetWidth - 1 do begin
+        ContributorList[I].N := 0;
+        Center := I / ScaleX;
+        Left := System.Math.Floor(Center - 2.0);
+        Right := System.Math.Ceil(Center + 2.0);
+        SetLength(ContributorList[I].Contributors, Right - Left + 1);
+        for J := Left to Right do begin
+          Weight := Round(BitmapFilter(Center - J) * 256);
+          if Weight <> 0 then begin
+            if J < 0 then N := -J
+            else N := IfThen(J >= SourceWidth, 2 * SourceWidth - J - 1, J);
+            K := ContributorList[I].N;
+            Inc(ContributorList[I].N);
+            ContributorList[I].Contributors[K].Pixel := N;
+            ContributorList[I].Contributors[K].Weight := Weight;
+          end;
+        end;
+      end;
+    end;
+    if SourceWidth > SourceHeight then SetLength(CurrentLine, SourceWidth)
+    else SetLength(CurrentLine, SourceHeight);
+    for K := 0 to SourceHeight - 1 do begin
+      SourceLine := Source.ScanLine[K];
+      FillLineCacheHorz(SourceWidth, SourceLine, CurrentLine);
+      DestPixel := Work.ScanLine[K];
+      for I := 0 to TargetWidth - 1 do begin
+        DestPixel^ := ApplyContributors(@ContributorList[I], CurrentLine);
+        Inc(DestPixel);
+      end;
+    end;
+    for I := 0 to TargetWidth - 1 do ContributorList[I].Contributors := nil;
+    ContributorList := nil;
+    SetLength(ContributorList, TargetHeight);
+    if ScaleY < 1 then begin
+      Width := 2.0 / ScaleY;
+      for I := 0 to TargetHeight - 1 do begin
+        ContributorList[I].N := 0;
+        Center := I / ScaleY;
+        Left := System.Math.Floor(Center - Width);
+        Right := System.Math.Ceil(Center + Width);
+        SetLength(ContributorList[I].Contributors, Right - Left + 1);
+        for J := Left to Right do
+        begin
+          Weight := Round(BitmapFilter((Center - J) * ScaleY) * ScaleY * 256);
+          if Weight <> 0 then begin
+            if J < 0 then N := -J
+            else N := IfThen(J >= SourceHeight, 2 * SourceHeight - J - 1, J);
+            K := ContributorList[I].N;
+            Inc(ContributorList[I].N);
+            ContributorList[I].Contributors[K].Pixel := N;
+            ContributorList[I].Contributors[K].Weight := Weight;
+          end;
+        end;
+      end;
+    end else begin
+      for I := 0 to TargetHeight - 1 do begin
+        ContributorList[I].N := 0;
+        Center := I / ScaleY;
+        Left := System.Math.Floor(Center - 2.0);
+        Right := System.Math.Ceil(Center + 2.0);
+        SetLength(ContributorList[I].Contributors, Right - Left + 1);
+        for J := Left to Right do begin
+          Weight := Round(BitmapFilter(Center - J) * 256);
+          if Weight <> 0 then begin
+            if J < 0 then N := -J
+            else N := IfThen(J >= SourceHeight, 2 * SourceHeight - J - 1, J);
+            K := ContributorList[I].N;
+            Inc(ContributorList[I].N);
+            ContributorList[I].Contributors[K].Pixel := N;
+            ContributorList[I].Contributors[K].Weight := Weight;
+          end;
+        end;
+      end;
+    end;
+    SourceLine := Work.ScanLine[0];
+    Delta := PAnsiChar(Work.ScanLine[1]) - PAnsiChar(SourceLine);
+    DestLine := Target.ScanLine[0];
+    DestDelta := PAnsiChar(Target.ScanLine[1]) - PAnsiChar(DestLine);
+    for K := 0 to TargetWidth - 1 do begin
+      DestPixel := Pointer(DestLine);
+      FillLineCacheVert(SourceHeight, Delta, SourceLine, CurrentLine);
+      for I := 0 to TargetHeight - 1 do begin
+        DestPixel^ := ApplyContributors(@ContributorList[I], CurrentLine);
+        Inc(Integer(DestPixel), DestDelta);
+      end;
+      Inc(SourceLine);
+      Inc(DestLine);
+    end;
+    for I := 0 to TargetHeight - 1 do ContributorList[I].Contributors := nil;
+    ContributorList := nil;
+  finally
+    Work.Free;
+    Target.Modified := True;
+  end;
+end;
+
+procedure Stretch(NewWidth, NewHeight: Cardinal; Source: TGraphic;
+                    Target: TBitmap);
+var
+  Temp:                 TBitmap;
+  OriginalPixelFormat:  TPixelFormat;
+begin
+  if Source.Empty then Exit;
+  Temp := TBitmap.Create;
+  try
+    Temp.Assign(Source);
+    Temp.PixelFormat := pf32bit;
+    OriginalPixelFormat := Target.PixelFormat;
+    Target.FreeImage;
+    Target.PixelFormat := pf32bit;
+    Target.Width := NewWidth;
+    Target.Height := NewHeight;
+    DoStretch(Temp, Target);
+    Target.PixelFormat := OriginalPixelFormat;
+  finally
+    Temp.Free;
+  end;
+end;
 
 //--Функция не позволяет уйти значению за пределы допустимых
 //--Входные параметры: значение, минимальное значение, максимальное значение
@@ -286,11 +604,12 @@ begin
   Dest.Modified := True;
 end;
 
+
 //--Функция делает ресайз изображения
 procedure SmoothResize(Src, Dst: TBitmap);
 begin
   Dst.PixelFormat := pf32bit;
-  Stretch(Dst.Width, Dst.Height, rfMitchell, 0, Src, Dst);
+  Stretch(Dst.Width, Dst.Height, Src, Dst);
   Dst.AlphaFormat := afDefined;
 end;
 
