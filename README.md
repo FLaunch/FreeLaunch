@@ -1,6 +1,6 @@
 # FreeLaunch
 
-![image](https://user-images.githubusercontent.com/63456473/203093681-11ac5134-c333-4c3e-83a6-e7d9ff74fde9.png)
+![image](https://freelaunch.su/data/image/en/mainwnd.png)
 
 FreeLaunch is a free links manager for Microsoft Windows. It allows to organize shortcuts to your programs, files and folders. FreeLaunch is easy and fully configurable.
 
@@ -24,18 +24,18 @@ FreeLaunch is a free links manager for Microsoft Windows. It allows to organize 
 
 ## Historical Note
 
-### 2024 and now
+### 2024
 
 As a result of GitHub's actions aimed at discriminating against Russian developers, access to the repository on GitHub was lost.
-In connection with this, the project moved to the Russian service GitVerse.
+In connection with this, the project moved to the Russian service [GitVerse](https://gitverse.ru/freelaunch/FreeLaunch).
 
 ### 2022-2023
 
-Project page was located on GitHub: https://github.com/FLaunch/FreeLaunch
+Project page was located on [GitHub](https://github.com/FLaunch/FreeLaunch)
 
 ### 2008-2021
 
-Original project page was located on SourceForge: https://sourceforge.net/projects/freelaunch/
+Original project page was located on [SourceForge](https://sourceforge.net/projects/freelaunch/)
 Last revision of source code from SourceForge you can find in custom branch: [[original_branch]](../../content/original_branch).
 
 ## Releases
