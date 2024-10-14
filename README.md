@@ -16,6 +16,14 @@ FreeLaunch is a free links manager for Microsoft Windows. It allows to organize 
 - Portable mode supported
 - Relative pathes supported
 
+## Releases
+
+All actual releases can be found at [Releases page](../../releases)
+
+## Bugtracker
+
+You can report any issues you find to the [bugtracker](https://bt.freelaunch.su/)
+
 ## Contributors
 
 - 2022-2024 [@Ta2i4](https://gitverse.ru/ta2i4)
@@ -38,7 +46,3 @@ Project page was located on [GitHub](https://github.com/FLaunch/FreeLaunch)
 Original project page was located on [SourceForge](https://sourceforge.net/projects/freelaunch/)
 
 Last revision of source code from SourceForge you can find in custom branch: [[original_branch]](../../content/original_branch).
-
-## Releases
-
-All actual releases can be found at [Releases page](../../releases)
