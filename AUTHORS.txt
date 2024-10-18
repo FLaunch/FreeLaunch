@@ -1,17 +1,6 @@
 FreeLaunch contributors:
+===========================
 
-Programming
------------
-Evgeny Koreyba (Joker-jar)
-Mykola Petrivskiy (Torbins)
 Alexey Tatuyko (Ta2i4)
-
-Documentation
--------------
-Alexey Tatuyko
-
-Localization
-------------
-Evgeny Koreyba - English
-Evgeny Koreyba - Russian
-Mykola Petrivskiy - Ukrainian
+Mykola Petrivskiy (Torbins)
+Evgeny Koreyba (Joker-jar)
