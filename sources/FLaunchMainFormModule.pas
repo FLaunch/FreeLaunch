@@ -379,19 +379,16 @@ procedure TFlaunchMainForm.SetAutorun(b: boolean);
 var
   reg: TRegistry;
 begin
-  if IsPortable then
-    Exit;
+  if IsPortable then Exit;
   reg := TRegistry.Create;
   try
     reg.RootKey := HKEY_CURRENT_USER;
     reg.LazyWrite := false;
     reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Run', false);
-    if b then
-      begin
-        reg.WriteString(cr_progname, Application.ExeName);
-      end
-    else
-      reg.DeleteValue(cr_progname);
+    if (b = false) and (Application.ExeName <> reg.ReadString(cr_progname))
+    then Exit;
+    if b then reg.WriteString(cr_progname, Application.ExeName)
+    else reg.DeleteValue(cr_progname);
     reg.CloseKey;
   finally
     reg.free;
