@@ -1298,7 +1298,7 @@ begin
     1: MainTabsNew.Style := tsButtons;
     2: MainTabsNew.Style := tsFlatButtons;
   end;
-  if AlwaysOnTop then FormStyle := fsStayOnTop;
+  if AlwaysOnTop then FormStyle := fsStayOnTop else FormStyle := fsNormal;
   ChangeWndSize;
 end;
 

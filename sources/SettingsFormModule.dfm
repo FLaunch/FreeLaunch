@@ -28,7 +28,6 @@ object SettingsForm: TSettingsForm
     Align = alTop
     TabOrder = 0
     OnChange = pgcChange
-    ExplicitWidth = 440
     object TabGeneral: TTabSheet
       object AutorunCheckBox: TCheckBox
         Left = 10
