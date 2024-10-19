@@ -482,16 +482,13 @@ begin
     '78////z5mK////YmP+YmP+////x4Rxr678jZH5////1q2hjisY1q2hr678//7+9OHb1q2h1q' +
     '2h//7+jZH5jZH5//7+z5mKz5mK3cTCfIX5+/3907aQz5mK7c+6xJt7wYNhwYNhwYNh7d3Zf2' +
     'Gsf2Gs7d3ZsWVQsWVQrFI8wYNhaUuYxJt7x==='));
-  if not Assigned(Image) then
-    Image := TBitmap.Create;
-
+  if not Assigned(Image) then Image := TBitmap.Create;
   ImageStrToBMP(ImageStr, Image);
 end;
 
 initialization
 
 finalization
-  if Assigned(Language.Info.Image) then
-    Language.Info.Image.Free;
+  if Assigned(Language.Info.Image) then Language.Info.Image.Free;
 
 end.

@@ -835,22 +835,15 @@ var
 begin
   exec := GetAbsolutePath(ALink.exec);
   path := GetAbsolutePath(ALink.workdir);
-  if path = '' then
-    path := ExtractFilePath(exec);
-  if not ALink.active then
-    Exit;
-  if (ALink.ques) and
-    (RequestMessage(AMainHandle, Format(Language.Messages.RunProgram,
-      [ExtractFileName(exec)])) = IDNO)
-    then Exit;
+  if path = '' then path := ExtractFilePath(exec);
+  if not ALink.active then Exit;
   case ALink.wst of
     0: WinType := SW_SHOW;
     1: WinType := SW_SHOWMAXIMIZED;
     2: WinType := SW_SHOWMINIMIZED;
     3: WinType := SW_HIDE;
   end;
-  if ALink.ltype = 0 then
-  begin
+  if ALink.ltype = 0 then begin
     case ALink.pr of
       0: Prior := NORMAL_PRIORITY_CLASS;
       1: Prior := HIGH_PRIORITY_CLASS;
@@ -859,35 +852,35 @@ begin
       4: Prior := BELOW_NORMAL_PRIORITY_CLASS;
       5: Prior := ABOVE_NORMAL_PRIORITY_CLASS;
     end;
-    if ADroppedFile <> '' then
-      params := stringreplace(ALink.dropparams, '%1', ADroppedFile, [rfReplaceAll])
-    else
-      params := ALink.params;
-    params := GetAbsolutePath(params);
+    params := GetAbsolutePath(IfThen(
+                ADroppedFile <> '',
+                StringReplace(ALink.dropparams, '%1', ADroppedFile,
+                                [rfReplaceAll]),
+                ALink.params
+                )
+              );
     execparams := Format('"%s" %s', [exec, params]);
-    if (ALink.IsAdmin or ALink.AsAdminPerm) and (not ParamStr(0).Contains('FLExecutor.exe')) then
-      RunElevated
-    else
+    if (ALink.IsAdmin or ALink.AsAdminPerm)
+          and (not ParamStr(0).Contains('FLExecutor.exe'))
+    then RunElevated else
       if not CreateProcessFL(exec, execparams, path, WinType, Prior, ErrorCode)
       then begin
-        if ErrorCode = ERROR_ELEVATION_REQUIRED then
-        begin
+        if ErrorCode = ERROR_ELEVATION_REQUIRED then begin
           ALink.IsAdmin := True;
           RunElevated;
-        end
-        else
-          RaiseLastOSError(ErrorCode);
+        end else RaiseLastOSError(ErrorCode);
       end;
-  end
-  else
-    ShellExecuteFL(AMainHandle, '', exec, '', path, WinType);
-  if ALink.hide then
-    PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
+  end else ShellExecuteFL(AMainHandle, '', exec, '', path, WinType);
+  if ALink.hide then PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
 end;
 
 procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
   ADroppedFile: string);
 begin
+  if (ALink.ques) and
+    (RequestMessage(AMainHandle, Format(Language.Messages.RunProgram,
+      [ExtractFileName(GetAbsolutePath(ALink.exec))])) = IDNO)
+  then Exit;
   TThread.CreateAnonymousThread(procedure
     begin
       try
