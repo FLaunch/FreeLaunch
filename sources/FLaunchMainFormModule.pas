@@ -370,8 +370,7 @@ var
   AHelpFile: string;
 begin
   AHelpFile := ExtractFilePath(ParamStr(0)) + 'help\' + Language.Main.HelpFile;
-  if FileExists(AHelpFile)
-    then ExecHelpFile(Handle, AHelpFile);
+  if FileExists(AHelpFile) then ExecHelpFile(Handle, AHelpFile);
 end;
 
 //autostart with Windows
@@ -438,11 +437,11 @@ function TFlaunchMainForm.DefNameOfTab(tn: string): boolean;
 var
   i: integer;
 begin
-  result := true;
-  if tn = '' then exit;
+  Result := True;
+  if tn = '' then Exit;
   for i := 1 to TabsCountMax do
     if tn = Format(Language.Main.TabName, [i]) then exit;
-  result := false;
+  Result := False;
 end;
 
 //--Удаление вкладки

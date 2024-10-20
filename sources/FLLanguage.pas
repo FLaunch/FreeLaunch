@@ -202,9 +202,10 @@ begin
       '&Export...'));
     Menu.Import :=       Parse(Ini.ReadString(SctMain, 'ni_import',
       '&Import...'));
-    Menu.Clear :=        Parse(Ini.ReadString(SctMain, 'ni_clear', '&Clear'));
+    Menu.Clear :=        Parse(Ini.ReadString(SctMain, 'ni_clear',
+      '&Clear button'));
     Menu.Prop :=         Parse(Ini.ReadString(SctMain, 'ni_prop',
-      '&Properties...'));
+      'Button &properties...'));
     Menu.Rename :=       Parse(Ini.ReadString(SctMain, 'ni_rename', '&Rename'));
     Menu.NewTab :=       Parse(Ini.ReadString(SctMain, 'ni_newtab', '&Add'));
     Menu.ClearTab :=     Parse(Ini.ReadString(SctMain, 'ni_cleartab',
