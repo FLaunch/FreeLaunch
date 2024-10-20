@@ -1361,55 +1361,73 @@ procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
 var
   LnkInfo: TShellLinkInfoStruct;
   ext: string;
+  crow, ccol: Integer;
+  TempButton : TFLButton;
 begin
+  TempButton := Button;
   //--Если кнопка активна и "умеет" принимать перетягиваемые файлы
-  if (Button.IsActive) and (Button.Data.DropFiles) then
+  if (TempButton.IsActive) and (TempButton.Data.DropFiles) then
   begin
     LaunchButton(Button, FileName);
-    exit;
+    Exit;
   end;
   {*--Если кнопка активна, просим подтверждение замены--*}
-  if Button.IsActive then
+  if TempButton.IsActive then
   begin
-    Button.Highlight;
-    if not (RequestMessage(Handle, Language.Messages.BusyReplace) = IDYES)
-      then Exit;
+    TempButton.Highlight;
+    case RequestMessage(Handle, Language.Messages.BusyReplace) of
+      IDYES: {go to next step};
+      IDNO:
+          if RequestMessage(Handle, Language.Messages.SearchAButton) = IDYES
+          then begin
+            for crow := 0 to TempButton.Father.RowsCount - 1 do begin
+              for ccol := 0 to TempButton.Father.ColsCount - 1 do begin
+                if TempButton.Father.Buttons[TempButton.CurPage, crow, ccol].IsActive = False then begin
+                  TempButton := TempButton.Father.Buttons[TempButton.CurPage, crow, ccol];
+                  Break;
+                end;
+              end;
+              if TempButton.IsActive = False then Break;
+            end;
+            //if no empty buttons on active tab
+            if TempButton.IsActive = True then Exit;
+          end else Exit;
+      else Exit;
+    end;
   end;
   Ext := ExtractFileExt(FileName).ToLower;
   //--Если был перетянут файл кнопки
   if Ext = '.flb' then
   begin
-    Button.Highlight;
+    TempButton.Highlight;
     if RequestMessage(Handle,
         format(Language.Messages.ImportButton,[FileName])) = IDYES
-      then ImportButton(Button, FileName);
-    exit;
+      then ImportButton(TempButton, FileName);
+    Exit;
   end;
   //--Инициализируем ячейку данных
-  if not Button.IsActive then
-    Button.InitializeData;
+  if not TempButton.IsActive then TempButton.InitializeData;
   //--Если был перетянут ярлык
-  if Ext = '.lnk' then
-  begin
+  if Ext = '.lnk' then begin
     StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, MAX_PATH - 1);
     //--Извлекаем информацию о ярлыке
     GetLinkInfo(@lnkinfo);
     {*--Заполняем информацию в поля кнопки--*}
-    Button.Data.Exec := LnkInfo.FullPathAndNameOfFileToExecute;
-    Button.Data.IconIndex := LnkInfo.IconIndex;
-    Button.Data.Icon := LnkInfo.FullPathAndNameOfFileContiningIcon;
-    if Button.Data.Icon = '' then
+    TempButton.Data.Exec := LnkInfo.FullPathAndNameOfFileToExecute;
+    TempButton.Data.IconIndex := LnkInfo.IconIndex;
+    TempButton.Data.Icon := LnkInfo.FullPathAndNameOfFileContiningIcon;
+    if TempButton.Data.Icon = '' then
     begin
       FLPanel.ExpandStrings := False;
       try
-        Button.Data.Icon := Button.Data.Exec;
+        TempButton.Data.Icon := TempButton.Data.Exec;
       finally
         FLPanel.ExpandStrings := True;
       end;
     end;
-    Button.Data.WorkDir := LnkInfo.FullPathAndNameOfWorkingDirectroy;
-    Button.Data.Params := LnkInfo.ParamStringsOfFileToExecute;
-    Button.Data.Descr := LnkInfo.Description;
+    TempButton.Data.WorkDir := LnkInfo.FullPathAndNameOfWorkingDirectroy;
+    TempButton.Data.Params := LnkInfo.ParamStringsOfFileToExecute;
+    TempButton.Data.Descr := LnkInfo.Description;
     {*--------------------------------------*}
     //need to delete filename here
     if FileExists(FileName) and deletelnk then
@@ -1418,50 +1436,50 @@ begin
       finally
         //do nothing
       end;
-    FileName := Button.Data.Exec;
+    FileName := TempButton.Data.Exec;
     Ext := ExtractFileExt(FileName).ToLower;
   end
   else
   begin
-    Button.Data.Exec := FileName;
-    Button.Data.IconIndex := 0;
-    Button.Data.Icon := FileName;
-    Button.Data.WorkDir := ExtractFilePath(FileName);
-    Button.Data.Params := '';
-    Button.Data.Descr := '';
+    TempButton.Data.Exec := FileName;
+    TempButton.Data.IconIndex := 0;
+    TempButton.Data.Icon := FileName;
+    TempButton.Data.WorkDir := ExtractFilePath(FileName);
+    TempButton.Data.Params := '';
+    TempButton.Data.Descr := '';
   end;
   //--Если исполняемый файл
   if IsExecutable(Ext) then
   begin
-    Button.Data.LType := 0;
-    if Button.Data.Descr = '' then
-      Button.Data.Descr := GetFileDescription(FileName);
-    if Button.Data.Descr = '' then
-      Button.Data.Descr := ExtractFileNameNoExt(FileName);
+    TempButton.Data.LType := 0;
+    if TempButton.Data.Descr = '' then
+      TempButton.Data.Descr := GetFileDescription(FileName);
+    if TempButton.Data.Descr = '' then
+      TempButton.Data.Descr := ExtractFileNameNoExt(FileName);
   end
   else
   begin
-    Button.Data.LType := 1;
-    if Button.Data.Descr = '' then
-      Button.Data.Descr := ExtractFileName(FileName);
+    TempButton.Data.LType := 1;
+    if TempButton.Data.Descr = '' then
+      TempButton.Data.Descr := ExtractFileName(FileName);
   end;
 
   if IsPortable then
   begin
-    Button.Data.Exec := PathToPortable(Button.Data.Exec);
-    Button.Data.WorkDir := PathToPortable(Button.Data.WorkDir);
-    Button.Data.Icon := PathToPortable(Button.Data.Icon);
+    TempButton.Data.Exec := PathToPortable(Button.Data.Exec);
+    TempButton.Data.WorkDir := PathToPortable(Button.Data.WorkDir);
+    TempButton.Data.Icon := PathToPortable(Button.Data.Icon);
   end;
-  Button.Data.Hide := hideafterlaunch;
-  Button.Data.Ques := queryonlaunch;
-  Button.Data.WSt := WStateDef;
-  Button.Data.IsAdmin := rwar;
-  Button.Data.DropFiles := defdrop;
-  Button.Data.Pr := PriorDef;
+  TempButton.Data.Hide := hideafterlaunch;
+  TempButton.Data.Ques := queryonlaunch;
+  TempButton.Data.WSt := WStateDef;
+  TempButton.Data.IsAdmin := rwar;
+  TempButton.Data.DropFiles := defdrop;
+  TempButton.Data.Pr := PriorDef;
   //--Рисуем иконки на кнопке
-  Button.Data.AssignIcons;
+  TempButton.Data.AssignIcons;
   //--Перерисовываем кнопку
-  Button.Repaint;
+  TempButton.Repaint;
 end;
 
 procedure TFlaunchMainForm.FormActivate(Sender: TObject);

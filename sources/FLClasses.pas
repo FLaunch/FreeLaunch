@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2022 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -83,6 +83,7 @@ type
       procedure FreeData;
       //--Ссылка на родительскую панель
       property Father: TFLPanel read GetFather;
+      property CurPage: Integer read fCurPage;
       //--Номер строки и колонки данной кнопки
       property RowNumber: integer read fRowNumber;
       property ColNumber: integer read fColNumber;
@@ -546,7 +547,8 @@ procedure TFLButton.CMMouseLeave(var Msg: TMessage);
 begin
   inherited;
   //--Генерируем событие родительской панели OnButtonMouseLeave, передавая текущую кнопку
-  if Assigned(Father.fButtonMouseLeave) then Father.fButtonMouseLeave(Father, Self);
+  if Assigned(Father.fButtonMouseLeave)
+  then Father.fButtonMouseLeave(Father, Self);
 end;
 
 //--Метод генерируется при нажатии кнопки на клавиатуре
