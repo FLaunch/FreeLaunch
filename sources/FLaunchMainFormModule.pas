@@ -801,7 +801,6 @@ begin
   while MainTabsNew.Tabs.Count < ACount do MainTabsNew.Tabs.Add('');
   while MainTabsNew.Tabs.Count > ACount
     do MainTabsNew.Tabs.Delete(Pred(MainTabsNew.Tabs.Count));
-  ShowMessage(IntToStr(FLPanel.PageNumber));
   FLPanel.PageNumber := IfThen(FLPanel.PageNumber > Pred(ACount), Pred(ACount),
                           FLPanel.PageNumber);
   FLPanel.PagesCount := ACount;
@@ -1380,8 +1379,8 @@ begin
       IDNO:
           if RequestMessage(Handle, Language.Messages.SearchAButton) = IDYES
           then begin
-            for crow := 0 to TempButton.Father.RowsCount - 1 do begin
-              for ccol := 0 to TempButton.Father.ColsCount - 1 do begin
+            for crow := 0 to Pred(TempButton.Father.RowsCount) do begin
+              for ccol := 0 to Pred(TempButton.Father.ColsCount) do begin
                 if TempButton.Father.Buttons[TempButton.CurPage, crow, ccol].IsActive = False then begin
                   TempButton := TempButton.Father.Buttons[TempButton.CurPage, crow, ccol];
                   Break;
@@ -1409,7 +1408,7 @@ begin
   if not TempButton.IsActive then TempButton.InitializeData;
   //--Если был перетянут ярлык
   if Ext = '.lnk' then begin
-    StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, MAX_PATH - 1);
+    StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, Pred(MAX_PATH));
     //--Извлекаем информацию о ярлыке
     GetLinkInfo(@lnkinfo);
     {*--Заполняем информацию в поля кнопки--*}
