@@ -796,14 +796,14 @@ end;
 
 procedure TFlaunchMainForm.GrowTabNames(ACount: Integer);
 begin
-  while TabNames.Count < ACount do
-    TabNames.Add('');
-  while TabNames.Count > ACount do
-    TabNames.Delete(Pred(TabNames.Count));
-  while MainTabsNew.Tabs.Count < ACount do
-    MainTabsNew.Tabs.Add('');
-  while MainTabsNew.Tabs.Count > ACount do
-    MainTabsNew.Tabs.Delete(Pred(MainTabsNew.Tabs.Count));
+  while TabNames.Count < ACount do TabNames.Add('');
+  while TabNames.Count > ACount do TabNames.Delete(Pred(TabNames.Count));
+  while MainTabsNew.Tabs.Count < ACount do MainTabsNew.Tabs.Add('');
+  while MainTabsNew.Tabs.Count > ACount
+    do MainTabsNew.Tabs.Delete(Pred(MainTabsNew.Tabs.Count));
+  ShowMessage(IntToStr(FLPanel.PageNumber));
+  FLPanel.PageNumber := IfThen(FLPanel.PageNumber > Pred(ACount), Pred(ACount),
+                          FLPanel.PageNumber);
   FLPanel.PagesCount := ACount;
 end;
 
