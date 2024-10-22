@@ -332,7 +332,7 @@ begin
     Settings.ChbGlass :=         Parse(Ini.ReadString(SctSettings, 'chb_glass',
       'Make button background transparent if there are no tabs'));
     Settings.ChbClear :=         Parse(Ini.ReadString(SctSettings, 'chb_clear',
-      'When reloading buttons, delete the button if the object is not found'));
+      'When reloading icons, delete the button if the object is not found'));
     Settings.ChbAlphaBlend :=    Parse(Ini.ReadString(SctSettings, 'chb_ablend',
       'Enable main window transparency'));
     Settings.ChbABOff :=         Parse(Ini.ReadString(SctSettings, 'chb_aboff',
