@@ -45,4 +45,4 @@ Project page was located on [GitHub](https://github.com/FLaunch/FreeLaunch)
 
 Original project page was located on [SourceForge](https://sourceforge.net/projects/freelaunch/)
 
-Last revision of source code from SourceForge you can find in custom branch: [[original_branch]](../../content/original_branch).
+Last revision of source code from SourceForge you can find in custom branch: [original_branch](../../content/original_branch).
