@@ -119,9 +119,9 @@
         <BRCC_Verbose>true</BRCC_Verbose>
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_Define>madExcept;$(DCC_Define)</DCC_Define>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=3.0.2024.1022;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=3.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=3.0.2024.1031;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=3.0;Comments=</VerInfo_Keys>
         <VerInfo_Release>2024</VerInfo_Release>
-        <VerInfo_Build>1022</VerInfo_Build>
+        <VerInfo_Build>1031</VerInfo_Build>
         <VerInfo_Debug>true</VerInfo_Debug>
         <VerInfo_PreRelease>true</VerInfo_PreRelease>
         <VerInfo_MinorVer>0</VerInfo_MinorVer>

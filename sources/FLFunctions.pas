@@ -722,7 +722,8 @@ end;
 
 function IsExecutable(Ext: string): Boolean;
 begin
-  Result := Ext.EndsWith('.exe', True) or Ext.EndsWith('.bat', True);
+  Result := Ext.EndsWith('.exe', True) or Ext.EndsWith('.bat', True)
+              or Ext.EndsWith('.cmd', True);
 end;
 
 procedure ShellExecuteFL(const AWnd: HWND; const AOperation, AFileName: String;

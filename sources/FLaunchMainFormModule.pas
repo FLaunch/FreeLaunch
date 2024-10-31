@@ -447,11 +447,10 @@ end;
 //--Удаление вкладки
 procedure TFlaunchMainForm.DeleteTab(i: integer);
 begin
-  if TabsCount = 1 then
-    Exit;
+  if TabsCount = 1 then Exit;
   if not (RequestMessage(Handle, format(Language.Messages.DeleteTab,
       [MainTabsNew.Tabs[i]])) = IDYES)
-    then Exit;
+  then Exit;
   //--Удаляем имя этой вкладки
   TabNames.Delete(i);
   //--Удаляем вкладку
