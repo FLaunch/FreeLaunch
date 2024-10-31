@@ -788,37 +788,12 @@ begin
   CloseHandle(PI.hProcess);
 end;
 
-procedure LaunchInExecutor(ALink: TLink; AMainHandle: HWND;
-  ADroppedFile: string);
-var
-  Executor, Parameters: string;
-  LinkStrings: TStringList;
-begin
-  Executor := GetAbsolutePath('%FL_DIR%\FLExecutor.exe');
-
-  LinkStrings := TStringList.Create;
-  try
-    LinkToStrings(ALink, LinkStrings);
-    LinkStrings.Delimiter := ';';
-    LinkStrings.QuoteChar := '''';
-    Parameters := AnsiQuotedStr(LinkStrings.DelimitedText, '"');
-  finally
-    LinkStrings.Free;
-  end;
-
-  Parameters := Parameters + ' ' + IntToStr(AMainHandle);
-  Parameters := Parameters + ' ' + AnsiQuotedStr(Language.FileName, '"');
-  Parameters := Parameters + ' ' + AnsiQuotedStr(ADroppedFile, '"');
-
-  ShellExecuteFL(AMainHandle, '', Executor, Parameters);
-end;
-
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
 const
   ERROR_ELEVATION_REQUIRED = 740;
 var
   WinType, Prior, ErrorCode: integer;
-  execparams, path, exec, params: string;
+  path, exec, params: string;
 
   function RunasCanBeUsed: Boolean;
   begin
@@ -827,10 +802,8 @@ var
 
   procedure RunElevated;
   begin
-    if RunasCanBeUsed then
-      ShellExecuteFL(AMainHandle, 'runas', exec, execparams, path, WinType)
-    else
-      LaunchInExecutor(ALink, AMainHandle, ADroppedFile);
+    if RunasCanBeUsed
+    then ShellExecuteFL(AMainHandle, 'runas', exec, params, path, WinType);
   end;
 
 begin
@@ -860,11 +833,8 @@ begin
                 ALink.params
                 )
               );
-    execparams := Format('"%s" %s', [exec, params]);
-    if (ALink.IsAdmin or ALink.AsAdminPerm)
-          and (not ParamStr(0).Contains('FLExecutor.exe'))
-    then RunElevated else
-      if not CreateProcessFL(exec, execparams, path, WinType, Prior, ErrorCode)
+    if (ALink.IsAdmin or ALink.AsAdminPerm) then RunElevated else
+      if not CreateProcessFL(exec, params, path, WinType, Prior, ErrorCode)
       then begin
         if ErrorCode = ERROR_ELEVATION_REQUIRED then begin
           ALink.IsAdmin := True;

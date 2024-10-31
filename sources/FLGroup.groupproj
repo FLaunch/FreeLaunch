@@ -6,9 +6,6 @@
         <Projects Include="FLaunch.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Executor\FLExecutor.dproj">
-            <Dependencies/>
-        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -26,23 +23,14 @@
     <Target Name="FLaunch:Make">
         <MSBuild Projects="FLaunch.dproj" Targets="Make"/>
     </Target>
-    <Target Name="FLExecutor">
-        <MSBuild Projects="Executor\FLExecutor.dproj"/>
-    </Target>
-    <Target Name="FLExecutor:Clean">
-        <MSBuild Projects="Executor\FLExecutor.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="FLExecutor:Make">
-        <MSBuild Projects="Executor\FLExecutor.dproj" Targets="Make"/>
-    </Target>
     <Target Name="Build">
-        <CallTarget Targets="FLaunch;FLExecutor"/>
+        <CallTarget Targets="FLaunch"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="FLaunch:Clean;FLExecutor:Clean"/>
+        <CallTarget Targets="FLaunch:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="FLaunch:Make;FLExecutor:Make"/>
+        <CallTarget Targets="FLaunch:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

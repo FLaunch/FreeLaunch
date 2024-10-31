@@ -1363,13 +1363,12 @@ var
   TempButton : TFLButton;
 begin
   TempButton := Button;
-  //--Если кнопка активна и "умеет" принимать перетягиваемые файлы
-  if (TempButton.IsActive) and (TempButton.Data.DropFiles) then
-  begin
+  //if current button can open dropped files
+  if (TempButton.IsActive) and (TempButton.Data.DropFiles) then begin
     LaunchButton(Button, FileName);
     Exit;
   end;
-  {*--Если кнопка активна, просим подтверждение замены--*}
+  //if current button is active
   if TempButton.IsActive then
   begin
     TempButton.Highlight;
@@ -1380,27 +1379,29 @@ begin
           then begin
             for crow := 0 to Pred(TempButton.Father.RowsCount) do begin
               for ccol := 0 to Pred(TempButton.Father.ColsCount) do begin
-                if TempButton.Father.Buttons[TempButton.CurPage, crow, ccol].IsActive = False then begin
+                if TempButton.Father.Buttons[TempButton.CurPage, crow, ccol].IsActive = False
+                then begin
                   TempButton := TempButton.Father.Buttons[TempButton.CurPage, crow, ccol];
                   Break;
                 end;
               end;
               if TempButton.IsActive = False then Break;
             end;
-            //if no empty buttons on active tab
-            if TempButton.IsActive = True then Exit;
+            if TempButton.IsActive then begin
+              WarningMessage(Handle, 'Place in this tab was not found.'); //temporary, for testing purposes
+              Exit;
+            end;
           end else Exit;
       else Exit;
     end;
   end;
   Ext := ExtractFileExt(FileName).ToLower;
   //--Если был перетянут файл кнопки
-  if Ext = '.flb' then
-  begin
+  if Ext = '.flb' then begin
     TempButton.Highlight;
     if RequestMessage(Handle,
-        format(Language.Messages.ImportButton,[FileName])) = IDYES
-      then ImportButton(TempButton, FileName);
+        Format(Language.Messages.ImportButton, [FileName])) = IDYES
+    then ImportButton(TempButton, FileName);
     Exit;
   end;
   //--Инициализируем ячейку данных
@@ -1414,8 +1415,7 @@ begin
     TempButton.Data.Exec := LnkInfo.FullPathAndNameOfFileToExecute;
     TempButton.Data.IconIndex := LnkInfo.IconIndex;
     TempButton.Data.Icon := LnkInfo.FullPathAndNameOfFileContiningIcon;
-    if TempButton.Data.Icon = '' then
-    begin
+    if TempButton.Data.Icon = '' then begin
       FLPanel.ExpandStrings := False;
       try
         TempButton.Data.Icon := TempButton.Data.Exec;
@@ -1426,7 +1426,6 @@ begin
     TempButton.Data.WorkDir := LnkInfo.FullPathAndNameOfWorkingDirectroy;
     TempButton.Data.Params := LnkInfo.ParamStringsOfFileToExecute;
     TempButton.Data.Descr := LnkInfo.Description;
-    {*--------------------------------------*}
     //need to delete filename here
     if FileExists(FileName) and deletelnk then
       try
@@ -1436,9 +1435,7 @@ begin
       end;
     FileName := TempButton.Data.Exec;
     Ext := ExtractFileExt(FileName).ToLower;
-  end
-  else
-  begin
+  end else begin
     TempButton.Data.Exec := FileName;
     TempButton.Data.IconIndex := 0;
     TempButton.Data.Icon := FileName;
@@ -1446,24 +1443,19 @@ begin
     TempButton.Data.Params := '';
     TempButton.Data.Descr := '';
   end;
-  //--Если исполняемый файл
-  if IsExecutable(Ext) then
-  begin
+  if IsExecutable(Ext) then begin
     TempButton.Data.LType := 0;
-    if TempButton.Data.Descr = '' then
-      TempButton.Data.Descr := GetFileDescription(FileName);
-    if TempButton.Data.Descr = '' then
-      TempButton.Data.Descr := ExtractFileNameNoExt(FileName);
-  end
-  else
-  begin
+    if TempButton.Data.Descr = ''
+    then TempButton.Data.Descr := GetFileDescription(FileName);
+    if TempButton.Data.Descr = ''
+    then TempButton.Data.Descr := ExtractFileNameNoExt(FileName);
+  end else begin
     TempButton.Data.LType := 1;
-    if TempButton.Data.Descr = '' then
-      TempButton.Data.Descr := ExtractFileName(FileName);
+    if TempButton.Data.Descr = ''
+    then TempButton.Data.Descr := ExtractFileName(FileName);
   end;
 
-  if IsPortable then
-  begin
+  if IsPortable then begin
     TempButton.Data.Exec := PathToPortable(Button.Data.Exec);
     TempButton.Data.WorkDir := PathToPortable(Button.Data.WorkDir);
     TempButton.Data.Icon := PathToPortable(Button.Data.Icon);
@@ -1474,9 +1466,7 @@ begin
   TempButton.Data.IsAdmin := rwar;
   TempButton.Data.DropFiles := defdrop;
   TempButton.Data.Pr := PriorDef;
-  //--Рисуем иконки на кнопке
   TempButton.Data.AssignIcons;
-  //--Перерисовываем кнопку
   TempButton.Repaint;
 end;
 
