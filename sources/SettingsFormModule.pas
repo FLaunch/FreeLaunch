@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -78,7 +78,6 @@ type
     lblPriority: TLabel;
     PriorityBox: TComboBox;
     DropCheckBox: TCheckBox;
-    GlassCheckBox: TCheckBox;
     ClearCheckBox: TCheckBox;
     ThemesBox: TComboBox;
     lblTheme: TLabel;
@@ -148,7 +147,6 @@ begin
   DelLnkCheckBox.Caption := Language.Settings.ChbDelLnk;
   AdminCheckBox.Caption := Language.Settings.ChbAdmin;
   DropCheckBox.Caption := Language.Settings.ChbDrop;
-  GlassCheckBox.Caption := Language.Settings.ChbGlass;
   ClearCheckBox.Caption := Language.Settings.ChbClear;
   ABlendCheckBox.Caption := Language.Settings.ChbAlphaBlend + ':';
   ABOffCheckBox.Caption := Language.Settings.ChbABOff;
@@ -205,7 +203,6 @@ begin
   deletelnk := DelLnkCheckBox.Checked;
   rwar := AdminCheckBox.Checked;
   defdrop := DropCheckBox.Checked;
-  nobgnotabs := GlassCheckBox.Checked;
   ClearONF := ClearCheckBox.Checked;
   ABlend := ABlendCheckBox.Checked;
   ABOffOnHover := ABOffCheckBox.Checked;
@@ -370,7 +367,6 @@ begin
   TaskBarBox.Checked := taskbarvis;
   DateTimeBox.Checked := dtimeinstbar;
   DateTimeBox.Enabled := StatusBarBox.Checked;
-  GlassCheckBox.Checked := nobgnotabs;
   ClearCheckBox.Checked := ClearONF;
   ABlendCheckBox.Checked := ABlend;
   ABOffCheckBox.Checked := ABOffOnHover;

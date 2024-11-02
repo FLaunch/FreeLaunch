@@ -51,8 +51,8 @@ type
   TLngSettings = record
     Caption, General, NumOfTabs, Rows, Cols, Padding, Theme,
     ChbAutorun, ChbAdmin, ChbAlwaysOnTop, ChbStartHide, ChbStatusbar,
-    ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbGlass, ChbClear,
-    ChbAlphaBlend, ChbABOff, ChbTaskbar,
+    ChbDateTime, ChbHideAL, ChbQoL, ChbDelLnk, ChbDrop, ChbClear, ChbAlphaBlend,
+    ChbABOff, ChbTaskbar,
     Priority, PriorityNormal, PriorityHigh, PriorityIdle, PriorityAboveNormal,
     PriorityBelowNormal, PriorityRealTime,
     Titlebar, TitlebarNormal, TitlebarMini,
@@ -329,8 +329,6 @@ begin
       'Delete shortcut file after creating a button'));
     Settings.ChbDrop :=          Parse(Ini.ReadString(SctSettings, 'chb_drop',
       'Accept dropped files'));
-    Settings.ChbGlass :=         Parse(Ini.ReadString(SctSettings, 'chb_glass',
-      'Make button background transparent if there are no tabs'));
     Settings.ChbClear :=         Parse(Ini.ReadString(SctSettings, 'chb_clear',
       'When reloading icons, delete the button if the object is not found'));
     Settings.ChbAlphaBlend :=    Parse(Ini.ReadString(SctSettings, 'chb_ablend',

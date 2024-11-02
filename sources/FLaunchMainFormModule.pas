@@ -223,7 +223,6 @@ var
   settingsshowing: Boolean = False;
   starthide:       Boolean = False;
   ClearONF:        Boolean = True;
-  nobgnotabs:      Boolean = True;
   statusbarvis:    Boolean = True;
   taskbarvis:      Boolean = False;
   PropertiesMode:  Integer; //тип кнопки, свойства которой редактируются
@@ -685,7 +684,6 @@ begin
   WindowNode.AddChild('DefAcceptDropFiles').NodeValue := defdrop;
   WindowNode.AddChild('DefWinState').NodeValue := WStateDef;
   WindowNode.AddChild('DefPriority').NodeValue := PriorDef;
-  WindowNode.AddChild('GlassWhenNoTabs').NodeValue := nobgnotabs;
   WindowNode.AddChild('ClearBtnIfONF').NodeValue := ClearONF;
   WindowNode.AddChild('CurrentThemeID').NodeValue := CurrAppTheme;
   WindowNode.AddChild('LastTabInSettings').NodeValue := lotabinsettings;
@@ -929,7 +927,6 @@ begin
           PriorDef := ToMinInt(GetInt(WindowNode, 'DefPriority'), 0, 5);
           WStateDef := ToMinInt(GetInt(WindowNode, 'DefWinState'), 0, 3);
           deletelnk := GetBool(WindowNode, 'DeleteLNK');
-          nobgnotabs := GetBool(WindowNode, 'GlassWhenNoTabs', True);
           hideafterlaunch := GetBool(WindowNode, 'HideAfterLaunchBtn');
           lotabinsettings := GetInt(WindowNode, 'LastTabInSettings');
           //position node
@@ -1225,14 +1222,13 @@ var
   TabInternalRect: TRect;
 begin
   SetAppThemeByIndex(CurrAppTheme);
+  FLPanel.DoubleBuffered := True;
   if TabsCount > 1 then begin
     MainTabsNew.Show;
     TabInternalRect := MainTabsNew.DisplayRect;
     FLPanel.Parent := MainTabsNew;
     FLPanel.Left := TabInternalRect.Left;
     FLPanel.Top := TabInternalRect.Top;
-    FLPanel.DoubleBuffered := True;
-    GlassFrame.Enabled := False;
     MainTabsNew.Width := MainTabsNew.Width + FLPanel.Width -
         TabInternalRect.Width;
     MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height -
@@ -1245,8 +1241,6 @@ begin
     MainTabsNew.Hide;
     FLPanel.Left := 0;
     FLPanel.Top := 0;
-    FLPanel.DoubleBuffered := not nobgnotabs;
-    GlassFrame.Enabled := nobgnotabs;
     MainHeight := FLPanel.Height;
     MainWidth := FLPanel.Width;
   end;
