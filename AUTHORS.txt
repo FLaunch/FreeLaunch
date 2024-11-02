@@ -1,6 +1,12 @@
-FreeLaunch contributors:
-===========================
+We would like to acknowledge the following contributors:
 
-Alexey Tatuyko (Ta2i4)
-Mykola Petrivskiy (Torbins)
-Evgeny Koreyba (Joker-jar)
+Programming
+-------------
+Alexey Tatuyko
+Evgeny Koreyba
+Mykola Petrivskiy
+
+Documentation
+-------------
+Alexey Tatuyko
+Mykola Petrivskiy
