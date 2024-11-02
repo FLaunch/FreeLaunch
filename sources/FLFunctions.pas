@@ -31,8 +31,6 @@ uses
   Winapi.Windows, Winapi.Messages, System.Classes,
   Vcl.Graphics, Vcl.Imaging.PNGImage, Vcl.Themes, Vcl.Styles;
 
-
-
 type
 
   TFLThemeInfo = record
@@ -1124,6 +1122,7 @@ end;
 
 procedure SetAppTheme(AName: string);
 begin
+  if AName = GetAppTheme then Exit;
   TStyleManager.TrySetStyle(AName, False);
 end;
 

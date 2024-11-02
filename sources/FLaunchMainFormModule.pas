@@ -805,8 +805,7 @@ end;
 
 procedure TFlaunchMainForm.LoadSettings;
 var
-  gtabscount, gthemeid: Boolean;
-
+  gtabscount: Boolean;
   RootNode, WindowsNode, WindowNode, PositionNode, TabRootNode,
   LinkNode, IconNode, TabNode, IconsNode,
   PanelRootNode, PanelNode, DropNode: IXMLNode;
@@ -864,11 +863,16 @@ var
     if not (AInt in [Max(AMin, 0)..Min(AMax, 255)]) then Result := AMax;
   end;
 
-  procedure SetSettings;
+  procedure SetSettings(nofile: Boolean = False);
   var
     I: Integer;
   begin
-    if not gthemeid then CurrAppTheme := GetAppThemeIndex(GetAppTheme);
+    if nofile then CurrAppTheme := GetAppThemeIndex(WinThemeDetect)
+    else
+      if (GetStr(WindowNode, 'CurrentThemeID') = '')
+      then CurrAppTheme := GetAppThemeIndex(WinThemeDetect)
+      else CurrAppTheme := ToMinInt(GetInt(WindowNode, 'CurrentThemeID'),
+                                    Low(FLThemes), High(FLThemes));
     if not gtabscount then begin
       TabsCount := 3;
       GrowTabNames(TabsCount);
@@ -884,9 +888,8 @@ var
 
 begin
   gtabscount := False;
-  gthemeid := False;
   if not FileExists(fl_WorkDir + 'FLaunch.xml') then begin
-    SetSettings;
+    SetSettings(True);
     Exit;
   end;
   XMLDocument := TXMLDocument.Create(Self);
@@ -896,7 +899,7 @@ begin
     XMLDocument.LoadFromFile(fl_WorkDir + 'FLaunch.xml');
   except
     // if settings XML file is corrupted
-    SetSettings;
+    SetSettings(True);
     if XMLDocument.Active then XMLDocument.Active := False;
     Exit;
   end;
@@ -918,8 +921,7 @@ begin
             25, 255);
           alwaysontop := GetBool(WindowNode, 'AlwaysOnTop');
           ClearONF := GetBool(WindowNode, 'ClearBtnIfONF', True);
-          gthemeid := not (GetStr(WindowNode, 'CurrentThemeID') = '');
-          if gthemeid
+          if (GetStr(WindowNode, 'CurrentThemeID') = '') = False
             then CurrAppTheme := ToMinInt(GetInt(WindowNode, 'CurrentThemeID'),
               Low(FLThemes), High(FLThemes));
           dtimeinstbar := GetBool(WindowNode, 'DateTimeInStatusBar');

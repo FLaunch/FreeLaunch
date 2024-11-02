@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -29,7 +29,7 @@ program FLaunch;
 
 uses
   Vcl.Forms,
-  Windows,
+  WinAPI.Windows,
   FLaunchMainFormModule in 'FLaunchMainFormModule.pas' {FlaunchMainForm},
   ProgrammPropertiesFormModule in 'ProgrammPropertiesFormModule.pas' {ProgrammPropertiesForm},
   FilePropertiesFormModule in 'FilePropertiesFormModule.pas' {FilePropertiesForm},
@@ -41,9 +41,7 @@ uses
   FLClasses in 'FLClasses.pas',
   FLLanguage in 'FLLanguage.pas',
   FLDialogs in 'FLDialogs.pas',
-  FLData in 'FLData.pas' {Data: TDataModule},
-  Vcl.Themes,
-  Vcl.Styles;
+  FLData in 'FLData.pas' {Data: TDataModule};
 
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED}
 
@@ -58,7 +56,6 @@ begin
     then PostMessage(Wnd, UM_ShowMainForm, 0, 0)
     else begin
       Application.Initialize;
-      SetAppTheme(WinThemeDetect);
       Application.CreateForm(TData, Data);
       Application.CreateForm(TFlaunchMainForm, FlaunchMainForm);
       Application.Run;
