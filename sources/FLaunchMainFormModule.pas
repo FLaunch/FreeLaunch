@@ -1225,6 +1225,11 @@ var
 begin
   SetAppThemeByIndex(CurrAppTheme);
   FLPanel.DoubleBuffered := True;
+  case titlebar of
+    0: BorderStyle := bsSingle;
+    1: BorderStyle := bsToolWindow;
+    2: BorderStyle := bsNone;
+  end;
   if TabsCount > 1 then begin
     MainTabsNew.Show;
     TabInternalRect := MainTabsNew.DisplayRect;
@@ -1248,6 +1253,7 @@ begin
   end;
   //--Позволяем перетягивать файлы на кнопку
   DragAcceptFiles(FLPanel.Handle, True);
+  StatusBar.Visible := statusbarvis;
   StatusBar.Top := MainHeight + 1;
   StatusBar.Width := MainWidth;
   if StatusBar.Panels.Count > 1 then begin
@@ -1277,12 +1283,6 @@ end;
 
 procedure TFlaunchMainForm.GenerateWnd;
 begin
-  StatusBar.Visible := statusbarvis;
-  case titlebar of
-    0: BorderStyle := bsSingle;
-    1: BorderStyle := bsToolWindow;
-    2: BorderStyle := bsNone;
-  end;
   case tabsview of
     0: MainTabsNew.Style := tsTabs;
     1: MainTabsNew.Style := tsButtons;
