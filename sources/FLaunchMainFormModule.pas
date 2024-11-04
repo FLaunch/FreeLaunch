@@ -1223,13 +1223,13 @@ var
   MainWidth, MainHeight: Integer;
   TabInternalRect: TRect;
 begin
-  SetAppThemeByIndex(CurrAppTheme);
-  FLPanel.DoubleBuffered := True;
   case titlebar of
     0: BorderStyle := bsSingle;
     1: BorderStyle := bsToolWindow;
     2: BorderStyle := bsNone;
   end;
+  SetAppThemeByIndex(CurrAppTheme);
+  FLPanel.DoubleBuffered := True;
   if TabsCount > 1 then begin
     MainTabsNew.Show;
     TabInternalRect := MainTabsNew.DisplayRect;
