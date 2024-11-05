@@ -181,6 +181,8 @@ type
     procedure LoadLinksIconsFromCache;
     /// <summary> Сохранение иконок кнопок в кэш </summary>
     procedure SaveLinksIconsToCache;
+    /// setting sys menu
+    procedure SetSysMenuCommands;
     /// setting app theme by index
     procedure SetAppThemeByIndex(AIndex: Integer);
   public
@@ -488,7 +490,6 @@ var
 begin
   Button := LaunchingButtons.Items[Msg.LParam];
   LaunchingButtons.Remove(Msg.LParam);
-
   if (Button.IsActive) and (Button.Data.IsAdmin <> Msg.WParam.ToBoolean) then
   begin
     Button.Data.IsAdmin := Msg.WParam.ToBoolean;
@@ -547,12 +548,6 @@ end;
 
 procedure TFlaunchMainForm.Timer1Timer(Sender: TObject);
 begin
-  if StatusBar.Panels.Count = 1
-  then begin
-    StatusBar.Panels.Add;
-    StatusBar.Panels[1].Alignment := taCenter;
-    GenerateWnd;
-  end;
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
 end;
 
@@ -571,20 +566,15 @@ end;
 
 procedure TFlaunchMainForm.ChWinView(b: boolean);
 begin
-  if b then
-    begin
-      Visible := true;
-      Timer1.Enabled := statusbarvis and dtimeinstbar;
-      ShowWindow(Application.Handle, IfThen(taskbarvis, SW_SHOW, SW_HIDE));
-      SetForegroundWindow(Application.Handle);
-    end
-  else
-    begin
-      Visible := false;
-      Timer1.Enabled := False;
-    end;
-  if (dtimeinstbar = False) and (StatusBar.Panels.Count > 1)
-    then StatusBar.Panels.Delete(1);
+  if b then begin
+    Visible := True;
+    Timer1.Enabled := statusbarvis and dtimeinstbar;
+    ShowWindow(Application.Handle, IfThen(taskbarvis, SW_SHOW, SW_HIDE));
+    SetForegroundWindow(Application.Handle);
+  end else begin
+    Visible := False;
+    Timer1.Enabled := False;
+  end;
 end;
 
 procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
@@ -1241,36 +1231,38 @@ begin
     MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height -
         TabInternalRect.Height;
     MainTabsNew.TabIndex := FLPanel.PageNumber;
-    MainHeight := MainTabsNew.Height;
-    MainWidth := MainTabsNew.Width;
   end else begin
     FLPanel.Parent := Self;
     MainTabsNew.Hide;
     FLPanel.Left := 0;
     FLPanel.Top := 0;
-    MainHeight := FLPanel.Height;
-    MainWidth := FLPanel.Width;
   end;
   //--Позволяем перетягивать файлы на кнопку
   DragAcceptFiles(FLPanel.Handle, True);
+  MainWidth := IfThen(TabsCount > 1, MainTabsNew.Width, FLPanel.Width);
+  MainHeight := IfThen(TabsCount > 1, MainTabsNew.Height, FLPanel.Height);
   StatusBar.Visible := statusbarvis;
-  StatusBar.Top := MainHeight + 1;
+  ClientWidth := MainWidth;
   StatusBar.Width := MainWidth;
-  if StatusBar.Panels.Count > 1 then begin
+  StatusBar.Top := MainHeight + 1;
+  if dtimeinstbar then begin
     StatusBar.Panels[1].Width :=
       StatusBar.Canvas.TextWidth(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now)
-      + Space + Space + Space + Space);
-    StatusBar.Height := 2 *
-      StatusBar.Canvas.TextHeight(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now));
+                                  + Space + Space + Space + Space);
     StatusBar.Panels[0].Width := StatusBar.Width - StatusBar.Panels[1].Width;
-  end else StatusBar.Panels[0].Width := StatusBar.Width;
-  ClientWidth := MainWidth;
+  end else begin
+    StatusBar.Panels[1].Width := 0;
+    StatusBar.Panels[0].Width := StatusBar.Width;
+  end;
+  StatusBar.Height := 2 *
+      StatusBar.Canvas.TextHeight(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now));
   ClientHeight := MainHeight + IfThen(statusbarvis, StatusBar.Height);
   Left := PercentToPosition(LeftPer, true);
   Top := PercentToPosition(TopPer, false);
   AlphaBlend := ABlend;
   AlphaBlendValue := ABlendVal;
   ABOffTimer.Enabled := ABlend and ABOffOnHover;
+  SetSysMenuCommands;
   //fix for change panel size without app restart
   FLPanel.ButtonsPopup := ButtonPopupMenu;
   //end fix
@@ -1478,15 +1470,12 @@ begin
   ChWinView(False);
 end;
 
-procedure TFlaunchMainForm.SetAppThemeByIndex(AIndex: Integer);
+procedure TFlaunchMainForm.SetSysMenuCommands;
 begin
+  UnregisterHotKey(Handle, GHAtom);
   RemoveMenu(GetSystemMenu(Handle, False), SC_MYSEPARATOR, MF_BYCOMMAND);
   RemoveMenu(GetSystemMenu(Handle, False), SC_APPSETTINGS, MF_BYCOMMAND);
   RemoveMenu(GetSystemMenu(Handle, False), SC_ABOUTAPP, MF_BYCOMMAND);
-  UnregisterHotKey(Handle, GHAtom);
-  if AIndex in [Low(FLThemes)..High(FLThemes)]
-    then SetAppTheme(FLThemes[AIndex].Name)
-    else SetAppTheme(FLThemes[0].Name);
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, SC_MYSEPARATOR, '');
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, SC_APPSETTINGS,
     PChar(Language.Menu.Settings));
@@ -1494,6 +1483,13 @@ begin
     PChar(Language.Menu.About));
   GHAtom := GlobalAddAtom('FL_Hotkey');
   RegisterHotKey(Handle, GHAtom, MOD_CONTROL or MOD_WIN, 0);
+end;
+
+procedure TFlaunchMainForm.SetAppThemeByIndex(AIndex: Integer);
+begin
+  if AIndex in [Low(FLThemes)..High(FLThemes)]
+    then SetAppTheme(FLThemes[AIndex].Name)
+    else SetAppTheme(FLThemes[0].Name);
 end;
 
 procedure TFlaunchMainForm.FormCreate(Sender: TObject);

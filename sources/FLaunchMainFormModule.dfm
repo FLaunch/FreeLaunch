@@ -31,6 +31,10 @@ object FlaunchMainForm: TFlaunchMainForm
     Panels = <
       item
         Width = 100
+      end
+      item
+        Alignment = taCenter
+        Width = 10
       end>
     ParentDoubleBuffered = False
   end
