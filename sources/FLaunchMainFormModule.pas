@@ -1072,7 +1072,6 @@ end;
 procedure TFlaunchMainForm.EndWork;
 begin
   UnregisterHotKey(Handle, GHAtom);
-  DeleteFile(fl_WorkDir + '.session');
   //--Сохраняем настройки кнопок
   SaveLinksSettings;
   //--Сохраняем иконки кнопок в кэш
@@ -1521,12 +1520,6 @@ begin
   ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
   ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
   ChangeWindowMessageFilter(WM_COPYGLOBALDATA, MSGFLT_ADD);
-  if not fileexists(fl_WorkDir + '.session') then
-  begin
-    //--Создаем файл, который будет идентифицировать сессию. При корректном завершении программы файл будет удален
-    FileClose(FileCreate(fl_WorkDir + '.session'));
-    SetFileAttributes(PChar(fl_WorkDir + '.session'), FILE_ATTRIBUTE_HIDDEN);
-  end;
   TrayIcon.Hint := cr_progname;
   if not StartHide then ChWinView(True) else Application.ShowMainForm := False;
   ChPos := false;
