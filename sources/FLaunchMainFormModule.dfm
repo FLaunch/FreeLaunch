@@ -174,8 +174,8 @@ object FlaunchMainForm: TFlaunchMainForm
       0000FC000000FE000000FF000000FF800000FFE00000}
     PopupMenu = TrayMenu
     Visible = True
-    OnClick = TrayIconClick
-    OnDblClick = TrayIconClick
+    OnDblClick = TrayIconDblClick
+    OnMouseUp = TrayIconMouseUp
     Left = 244
     Top = 32
   end

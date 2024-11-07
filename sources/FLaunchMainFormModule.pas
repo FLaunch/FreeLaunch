@@ -108,7 +108,6 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure NI_SettingsClick(Sender: TObject);
     procedure TrayMenuPopup(Sender: TObject);
-    procedure TrayIconClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure ButtonPopupMenuPopup(Sender: TObject);
     procedure ButtonPopupItem_RunClick(Sender: TObject);
@@ -130,6 +129,9 @@ type
     procedure ButtonPopupItem_RunAsAdminClick(Sender: TObject);
     procedure TabPopupItem_NewClick(Sender: TObject);
     procedure ABOffTimerTimer(Sender: TObject);
+    procedure TrayIconMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure TrayIconDblClick(Sender: TObject);
   private
     GHAtom: Word;
    //--Список имен вкладок
@@ -227,6 +229,7 @@ var
   ClearONF:        Boolean = True;
   statusbarvis:    Boolean = True;
   taskbarvis:      Boolean = False;
+  traydblclick:    Boolean = False;
   PropertiesMode:  Integer; //тип кнопки, свойства которой редактируются
   FocusCol:        Integer = -1;
   FocusRow:        Integer = -1;
@@ -577,9 +580,19 @@ begin
   end;
 end;
 
-procedure TFlaunchMainForm.TrayIconClick(Sender: TObject);
+procedure TFlaunchMainForm.TrayIconDblClick(Sender: TObject);
 begin
-  ChWinView((not nowactive) or (not Showing));
+  traydblclick := True;
+end;
+
+procedure TFlaunchMainForm.TrayIconMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if traydblclick then begin
+    traydblclick := False;
+    Exit;
+  end;
+  if (Button <> mbRight) then ChWinView((not nowactive) or (not Showing));
 end;
 
 procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
