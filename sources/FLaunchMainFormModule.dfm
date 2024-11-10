@@ -72,10 +72,10 @@ object FlaunchMainForm: TFlaunchMainForm
       OnClick = NI_CloseClick
     end
   end
-  object Timer1: TTimer
+  object StatusBarDateTimer: TTimer
     Enabled = False
     Interval = 100
-    OnTimer = Timer1Timer
+    OnTimer = StatusBarDateTimerTimer
     Left = 112
     Top = 32
   end

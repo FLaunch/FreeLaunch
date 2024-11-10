@@ -1366,7 +1366,6 @@ var
   i, j: integer;
 begin
   FPadding := Value;
-
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
     begin
@@ -1383,18 +1382,13 @@ procedure TFLPanel.SetPageNumber(PageNumber: Integer);
 var
   i, j: integer;
 begin
-  if fCurrentDataIndex = PageNumber then
-    Exit;
-
+  if fCurrentDataIndex = PageNumber then Exit;
   //--Устанавливаем указатель на текущую страницу данных <- указатель на страницу с выбранным номером
   fCurrentDataIndex := PageNumber;
-  if fCurrentDataIndex < 0 then
-    fCurrentDataIndex := 0;
-
+  if fCurrentDataIndex < 0 then fCurrentDataIndex := 0;
   for i := 0 to fRowsCount - 1 do
     for j := 0 to fColsCount - 1 do
       fButtons[i, j].fCurPage := fCurrentDataIndex;
-
   FocusedButton := nil;
   Repaint;
 end;

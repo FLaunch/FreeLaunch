@@ -69,7 +69,7 @@ type
     NI_Close: TMenuItem;
     NI_Settings: TMenuItem;
     NI_Show: TMenuItem;
-    Timer1: TTimer;
+    StatusBarDateTimer: TTimer;
     NI_L5: TMenuItem;
     NI_About: TMenuItem;
     SaveButtonDialog: TSaveDialog;
@@ -103,7 +103,7 @@ type
     procedure NI_CloseClick(Sender: TObject);
     procedure NI_ShowClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure Timer1Timer(Sender: TObject);
+    procedure StatusBarDateTimerTimer(Sender: TObject);
     procedure NI_AboutClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure NI_SettingsClick(Sender: TObject);
@@ -549,7 +549,7 @@ begin
   RenameTab(MainTabsNew.TabIndex);
 end;
 
-procedure TFlaunchMainForm.Timer1Timer(Sender: TObject);
+procedure TFlaunchMainForm.StatusBarDateTimerTimer(Sender: TObject);
 begin
   StatusBar.Panels[1].Text := FormatDateTime('dd.mm.yyyy hh:mm:ss', Now);
 end;
@@ -567,16 +567,13 @@ begin
   end;
 end;
 
-procedure TFlaunchMainForm.ChWinView(b: boolean);
+procedure TFlaunchMainForm.ChWinView(b: Boolean);
 begin
-  if b then begin
-    Visible := True;
-    Timer1.Enabled := statusbarvis and dtimeinstbar;
+  Visible := b;
+  StatusBarDateTimer.Enabled := b and statusbarvis and dtimeinstbar;
+  if b = True then begin
     ShowWindow(Application.Handle, IfThen(taskbarvis, SW_SHOW, SW_HIDE));
     SetForegroundWindow(Application.Handle);
-  end else begin
-    Visible := False;
-    Timer1.Enabled := False;
   end;
 end;
 
