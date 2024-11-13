@@ -21,6 +21,7 @@ object FlaunchMainForm: TFlaunchMainForm
   OnDestroy = FormDestroy
   OnDeactivate = FormActivate
   OnKeyDown = FormKeyDown
+  OnMouseWheel = FormMouseWheel
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0

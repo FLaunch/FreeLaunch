@@ -132,6 +132,8 @@ type
     procedure TrayIconMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure TrayIconDblClick(Sender: TObject);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
   private
     GHAtom: Word;
    //--Список имен вкладок
@@ -254,6 +256,8 @@ var
   ButtonWidth:     Integer = 32;
   LeftPer:         Integer = 100;
   ABlendVal:       Integer = 255;
+  MWheelDelta:     Integer = 0;
+  MWheelSense:     Integer = 360;
   lngfilename:     string = '';
   FlVer:           TFlVer;
   FlaunchMainForm: TFlaunchMainForm;
@@ -469,6 +473,7 @@ begin
   SetTabNames;
   //--Удаляем страницу данных и делаем активной нужную вкладку
   MainTabsNew.TabIndex := FLPanel.DeletePage(i);
+  tabind := MainTabsNew.TabIndex;
   //--Перерисовываем активную вкладку
   MainTabsNew.Repaint;
   //--Подгоняем размер окна под актуальный размер панели
@@ -1135,6 +1140,26 @@ begin
   if key = VK_F2 then RenameTab(MainTabsNew.TabIndex);
 end;
 
+procedure TFlaunchMainForm.FormMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  if WheelDelta = 0 then Exit;
+  if TabsCount = 1 then Exit;
+  MWheelDelta := MWheelDelta + Abs(WheelDelta);
+  if MWheelDelta < MWheelSense then Exit;
+  MainTabsNew.TabIndex := IfThen(WheelDelta > 0,
+                                  IfThen(MainTabsNew.TabIndex > 0,
+                                          Pred(MainTabsNew.TabIndex),
+                                          Pred(TabsCount)),
+                                  IfThen(MainTabsNew.TabIndex < Pred(TabsCount),
+                                          Succ(MainTabsNew.TabIndex),
+                                          0)
+                                );
+  FLPanel.PageNumber := MainTabsNew.TabIndex;
+  tabind := MainTabsNew.TabIndex;
+  MWheelDelta := 0;
+end;
+
 procedure TFlaunchMainForm.ButtonPopupItem_ClearClick(Sender: TObject);
 var
   TempButton: TFLButton;
@@ -1240,6 +1265,7 @@ begin
     MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height -
         TabInternalRect.Height;
     MainTabsNew.TabIndex := FLPanel.PageNumber;
+    tabind := MainTabsNew.TabIndex;
   end else begin
     FLPanel.Parent := Self;
     MainTabsNew.Hide;
@@ -1569,6 +1595,7 @@ begin
         FLPanel.SwapData(MainTabsNew.TabIndex, i);
         SetTabNames;
         MainTabsNew.TabIndex := i;
+        tabind := MainTabsNew.TabIndex;
         MainTabsNewChange(MainTabsNew);
       end;
     end;
@@ -1598,6 +1625,7 @@ begin
       if (PtInRect(Rect, Point(X, Y))) and (MainTabsNew.TabIndex <> i) then
       begin
         MainTabsNew.TabIndex := i;
+        tabind := MainTabsNew.TabIndex;
         MainTabsNewChange(MainTabsNew);
       end;
     end;
@@ -1630,6 +1658,7 @@ begin
         if MainTabsNew.TabIndex <> i then
           begin
             MainTabsNew.TabIndex := i;
+            tabind := MainTabsNew.TabIndex;
             MainTabsNewChange(MainTabsNew);
           end;
         GetCursorPos(MousePos);
