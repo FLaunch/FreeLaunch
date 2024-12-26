@@ -1381,9 +1381,10 @@ procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
   FileName: string);
 var
   LnkInfo: TShellLinkInfoStruct;
-  ext: string;
-  crow, ccol: Integer;
+  ext{, reqstr}: string;
+  //crow, ccol: Integer;
   TempButton : TFLButton;
+  //test: TGUID;
 begin
   TempButton := Button;
   //if current button can open dropped files
@@ -1397,7 +1398,11 @@ begin
     TempButton.Highlight;
     case RequestMessage(Handle, Language.Messages.BusyReplace) of
       IDYES: {go to next step};
-      IDNO:
+      //IDNO: ;
+
+
+          //will be in next version - 2.11+
+          {
           if RequestMessage(Handle, Language.Messages.SearchAButton) = IDYES
           then begin
             for crow := 0 to Pred(TempButton.Father.RowsCount) do begin
@@ -1414,7 +1419,29 @@ begin
               WarningMessage(Handle, 'Place in this tab was not found.'); //temporary, for testing purposes
               Exit;
             end;
-          end else Exit;
+
+            //if no empty buttons on active tab
+            //if TempButton.IsActive = True then Exit;
+            {if TempButton.Father.PagesCount > 1
+            then reqstr := 'Look another tab?'
+            else reqstr := 'Add new tab?';
+            if TempButton.IsActive and (RequestMessage(Handle, reqstr) = IDYES)
+            then begin
+              if TempButton.Father.PagesCount = 1 then begin
+
+              end else begin
+
+              end;
+            end else Exit;}
+
+            //search case when we can repaint window after add a tab
+            {if TempButton.IsActive then begin
+              if RequestMessage(Handle, 'Place not found. Add another tab?') = IDYES then begin
+                TabPopupItem_New.Click;
+                TempButton := TempButton.Father.Buttons[TempButton.Father.PagesCount - 1, 0, 0];
+              end else Exit;
+            end;
+          end} //else Exit;
       else Exit;
     end;
   end;

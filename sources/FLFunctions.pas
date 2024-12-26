@@ -28,7 +28,8 @@ unit FLFunctions;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.Classes,
+  Winapi.Windows, Winapi.Messages, Winapi.ShlObj, Winapi.ActiveX,
+  System.Classes,
   Vcl.Graphics, Vcl.Imaging.PNGImage, Vcl.Themes, Vcl.Styles;
 
 type
@@ -170,8 +171,7 @@ implementation
 uses
   System.SysUtils, System.IniFiles, System.IOUtils, System.StrUtils,
   System.Win.ComObj, System.Win.Registry, System.Math,
-  Winapi.CommCtrl, Winapi.ShellApi, Winapi.ShFolder, Winapi.ActiveX,
-  Winapi.ShlObj,
+  Winapi.CommCtrl, Winapi.ShellApi, Winapi.ShFolder,
   FLLanguage;
 
 type
@@ -562,10 +562,7 @@ var
   Buf: array[0..MAX_PATH] of Char;
 begin
   Result := '';
-  if SHGetFolderPath(0, CSIDL, 0, 0, Buf) = 0 then
-    Result := Buf
-  else
-    exit;
+  if SHGetFolderPath(0, CSIDL, 0, 0, Buf) = 0 then Result := Buf else Exit;
   if Result[length(Result)] <> '\' then Result := Result + '\';
 end;
 
