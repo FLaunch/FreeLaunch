@@ -1,6 +1,6 @@
 # FreeLaunch
 
-![image](https://user-images.githubusercontent.com/63456473/203093681-11ac5134-c333-4c3e-83a6-e7d9ff74fde9.png)
+![image](https://freelaunch.su/images/freelaunch/en/mainwnd.png)
 
 FreeLaunch is a free links manager for Microsoft Windows. It allows to organize shortcuts to your programs, files and folders. FreeLaunch is easy and fully configurable.
 
@@ -26,11 +26,15 @@ You can report any issues you find to the [bugtracker](https://bt.freelaunch.su/
 
 ## Contributors
 
-- 2022-2024 [@Ta2i4](https://gitverse.ru/ta2i4)
+- 2022-2025 [@Ta2i4](https://gitverse.ru/ta2i4)
 - 2016-2021 [@Torbins](https://github.com/Torbins)
 - 2008-2010 [@Joker-jar](https://github.com/Joker-jar)
 
 ## Historical Note
+
+### 2025
+
+New features coming soon. Stay with FreeLaunch.
 
 ### 2024
 
