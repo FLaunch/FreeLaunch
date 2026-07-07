@@ -292,7 +292,7 @@ begin
       if GetFileVersionInfo(PChar(ParamStr(0)), 0, VInfoSize, VInfo) then begin
         VerQueryValue(VInfo, '\', Pointer(VValue), VValueSize);
         Result.Major := IntToStr(VValue^.dwFileVersionMS shr $10);
-        Result.Minor := IntToStr(VValue^.dwFileVersionMS and $FFF);
+        Result.Minor := IntToStr(VValue^.dwFileVersionMS and $FFFF);
         Result.Release := IntToStr(VValue^.dwFileVersionLS shr $10);
         Result.Build := IntToStr(VValue^.dwFileVersionLS and $FFFF);
         if Length(Result.Build) < 4 then Result.Build := '0' + Result.Build;
