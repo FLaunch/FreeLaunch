@@ -479,7 +479,7 @@ end;
 //--Освобождение ячейки данных текущей кнопки текущей страницы
 procedure TFLButton.FreeData;
 begin
-  FreeAndNil(Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber]);
+  FreeAndNil(Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber]);
   Invalidate;
 end;
 
