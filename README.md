@@ -26,13 +26,13 @@ You can report any issues you find to the [bugtracker](https://bt.freelaunch.su/
 
 ## Contributors
 
-- 2022-2025 [@Ta2i4](https://gitverse.ru/ta2i4)
+- 2022-2026 [@Ta2i4](https://gitverse.ru/ta2i4)
 - 2016-2021 [@Torbins](https://github.com/Torbins)
 - 2008-2010 [@Joker-jar](https://github.com/Joker-jar)
 
 ## Historical Note
 
-### 2025
+### 2026
 
 New features coming soon. Stay with FreeLaunch.
 
