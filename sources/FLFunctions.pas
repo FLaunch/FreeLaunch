@@ -668,6 +668,7 @@ var
   AnObj: IUnknown;
   ch_temp: array [0..MAX_PATH] of Char;
   s_temp: string;
+  ExpandedLen: DWORD;
 begin
   AnObj  := CreateComObject(CLSID_ShellLink);
   ShellLink := AnObj as IShellLink;
@@ -679,8 +680,12 @@ begin
       //32-bit app specific code for 64-bit Windows below
       if not FileExists(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute) then
         begin
-          ExpandEnvironmentStrings('%ProgramW6432%', ch_temp, SizeOf(ch_temp));
-          SetString(s_temp, PChar(@ch_temp[0]), High(ch_temp));
+          ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ch_temp, SizeOf(ch_temp));
+          if ExpandedLen = 0 then
+            s_temp := ''
+          else
+            // ExpandedLen includes the trailing #0
+            SetString(s_temp, PChar(@ch_temp[0]), ExpandedLen - 1);
           StrPCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, StringReplace(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, GetSpecialDir(CSIDL_PROGRAM_FILES), IncludeTrailingPathDelimiter(TrimRight(s_temp)), [rfReplaceAll, rfIgnoreCase]));
         end;
       //end of specific code
