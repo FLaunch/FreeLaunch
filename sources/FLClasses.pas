@@ -478,7 +478,17 @@ end;
 
 //--Освобождение ячейки данных текущей кнопки текущей страницы
 procedure TFLButton.FreeData;
+var
+  Item: TFLDataItem;
 begin
+  Item := Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber];
+  if Assigned(Item) then
+  begin
+    // If button data is explicitly removed by user/action, remove its cache file.
+    if TFile.Exists(Item.IconCache) then
+      TFile.Delete(Item.IconCache);
+    Item.IconCache := '';
+  end;
   FreeAndNil(Father.GetDataPageByPageNumber(fCurPage).fItems[fRowNumber, fColNumber]);
   Invalidate;
 end;

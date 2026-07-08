@@ -644,6 +644,8 @@ begin
             {*--Сохраняем обычную иконку в файл--*}
             AlphaToPng(FLPanel.Buttons[t,r,c].Data.IconBmp, PngImg);
             PngImg.SaveToFile(FLPanel.Buttons[t,r,c].Data.IconCache);
+            // Keep cache persistent across app restarts: prevent TFLDataItem.Destroy
+            // from deleting cache files on application shutdown.
             FLPanel.Buttons[t,r,c].Data.IconCache := '';
           end;
   finally
@@ -764,6 +766,7 @@ procedure TFlaunchMainForm.LoadLinksIconsFromCache;
 var
   t, r, c: Integer;
   PngImg: TPngImage;
+  TempData: TFLDataItem;
 begin
   PngImg := TPngImage.Create;
   try
@@ -773,22 +776,24 @@ begin
         for c := 0 to Pred(ColsCount) do
           if FLPanel.Buttons[t,r,c].IsActive then
           begin
-            if (FLPanel.Buttons[t,r,c].Data.IconCache <> '') and
-              TFile.Exists(FLPanel.Buttons[t,r,c].Data.IconCache) then
+            TempData := FLPanel.Buttons[t,r,c].Data;
+            if (TempData.IconCache <> '') and TFile.Exists(TempData.IconCache) then
             begin
-              PngImg.LoadFromFile(FLPanel.Buttons[t,r,c].Data.IconCache);
+              PngImg.LoadFromFile(TempData.IconCache);
 
-              if (PngImg.Width = ButtonWidth) and (PngImg.Height = ButtonHeight) then
+              // Cache stores IconBmp-sized PNG (ButtonWidth-4 x ButtonHeight-4).
+              if (PngImg.Width = TempData.IconBmp.Width) and (PngImg.Height = TempData.IconBmp.Height) then
               begin
-                FLPanel.Buttons[t,r,c].Data.IconBmp.Assign(PngImg);
+                TempData.IconBmp.Assign(PngImg);
                 FLPanel.Buttons[t,r,c].HasIcon := true;
-                FLPanel.Buttons[t,r,c].Data.PushedIconBmp.Assign(PngImg);
+                // PushedIconBmp has different size; rebuild it from IconBmp.
+                SmoothResize(TempData.IconBmp, TempData.PushedIconBmp);
               end
               else
-                FLPanel.Buttons[t,r,c].Data.AssignIcons;
+                TempData.AssignIcons;
             end
             else
-              FLPanel.Buttons[t,r,c].Data.AssignIcons;
+              TempData.AssignIcons;
           end;
   finally
     PngImg.Free;
@@ -1034,7 +1039,8 @@ begin
               TempData.Pr := GetInt(LinkNode, 'Priority');
               TempData.WSt := GetInt(LinkNode, 'WindowState');
               TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
-              TempData.AssignIcons;
+              // Icons are loaded from cache later in LoadLinksIconsFromCache.
+              // Calling AssignIcons here would delete cached files and defeat caching.
               LinkNode := LinkNode.NextSibling;
             end;
             //link node end
