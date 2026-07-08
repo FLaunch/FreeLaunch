@@ -308,20 +308,36 @@ end;
 
 //convert window position from pixels to percent
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
+var
+  Denom: Integer;
 begin
   if iswidth then
-    Result := round(p / (Screen.DesktopWidth - Width) * 100)
+    Denom := Screen.DesktopWidth - Width
   else
-    Result := round(p / (Screen.DesktopHeight - Height) * 100);
+    Denom := Screen.DesktopHeight - Height;
+
+  // When the window is fullscreen-sized (or larger), denom can be 0 or negative.
+  // In that case, position in "percent of free space" is undefined; clamp to 0.
+  if Denom <= 0 then
+    Exit(0);
+
+  Result := Round(p / Denom * 100);
 end;
 
 //convert window position from percent to pixels
 function TFlaunchMainForm.PercentToPosition(p: integer; iswidth: boolean): integer;
+var
+  Denom: Integer;
 begin
   if iswidth then
-    result := round(p * (Screen.DesktopWidth - Width) / 100)
+    Denom := Screen.DesktopWidth - Width
   else
-    result := round(p * (Screen.DesktopHeight - Height) / 100);
+    Denom := Screen.DesktopHeight - Height;
+
+  if Denom <= 0 then
+    Exit(0);
+
+  Result := Round(p * Denom / 100);
 end;
 
 //reload icons
