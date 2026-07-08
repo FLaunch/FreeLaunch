@@ -1467,44 +1467,63 @@ var
   tempctrl: TControl;
   tempcp, newcp: TPoint;
   i: Integer;
+  BestButton: TFLButton;
+  BestDist: Integer;
+
+  function ButtonAtScreenPos(const APos: TPoint): TFLButton;
+  var
+    C: TControl;
+  begin
+    Result := nil;
+    C := ControlAtPos(ScreenToClient(APos), False);
+    if C is TFLButton then
+      Result := C as TFLButton;
+  end;
+
+  procedure ConsiderButton(AButton: TFLButton; ADist: Integer);
+  begin
+    if AButton = nil then
+      Exit;
+    if (BestButton = nil) or
+       ((not AButton.IsActive) and BestButton.IsActive) or
+       ((AButton.IsActive = BestButton.IsActive) and (ADist < BestDist)) then
+    begin
+      BestButton := AButton;
+      BestDist := ADist;
+    end;
+  end;
+
 begin
   if Assigned(fDropFile) then
   begin
     DragQueryFile(Msg.Drop, 0, buf, SizeOf(buf));
     tempcp := Mouse.CursorPos;
     tempctrl := ControlAtPos(ScreenToClient(tempcp), False);
-    if Assigned(tempctrl as TFLButton) then begin
+    if (tempctrl is TFLButton) then begin
       Button := tempctrl as TFLButton;
       fDropFile(Self, Button, buf);
     end else begin
-      //if no button under cursor - search button by the horizontal
+      BestButton := nil;
+      BestDist := MaxInt;
+      // Search horizontally: prefer empty buttons, then nearest to cursor
       for I := tempcp.X - Padding - ButtonWidth to tempcp.X + Padding
         + ButtonWidth
         do begin
           newcp := tempcp;
           newcp.X := I;
-          tempctrl := ControlAtPos(ScreenToClient(newcp), False);
-          if Assigned(tempctrl as TFLButton) then begin
-            Button := tempctrl as TFLButton;
-            fDropFile(Self, Button, buf);
-            Break;
-          end;
+          ConsiderButton(ButtonAtScreenPos(newcp), Abs(I - tempcp.X));
         end;
-      //if not found - search button by vertical
-      if not Assigned(tempctrl as TFLButton) then begin
+      // Search vertically if no button found yet
+      if BestButton = nil then
         for I := tempcp.Y - Padding - ButtonHeight to tempcp.Y + Padding
           + ButtonHeight
           do begin
             newcp := tempcp;
             newcp.Y := I;
-            tempctrl := ControlAtPos(ScreenToClient(newcp), False);
-            if Assigned(tempctrl as TFLButton) then begin
-              Button := tempctrl as TFLButton;
-              fDropFile(Self, Button, buf);
-              Break;
-            end;
+            ConsiderButton(ButtonAtScreenPos(newcp), Abs(I - tempcp.Y));
           end;
-      end;
+      if BestButton <> nil then
+        fDropFile(Self, BestButton, buf);
     end;
     //--Генерируем событие родительской панели OnDropFile, передавая текущую кнопку и путь к файлу
     DragFinish(Msg.Drop);
