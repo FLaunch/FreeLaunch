@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2026 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -721,9 +721,47 @@ begin
 end;
 
 function IsExecutable(Ext: string): Boolean;
+var
+  Pathext: string;
+  Token: string;
+  I: Integer;
+  C: Char;
+  function NormalizeExt(const S: string): string;
+  begin
+    Result := Trim(S).ToLower;
+    if Result = '' then
+      Exit;
+    if Result[1] <> '.' then
+      Result := '.' + Result;
+  end;
 begin
-  Result := Ext.EndsWith('.exe', True) or Ext.EndsWith('.bat', True)
-              or Ext.EndsWith('.cmd', True);
+  Ext := NormalizeExt(Ext);
+  if Ext = '' then
+    Exit(False);
+
+  // If PATHEXT is present, follow the current system configuration.
+  Pathext := GetEnvironmentVariable('PATHEXT');
+  if Pathext <> '' then
+  begin
+    Token := '';
+    for I := 1 to Length(Pathext) do
+    begin
+      C := Pathext[I];
+      if C = ';' then
+      begin
+        if NormalizeExt(Token) = Ext then
+          Exit(True);
+        Token := '';
+      end
+      else
+        Token := Token + C;
+    end;
+    if NormalizeExt(Token) = Ext then
+      Exit(True);
+  end;
+
+  // Fallback (should be rare): keep historical defaults.
+  Result := (Ext = '.exe') or (Ext = '.com') or (Ext = '.bat') or (Ext = '.cmd');
 end;
 
 procedure ShellExecuteFL(const AWnd: HWND; const AOperation, AFileName: String;
@@ -794,6 +832,7 @@ const
 var
   WinType, Prior, ErrorCode: integer;
   path, exec, params: string;
+  Ext: string;
 
   function RunasCanBeUsed: Boolean;
   begin
@@ -811,6 +850,7 @@ begin
   path := GetAbsolutePath(ALink.workdir);
   if path = '' then path := ExtractFilePath(exec);
   if not ALink.active then Exit;
+  Ext := ExtractFileExt(exec).ToLower;
   case ALink.wst of
     0: WinType := SW_SHOW;
     1: WinType := SW_SHOWMAXIMIZED;
@@ -833,14 +873,31 @@ begin
                 ALink.params
                 )
               );
-    if (ALink.IsAdmin or ALink.AsAdminPerm) then RunElevated else
-      if not CreateProcessFL(exec, params, path, WinType, Prior, ErrorCode)
-      then begin
-        if ErrorCode = ERROR_ELEVATION_REQUIRED then begin
+    // Use CreateProcess only for real binaries (.exe/.com). For everything else
+    // (including custom extensions from PATHEXT), rely on ShellExecute and file
+    // associations for maximum compatibility.
+    if (Ext = '.exe') or (Ext = '.com') then
+    begin
+      if (ALink.IsAdmin or ALink.AsAdminPerm) then
+        RunElevated
+      else if not CreateProcessFL(exec, params, path, WinType, Prior, ErrorCode) then
+      begin
+        if ErrorCode = ERROR_ELEVATION_REQUIRED then
+        begin
           ALink.IsAdmin := True;
           RunElevated;
-        end else RaiseLastOSError(ErrorCode);
+        end
+        else
+          RaiseLastOSError(ErrorCode);
       end;
+    end
+    else
+    begin
+      if (ALink.IsAdmin or ALink.AsAdminPerm) then
+        ShellExecuteFL(AMainHandle, 'runas', exec, params, path, WinType)
+      else
+        ShellExecuteFL(AMainHandle, '', exec, params, path, WinType);
+    end;
   end else ShellExecuteFL(AMainHandle, '', exec, '', path, WinType);
   if ALink.hide then PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
 end;

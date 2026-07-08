@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2026 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -104,18 +104,29 @@ end;
 procedure TProgrammPropertiesForm.CommandEditChange(Sender: TObject);
 var
   ext: string;
+  IsBinary: Boolean;
 begin
   ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
   OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) and IsExecutable(ext);
+  IsBinary := (ext = '.exe') or (ext = '.com');
+  Label3.Enabled := IsBinary;
+  PriorBox.Enabled := IsBinary;
+  if not IsBinary then
+    PriorBox.ItemIndex := 0;
 end;
 
 procedure TProgrammPropertiesForm.OKButtonClick(Sender: TObject);
+var
+  ext: string;
+  IsBinary: Boolean;
 begin
   if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then
     begin
       fillchar(Link, sizeof(TLink), 0);
       exit;
     end;
+  ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
+  IsBinary := (ext = '.exe') or (ext = '.com');
   link.active := true;
   link.ltype := 0;
   link.exec := CommandEdit.Text;
@@ -128,7 +139,10 @@ begin
   link.iconindex := iconindex;
   link.ques := QuesCheckBox.Checked;
   link.hide := HideCheckBox.Checked;
-  link.pr := PriorBox.ItemIndex;
+  if IsBinary then
+    link.pr := PriorBox.ItemIndex
+  else
+    link.pr := 0;
   link.wst := WStyleBox.ItemIndex;
   Link.IsAdmin := AdminBox.Checked;
 end;
@@ -259,6 +273,7 @@ begin
   if DescrEdit.Text = '' then
     DescrEdit.Text := ExtractFileNameNoExt(GetAbsolutePath(CommandEdit.Text));
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+  CommandEditChange(nil);
 end;
 
 procedure TProgrammPropertiesForm.WorkFolderClick(Sender: TObject);
