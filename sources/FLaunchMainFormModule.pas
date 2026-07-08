@@ -653,7 +653,7 @@ end;
 procedure TFlaunchMainForm.SaveLinksSettings;
 var
   RootNode, LinkNode, PanelNode, TabNode, IconNode, DropNode, WindowNode,
-    PositionNode, TabRootNode, PanelRootNode, WindowRootNode, FontNode: IXMLNode;
+    PositionNode, TabRootNode, PanelRootNode, WindowRootNode: IXMLNode;
   t,r,c: integer;
   TempData: TFLDataItem;
   XMLDocument: IXMLDocument;
@@ -697,10 +697,6 @@ begin
 
   TabRootNode := WindowNode.AddChild('Tabs');
   TabRootNode.AddChild('View').NodeValue := tabsview;
-
-  FontNode := TabRootNode.AddChild('Font');
-  FontNode.AddChild('Name').NodeValue := MainTabsNew.Font.Name;
-  FontNode.AddChild('Size').NodeValue := MainTabsNew.Font.Size;
 
   TabRootNode.AddChild('ActiveTab').NodeValue := MainTabsNew.TabIndex + 1;
 
