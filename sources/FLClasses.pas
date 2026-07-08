@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2024 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2026 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2021 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -1149,19 +1149,22 @@ end;
 
 //--Меняет местами две страницы данных
 procedure TFLPanel.SwapData(PageNumber1, PageNumber2: integer);
-var
-  Page1, Page2: TFLDataTable;
-  TempPageNumber: Integer;
 begin
-  //--Ищем страницу данных 1
-  Page1 := GetDataPageByPageNumber(PageNumber1);
-  //--Ищем страницу данных 2
-  Page2 := GetDataPageByPageNumber(PageNumber2);
-  {*--Делаем обмен индексов--*}
-  {**} TempPageNumber := Page1.fPageNumber;
-  {**} Page1.fPageNumber := Page2.fPageNumber;
-  {**} Page2.fPageNumber := TempPageNumber;
-  {*-------------------------*}
+  if (PageNumber1 = PageNumber2) then
+    Exit;
+
+  if (PageNumber1 < 0) or (PageNumber1 >= fPagesCount) then
+    Exit;
+  if (PageNumber2 < 0) or (PageNumber2 >= fPagesCount) then
+    Exit;
+
+  // IMPORTANT:
+  // fDataCollection is a TObjectList<TFLDataTable> (owns objects).
+  // Using indexed assignment would free the previous item and can lead to AV.
+  fDataCollection.Exchange(PageNumber1, PageNumber2);
+  fDataCollection[PageNumber1].fPageNumber := PageNumber1;
+  fDataCollection[PageNumber2].fPageNumber := PageNumber2;
+
   Repaint;
 end;
 

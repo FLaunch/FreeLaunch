@@ -140,6 +140,8 @@ type
     TabNames: TStringList;
     /// <summary> Список кнопок в процессе запуска </summary>
     LaunchingButtons: TDictionary<Integer, TFLButton>;
+    /// <summary> Index of tab being dragged (DnD reorder) </summary>
+    DraggedTabIndex: Integer;
     procedure WMSysMenuCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession);
       message WM_QUERYENDSESSION;
@@ -1565,6 +1567,7 @@ begin
   //--Создаем экземпляр панели с кнопками
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
+  DraggedTabIndex := -1;
   Randomize;
   //initialize environment variables
   InitEnvironment;
@@ -1604,28 +1607,43 @@ var
   i: integer;
   Rect: TRect;
   TempStr: string;
+  SrcIndex: Integer;
 begin
   //--Если перетягиваемый объект - вкладка
   if (Source is TTabControl) then
   begin
+    SrcIndex := DraggedTabIndex;
+    if (SrcIndex < 0) or (SrcIndex >= TabsCount) then
+      SrcIndex := MainTabsNew.TabIndex;
+
     //--Перебираем все вкладки
     for i := 0 to Pred(TabsCount) do
     begin
       //--Определяем регион вкладки
       MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
       //--Если найдена вкладка, над которой находится курсор
-      if (PtInRect(Rect, Point(X, Y))) and (MainTabsNew.TabIndex <> i) then
+      if (PtInRect(Rect, Point(X, Y))) and (SrcIndex <> i) then
       begin
-        TempStr := TabNames.Strings[MainTabsNew.TabIndex];
-        TabNames.Strings[MainTabsNew.TabIndex] := TabNames.Strings[i];
+        // If tab names are "default" (stored as empty string), they get regenerated
+        // by SetTabNames based on position. For drag'n'drop reorder we want the
+        // visible names to move together with tab data, so we materialize the
+        // current captions into TabNames before swapping.
+        if TabNames.Strings[SrcIndex] = '' then
+          TabNames.Strings[SrcIndex] := MainTabsNew.Tabs.Strings[SrcIndex];
+        if TabNames.Strings[i] = '' then
+          TabNames.Strings[i] := MainTabsNew.Tabs.Strings[i];
+
+        TempStr := TabNames.Strings[SrcIndex];
+        TabNames.Strings[SrcIndex] := TabNames.Strings[i];
         TabNames.Strings[i] := TempStr;
-        FLPanel.SwapData(MainTabsNew.TabIndex, i);
+        FLPanel.SwapData(SrcIndex, i);
         SetTabNames;
         MainTabsNew.TabIndex := i;
         tabind := MainTabsNew.TabIndex;
         MainTabsNewChange(MainTabsNew);
       end;
     end;
+    DraggedTabIndex := -1;
   end;
 end;
 
@@ -1671,7 +1689,23 @@ var
 begin
   if Button = TMouseButton.mbLeft then
     if ssCtrl in Shift then
+    begin
+      DraggedTabIndex := -1;
+      //--Find tab under cursor and start dragging it (not the active one)
+      for i := 0 to Pred(TabsCount) do
+      begin
+        MainTabsNew.Perform(TCM_GETITEMRECT, i, lParam(@Rect));
+        if PtInRect(Rect, Point(X, Y)) then
+        begin
+          DraggedTabIndex := i;
+          MainTabsNew.TabIndex := i;
+          tabind := MainTabsNew.TabIndex;
+          MainTabsNewChange(MainTabsNew);
+          Break;
+        end;
+      end;
       MainTabsNew.BeginDrag(false);
+    end;
   if Button = TMouseButton.mbRight then
   begin
     //--Перебираем все вкладки
