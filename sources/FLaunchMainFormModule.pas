@@ -45,6 +45,8 @@ const
 
   inisection = 'general';
 
+  HOTKEY_ID = 1;
+
   TabsCountMax = 50;
   PaddingMax = 100;
   RowsCountMax = 100;
@@ -135,7 +137,6 @@ type
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
   private
-    GHAtom: Word;
    //--Список имен вкладок
     TabNames: TStringList;
     /// <summary> Список кнопок в процессе запуска </summary>
@@ -1056,7 +1057,7 @@ procedure TFlaunchMainForm.WMHotKey(var Msg: TWMHotKey);
 begin
   if Msg.Msg = WM_HOTKEY then
     begin
-      if Msg.HotKey = GHAtom then
+      if Msg.HotKey = HOTKEY_ID then
         begin
           nowactive := Active;
           ChWinView((not nowactive) or (not Showing));
@@ -1086,7 +1087,7 @@ end;
 
 procedure TFlaunchMainForm.EndWork;
 begin
-  UnregisterHotKey(Handle, GHAtom);
+  UnregisterHotKey(Handle, HOTKEY_ID);
   //--Сохраняем настройки кнопок
   SaveLinksSettings;
   //--Сохраняем иконки кнопок в кэш
@@ -1534,7 +1535,7 @@ end;
 
 procedure TFlaunchMainForm.SetSysMenuCommands;
 begin
-  UnregisterHotKey(Handle, GHAtom);
+  UnregisterHotKey(Handle, HOTKEY_ID);
   RemoveMenu(GetSystemMenu(Handle, False), SC_MYSEPARATOR, MF_BYCOMMAND);
   RemoveMenu(GetSystemMenu(Handle, False), SC_APPSETTINGS, MF_BYCOMMAND);
   RemoveMenu(GetSystemMenu(Handle, False), SC_ABOUTAPP, MF_BYCOMMAND);
@@ -1543,8 +1544,7 @@ begin
     PChar(Language.Menu.Settings));
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, SC_ABOUTAPP,
     PChar(Language.Menu.About));
-  GHAtom := GlobalAddAtom('FL_Hotkey');
-  RegisterHotKey(Handle, GHAtom, MOD_CONTROL or MOD_WIN, 0);
+  RegisterHotKey(Handle, HOTKEY_ID, MOD_CONTROL or MOD_WIN, 0);
 end;
 
 procedure TFlaunchMainForm.SetAppThemeByIndex(AIndex: Integer);
