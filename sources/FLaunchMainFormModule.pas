@@ -337,9 +337,9 @@ begin
           if (not FileExists(FLPanel.Buttons[t,r,c].Data.Exec)) and ClearONF
             then FLPanel.Buttons[t,r,c].FreeData
             else FLPanel.Buttons[t,r,c].Data.AssignIcons;
-          FLPanel.Buttons[t,r,c].Repaint;
         end;
   FLPanel.PageNumber := MainTabsNew.TabIndex;
+  FLPanel.FullRepaint;
 end;
 
 //rename tab window

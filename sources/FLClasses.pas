@@ -1241,7 +1241,6 @@ end;
 //--Входные параметры: номер страницы, ряда и колонки
 function TFLPanel.GetButton(PageNumber, RowNumber, ColNumber: integer): TFLButton;
 begin
-  fCurrentDataIndex := PageNumber;
   fButtons[RowNumber][ColNumber].fCurPage := PageNumber;
   Result := fButtons[RowNumber][ColNumber];
 end;
@@ -1385,7 +1384,16 @@ procedure TFLPanel.SetPageNumber(PageNumber: Integer);
 var
   i, j: integer;
 begin
-  if fCurrentDataIndex = PageNumber then Exit;
+  // Even if the page number is the same, we still need to re-sync button
+  // fCurPage values. Various routines iterate over Tabs using Buttons[...]
+  // which mutates fCurPage for shared UI buttons.
+  if fCurrentDataIndex = PageNumber then
+  begin
+    for i := 0 to fRowsCount - 1 do
+      for j := 0 to fColsCount - 1 do
+        fButtons[i, j].fCurPage := fCurrentDataIndex;
+    Exit;
+  end;
   //--Устанавливаем указатель на текущую страницу данных <- указатель на страницу с выбранным номером
   fCurrentDataIndex := PageNumber;
   if fCurrentDataIndex < 0 then fCurrentDataIndex := 0;
