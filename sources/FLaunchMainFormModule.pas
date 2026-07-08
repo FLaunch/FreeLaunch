@@ -949,8 +949,8 @@ begin
           //tabs node
           TabRootNode := WindowNode.ChildNodes.FindNode('Tabs');
           if Assigned(TabRootNode) and TabRootNode.HasChildNodes then begin
-            TabNumber := 0;
             TabsCount := 0;
+            var MaxTabNumber: Integer := 0;
             tabind := ToMinInt(GetInt(TabRootNode, 'ActiveTab'), 0,
               TabsCountMax) - 1;
             TabNames.Clear;
@@ -958,13 +958,15 @@ begin
             TabNode := TabRootNode.ChildNodes.FindNode('Tab');
             while Assigned(TabNode) and TabNode.HasChildNodes do begin
               gtabscount := True;
-              Inc(TabsCount);
               TabNumber := TabNode.Attributes['Number'];
-              GrowTabNames(TabNumber);
+              if TabNumber > MaxTabNumber then
+                MaxTabNumber := TabNumber;
+              GrowTabNames(MaxTabNumber);
               TabNames.Strings[TabNumber - 1] := GetStr(TabNode, 'Name');
               TabNode := TabNode.NextSibling;
             end;
-            GrowTabNames(TabNumber);
+            TabsCount := MaxTabNumber;
+            GrowTabNames(TabsCount);
             //tab N node end
             tabsview := ToMinInt(GetInt(TabRootNode, 'View'), 0, 2);
           end;
