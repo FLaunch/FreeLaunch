@@ -42,6 +42,7 @@ uses
 
 const
   TCM_GETITEMRECT = $130A;
+  TCM_ADJUSTRECT = $1328;
 
   inisection = 'general';
 
@@ -101,6 +102,7 @@ type
     TabPopupItem_New: TMenuItem;
     ABOffTimer: TTimer;
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure NI_CloseClick(Sender: TObject);
     procedure NI_ShowClick(Sender: TObject);
@@ -1496,7 +1498,7 @@ end;
 procedure TFlaunchMainForm.RecalcLayout;
 var
   MainWidth, MainHeight: Integer;
-  TabInternalRect: TRect;
+  TabInternalRect, TabOuterRect: TRect;
 begin
   case titlebar of
     0: BorderStyle := bsSingle;
@@ -1507,14 +1509,14 @@ begin
   FLPanel.DoubleBuffered := True;
   if TabsCount > 1 then begin
     MainTabsNew.Show;
-    TabInternalRect := MainTabsNew.DisplayRect;
     FLPanel.Parent := MainTabsNew;
+    TabOuterRect := Rect(0, 0, FLPanel.Width, FLPanel.Height);
+    MainTabsNew.Perform(TCM_ADJUSTRECT, 1, LPARAM(@TabOuterRect));
+    MainTabsNew.Width := TabOuterRect.Right - TabOuterRect.Left;
+    MainTabsNew.Height := TabOuterRect.Bottom - TabOuterRect.Top;
+    TabInternalRect := MainTabsNew.DisplayRect;
     FLPanel.Left := TabInternalRect.Left;
     FLPanel.Top := TabInternalRect.Top;
-    MainTabsNew.Width := MainTabsNew.Width + FLPanel.Width -
-        TabInternalRect.Width;
-    MainTabsNew.Height := MainTabsNew.Height + FLPanel.Height -
-        TabInternalRect.Height;
     MainTabsNew.TabIndex := FLPanel.PageNumber;
     tabind := MainTabsNew.TabIndex;
   end else begin
@@ -1779,6 +1781,15 @@ begin
     DismissNonClientHints;
 end;
 
+procedure TFlaunchMainForm.FormShow(Sender: TObject);
+var
+  Dpi: Integer;
+begin
+  Dpi := FLGetWindowDpi(Handle);
+  if Dpi <> FLastDpi then
+    OnDpiEnvironmentChanged(FLastDpi, Dpi);
+end;
+
 procedure TFlaunchMainForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
@@ -1831,7 +1842,7 @@ begin
   //--Разрешаем/запрешаем автозагрузку
   SetAutorun(Autorun);
   SetTabNames;
-  FLastDpi := FLGetWindowDpi(Handle);
+  FLastDpi := 0;
   GenerateWnd;
   RestoreWindowPosition;
   LoadLinksIconsFromCache;

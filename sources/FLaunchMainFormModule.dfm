@@ -19,6 +19,7 @@ object FlaunchMainForm: TFlaunchMainForm
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
+  OnShow = FormShow
   OnDestroy = FormDestroy
   OnDeactivate = FormActivate
   OnKeyDown = FormKeyDown
