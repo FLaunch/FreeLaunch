@@ -1,4 +1,4 @@
-﻿{
+{
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
@@ -189,9 +189,12 @@ end;
 procedure TSettingsForm.ApplySettings;
 var
   tabnum: integer;
+  NeedReloadIcons: Boolean;
 begin
   ChPos := True;
   FlaunchMainForm.ChWinView(False);
+  NeedReloadIcons := (ButtonWidth <> IWEdit.Value) or
+    (ButtonHeight <> IHEdit.Value);
   Autorun := AutorunCheckBox.Checked;
   AlwaysOnTop := TopCheckBox.Checked;
   StartHide := StartHideBox.Checked;
@@ -225,22 +228,17 @@ begin
   FlaunchMainForm.SetTabNames;
   FlaunchMainForm.FLPanel.ColsCount := colscount;
   FlaunchMainForm.FLPanel.RowsCount := rowscount;
-  if (ButtonWidth <> IWEdit.Value) or (ButtonHeight <> IHEdit.Value)
-  then
-  begin
-    ButtonWidth := IWEdit.Value;
-    ButtonHeight := IHEdit.Value;
-    FlaunchMainForm.FLPanel.ButtonWidth := ButtonWidth;
-    FlaunchMainForm.FLPanel.ButtonHeight := ButtonHeight;
-    FlaunchMainForm.ReloadIcons;
-  end;
-  FlaunchMainForm.FLPanel.Padding := lpadding;
+  ButtonWidth := IWEdit.Value;
+  ButtonHeight := IHEdit.Value;
   if tabnum < tabscount then
     FlaunchMainForm.MainTabsNew.TabIndex := tabnum
   else
     FlaunchMainForm.MainTabsNew.TabIndex := 0;
   Language.Load(lngfilename);
   FlaunchMainForm.GenerateWnd;
+  FlaunchMainForm.RestoreWindowPosition;
+  if NeedReloadIcons then
+    FlaunchMainForm.ReloadIcons;
   FlaunchMainForm.ChWinView(true);
   ChPos := False;
 end;

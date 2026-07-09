@@ -11,10 +11,11 @@ object FlaunchMainForm: TFlaunchMainForm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  GlassFrame.SheetOfGlass = True
+  GlassFrame.SheetOfGlass = False
   KeyPreview = True
+  Scaled = False
   ScreenSnap = True
-  ShowHint = True
+  ShowHint = False
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate

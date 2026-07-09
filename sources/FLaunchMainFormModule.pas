@@ -38,7 +38,7 @@ uses
   Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Menus,
   ProgrammPropertiesFormModule,
   FilePropertiesFormModule, RenameTabFormModule, SettingsFormModule,
-  AboutFormModule, FLFunctions, FLLanguage, FLClasses;
+  AboutFormModule, FLFunctions, FLLanguage, FLClasses, FLDpi;
 
 const
   TCM_GETITEMRECT = $130A;
@@ -143,6 +143,8 @@ type
     LaunchingButtons: TDictionary<Integer, TFLButton>;
     /// <summary> Index of tab being dragged (DnD reorder) </summary>
     DraggedTabIndex: Integer;
+    FLastDpi: Integer;
+    FInUserMove: Boolean;
     procedure WMSysMenuCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession);
       message WM_QUERYENDSESSION;
@@ -151,6 +153,10 @@ type
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
     procedure WMDisplayChange(var Msg: TWMDisplayChange);
       message WM_DISPLAYCHANGE;
+    procedure WMDpiChanged(var Msg: TWMDpi); message WM_DPICHANGED;
+    procedure WMMoving(var Msg: TWMMoving); message WM_MOVING;
+    procedure WMEnterSizeMove(var Msg: TMessage); message WM_ENTERSIZEMOVE;
+    procedure WMExitSizeMove(var Msg: TMessage); message WM_EXITSIZEMOVE;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
     procedure UMShowMainForm(var Msg: TMessage); message UM_ShowMainForm;
     procedure UMHideMainForm(var Msg: TMessage); message UM_HideMainForm;
@@ -192,12 +198,23 @@ type
     procedure SetSysMenuCommands;
     /// setting app theme by index
     procedure SetAppThemeByIndex(AIndex: Integer);
+    function GetPositionMonitor: TMonitor;
+    function PositionToPercentOnMonitor(const AValue: Integer;
+      AMonitor: TMonitor; AIsWidth: Boolean): Integer;
+    function PercentToPositionOnMonitor(const APercent: Integer;
+      AMonitor: TMonitor; AIsWidth: Boolean): Integer;
+    procedure OnDpiEnvironmentChanged(OldDpi, NewDpi: Integer);
+    procedure ApplyDpiScaledLayout(ADpi: Integer);
+    procedure RecalcLayout;
+    procedure SyncPositionPercents;
+    procedure DismissNonClientHints;
   public
     FLPanel: TFLPanel;
     //--Количество вкладок
     //--Ширина и высота кнопок
     procedure EndWork;
     procedure ChangeWndSize;
+    procedure RestoreWindowPosition;
     procedure GenerateWnd;
     procedure LoadLanguage;
     procedure LaunchHelpFile;
@@ -206,6 +223,7 @@ type
     function GetAppVersion: TFlVer;
     function PositionToPercent(p: integer; iswidth: boolean): integer;
     function PercentToPosition(p: integer; iswidth: boolean): integer;
+    function GetLogicalIconPreviewSize: Integer;
     procedure LoadIcFromFileNoModif(var Im: TImage; FileName: string;
       Index: integer);
     procedure ChWinView(b: boolean);
@@ -258,6 +276,8 @@ var
   ButtonHeight:    Integer = 32;
   ButtonWidth:     Integer = 32;
   LeftPer:         Integer = 100;
+  PosMonitorName:  string = '';
+  FLegacyPosition: Boolean = True;
   ABlendVal:       Integer = 255;
   MWheelDelta:     Integer = 0;
   MWheelSense:     Integer = 360;
@@ -306,22 +326,84 @@ begin
   end;
 end;
 
-//convert window position from pixels to percent
+//convert window position from pixels to percent (monitor work area or legacy desktop)
+function TFlaunchMainForm.GetPositionMonitor: TMonitor;
+begin
+  if (not FLegacyPosition) and (PosMonitorName <> '') then
+  begin
+    Result := FLFindMonitorByDeviceName(PosMonitorName);
+    if Result <> nil then
+      Exit;
+  end;
+  Result := FLGetWindowMonitor(Handle);
+end;
+
+function TFlaunchMainForm.PositionToPercentOnMonitor(const AValue: Integer;
+  AMonitor: TMonitor; AIsWidth: Boolean): Integer;
+var
+  Denom: Integer;
+  WorkArea: TRect;
+  Origin: Integer;
+begin
+  if AMonitor = nil then
+    AMonitor := Screen.PrimaryMonitor;
+  WorkArea := FLMonitorWorkArea(AMonitor);
+  if AIsWidth then
+  begin
+    Denom := WorkArea.Width - Width;
+    Origin := WorkArea.Left;
+  end
+  else
+  begin
+    Denom := WorkArea.Height - Height;
+    Origin := WorkArea.Top;
+  end;
+  if Denom <= 0 then
+    Exit(0);
+  Result := Round((AValue - Origin) / Denom * 100);
+end;
+
 function TFlaunchMainForm.PositionToPercent(p: integer; iswidth: boolean): integer;
 var
   Denom: Integer;
 begin
-  if iswidth then
-    Denom := Screen.DesktopWidth - Width
+  if FLegacyPosition then
+  begin
+    if iswidth then
+      Denom := Screen.DesktopWidth - Width
+    else
+      Denom := Screen.DesktopHeight - Height;
+    if Denom <= 0 then
+      Exit(0);
+    Result := Round(p / Denom * 100);
+  end
   else
-    Denom := Screen.DesktopHeight - Height;
+    Result := PositionToPercentOnMonitor(p, GetPositionMonitor, iswidth);
+end;
 
-  // When the window is fullscreen-sized (or larger), denom can be 0 or negative.
-  // In that case, position in "percent of free space" is undefined; clamp to 0.
+function TFlaunchMainForm.PercentToPositionOnMonitor(const APercent: Integer;
+  AMonitor: TMonitor; AIsWidth: Boolean): Integer;
+var
+  Denom: Integer;
+  WorkArea: TRect;
+  Origin: Integer;
+begin
+  if AMonitor = nil then
+    AMonitor := Screen.PrimaryMonitor;
+  WorkArea := FLMonitorWorkArea(AMonitor);
+  if AIsWidth then
+  begin
+    Denom := WorkArea.Width - Width;
+    Origin := WorkArea.Left;
+  end
+  else
+  begin
+    Denom := WorkArea.Height - Height;
+    Origin := WorkArea.Top;
+  end;
   if Denom <= 0 then
-    Exit(0);
-
-  Result := Round(p / Denom * 100);
+    Exit(Origin);
+  Result := Origin + Round(APercent * Denom / 100);
 end;
 
 //convert window position from percent to pixels
@@ -329,15 +411,85 @@ function TFlaunchMainForm.PercentToPosition(p: integer; iswidth: boolean): integ
 var
   Denom: Integer;
 begin
-  if iswidth then
-    Denom := Screen.DesktopWidth - Width
+  if FLegacyPosition then
+  begin
+    if iswidth then
+      Denom := Screen.DesktopWidth - Width
+    else
+      Denom := Screen.DesktopHeight - Height;
+    if Denom <= 0 then
+      Exit(0);
+    Result := Round(p * Denom / 100);
+  end
   else
-    Denom := Screen.DesktopHeight - Height;
+    Result := PercentToPositionOnMonitor(p, GetPositionMonitor, iswidth);
+end;
 
-  if Denom <= 0 then
-    Exit(0);
+procedure TFlaunchMainForm.SyncPositionPercents;
+var
+  Mon: TMonitor;
+begin
+  if HandleAllocated then
+  begin
+    Mon := FLGetWindowMonitor(Handle);
+    if Mon <> nil then
+      PosMonitorName := FLGetMonitorDeviceName(Mon);
+  end;
+  LeftPer := PositionToPercent(Left, True);
+  TopPer := PositionToPercent(Top, False);
+  FLegacyPosition := False;
+end;
 
-  Result := Round(p * Denom / 100);
+procedure TFlaunchMainForm.ApplyDpiScaledLayout(ADpi: Integer);
+begin
+  if ADpi <= 0 then
+    ADpi := FLGetWindowDpi(Handle);
+  FLPanel.ButtonWidth := FLScaleToDpi(ButtonWidth, ADpi);
+  FLPanel.ButtonHeight := FLScaleToDpi(ButtonHeight, ADpi);
+  FLPanel.Padding := FLScaleToDpi(lpadding, ADpi);
+end;
+
+procedure TFlaunchMainForm.OnDpiEnvironmentChanged(OldDpi, NewDpi: Integer);
+begin
+  if NewDpi <= 0 then
+    NewDpi := FLGetWindowDpi(Handle);
+  if (OldDpi = NewDpi) and (OldDpi <> 0) then
+    Exit;
+  ChPos := True;
+  if HandleAllocated then
+    SendMessage(Handle, WM_SETREDRAW, 0, 0);
+  try
+    ApplyDpiScaledLayout(NewDpi);
+    RecalcLayout;
+    ReloadIcons;
+    RestoreWindowPosition;
+  finally
+    ChPos := False;
+    if HandleAllocated then
+    begin
+      SendMessage(Handle, WM_SETREDRAW, 1, 0);
+      RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_FRAME or
+        RDW_ALLCHILDREN or RDW_UPDATENOW);
+    end;
+  end;
+  SyncPositionPercents;
+  FLastDpi := NewDpi;
+end;
+
+procedure TFlaunchMainForm.DismissNonClientHints;
+begin
+  Application.CancelHint;
+  if HandleAllocated then
+  begin
+    ReleaseCapture;
+    SendMessage(Handle, WM_NCMOUSEMOVE, WPARAM(HTNOWHERE),
+      MakeLParam($FFFF, $FFFF));
+  end;
+end;
+
+function TFlaunchMainForm.GetLogicalIconPreviewSize: Integer;
+begin
+  Result := FLScaleToDpi(ButtonWidth, FLGetWindowDpi(Handle));
 end;
 
 //reload icons
@@ -497,6 +649,7 @@ begin
   MainTabsNew.Repaint;
   //--Подгоняем размер окна под актуальный размер панели
   ChangeWndSize;
+  RestoreWindowPosition;
   if TabsCount = 1 then ChPos := False;
 end;
 
@@ -566,6 +719,7 @@ begin
   GrowTabNames(TabsCount);
   SetTabNames;
   GenerateWnd;
+  RestoreWindowPosition;
 end;
 
 procedure TFlaunchMainForm.TabPopupItem_RenameClick(Sender: TObject);
@@ -593,6 +747,8 @@ end;
 
 procedure TFlaunchMainForm.ChWinView(b: Boolean);
 begin
+  if not b then
+    DismissNonClientHints;
   Visible := b;
   StatusBarDateTimer.Enabled := b and statusbarvis and dtimeinstbar;
   if b = True then begin
@@ -690,7 +846,11 @@ begin
   WindowRootNode := RootNode.AddChild('Windows');
   WindowNode := WindowRootNode.AddChild('Window');
 
+  if HandleAllocated then
+    SyncPositionPercents;
   PositionNode := WindowNode.AddChild('Position');
+  if PosMonitorName <> '' then
+    PositionNode.AddChild('Monitor').NodeValue := PosMonitorName;
   PositionNode.AddChild('Left').NodeValue := PositionToPercent(Left, true);
   PositionNode.AddChild('Top').NodeValue := PositionToPercent(Top, false);
 
@@ -906,9 +1066,6 @@ var
     MainTabsNew.TabIndex := tabind;
     FLPanel.ColsCount := colscount;
     FLPanel.RowsCount := rowscount;
-    FLPanel.ButtonHeight := ButtonHeight;
-    FLPanel.ButtonWidth := ButtonWidth;
-    FLPanel.Padding := lpadding;
   end;
 
 begin
@@ -959,6 +1116,8 @@ begin
           //position node
           PositionNode := WindowNode.ChildNodes.FindNode('Position');
           if Assigned(PositionNode) and PositionNode.HasChildNodes then begin
+            PosMonitorName := GetStr(PositionNode, 'Monitor');
+            FLegacyPosition := PosMonitorName = '';
             LeftPer := LimitInt(GetInt(PositionNode, 'Left', 100), 0, 100);
             TopPer := LimitInt(GetInt(PositionNode, 'Top'), 0, 100);
           end;
@@ -1090,25 +1249,94 @@ end;
 
 procedure TFlaunchMainForm.WMWindowPosChanging(var Msg: TWMWindowPosChanging);
 begin
+  inherited;
+end;
+
+procedure TFlaunchMainForm.WMEnterSizeMove(var Msg: TMessage);
+begin
+  FInUserMove := True;
+  inherited;
+end;
+
+procedure TFlaunchMainForm.WMExitSizeMove(var Msg: TMessage);
+begin
+  FInUserMove := False;
   if not ChPos then
-  begin
-    LeftPer := PositionToPercent(Left, true);
-    TopPer := PositionToPercent(Top, false);
-  end;
+    SyncPositionPercents;
   inherited;
 end;
 
 procedure TFlaunchMainForm.WMDisplayChange(var Msg: TWMDisplayChange);
+var
+  OldDpi: Integer;
 begin
-  ChPos := true;
-  Left := PercentToPosition(LeftPer, true);
-  Top := PercentToPosition(TopPer, false);
-  ChPos := false;
+  OldDpi := FLastDpi;
+  OnDpiEnvironmentChanged(OldDpi, FLGetWindowDpi(Handle));
   inherited;
+end;
+
+procedure TFlaunchMainForm.WMDpiChanged(var Msg: TWMDpi);
+var
+  OldDpi: Integer;
+  NewRect: PRect;
+begin
+  OldDpi := FLastDpi;
+  NewRect := Msg.ScaledRect;
+  if NewRect <> nil then
+  begin
+    ChPos := True;
+    try
+      SetWindowPos(Handle, 0, NewRect^.Left, NewRect^.Top,
+        NewRect^.Right - NewRect^.Left, NewRect^.Bottom - NewRect^.Top,
+        SWP_NOZORDER or SWP_NOACTIVATE);
+    finally
+      ChPos := False;
+    end;
+  end;
+  OnDpiEnvironmentChanged(OldDpi, Msg.YDpi);
+  inherited;
+end;
+
+procedure TFlaunchMainForm.WMMoving(var Msg: TWMMoving);
+var
+  DragRect, WinRect: TRect;
+  Center: TPoint;
+  TargetMon: TMonitor;
+begin
+  if ChPos or (Msg.DragRect = nil) then
+  begin
+    inherited;
+    Exit;
+  end;
+  DragRect := Msg.DragRect^;
+  WinRect := Rect(DragRect.Left, DragRect.Top, DragRect.Left + Width,
+    DragRect.Top + Height);
+  if FLRectSpansDpiMonitors(WinRect) then
+  begin
+    Center := Point((WinRect.Left + WinRect.Right) div 2,
+      (WinRect.Top + WinRect.Bottom) div 2);
+    TargetMon := FLMonitorFromPoint(Center);
+    WinRect := FLSnapRectToMonitorWorkArea(WinRect, TargetMon);
+    Msg.DragRect^.Left := WinRect.Left;
+    Msg.DragRect^.Top := WinRect.Top;
+  end;
+  inherited;
+end;
+
+procedure TFlaunchMainForm.RestoreWindowPosition;
+begin
+  ChPos := True;
+  try
+    Left := PercentToPosition(LeftPer, True);
+    Top := PercentToPosition(TopPer, False);
+  finally
+    ChPos := False;
+  end;
 end;
 
 procedure TFlaunchMainForm.EndWork;
 begin
+  DismissNonClientHints;
   UnregisterHotKey(Handle, HOTKEY_ID);
   //--Сохраняем настройки кнопок
   SaveLinksSettings;
@@ -1265,7 +1493,7 @@ begin
   FLPanel.LastUsedButton.MouseUp(TMouseButton.mbLeft, [], 0, 0);
 end;
 
-procedure TFlaunchMainForm.ChangeWndSize;
+procedure TFlaunchMainForm.RecalcLayout;
 var
   MainWidth, MainHeight: Integer;
   TabInternalRect: TRect;
@@ -1295,7 +1523,6 @@ begin
     FLPanel.Left := 0;
     FLPanel.Top := 0;
   end;
-  //--Позволяем перетягивать файлы на кнопку
   DragAcceptFiles(FLPanel.Handle, True);
   MainWidth := IfThen(TabsCount > 1, MainTabsNew.Width, FLPanel.Width);
   MainHeight := IfThen(TabsCount > 1, MainTabsNew.Height, FLPanel.Height);
@@ -1315,20 +1542,21 @@ begin
   StatusBar.Height := 2 *
       StatusBar.Canvas.TextHeight(FormatDateTime('dd.mm.yyyy hh:mm:ss', Now));
   ClientHeight := MainHeight + IfThen(statusbarvis, StatusBar.Height);
-  Left := PercentToPosition(LeftPer, true);
-  Top := PercentToPosition(TopPer, false);
   AlphaBlend := ABlend;
   AlphaBlendValue := ABlendVal;
   ABOffTimer.Enabled := ABlend and ABOffOnHover;
   SetSysMenuCommands;
-  //fix for change panel size without app restart
   FLPanel.ButtonsPopup := ButtonPopupMenu;
-  //end fix
   FLPanel.OnButtonMouseDown := FLPanelButtonMouseDown;
   FLPanel.OnButtonClick := FLPanelButtonClick;
   FLPanel.OnButtonMouseMove := FLPanelButtonMouseMove;
   FLPanel.OnButtonMouseLeave := FLPanelButtonMouseLeave;
   FLPanel.OnDropFile := FLPanelDropFile;
+end;
+
+procedure TFlaunchMainForm.ChangeWndSize;
+begin
+  RecalcLayout;
 end;
 
 procedure TFlaunchMainForm.GenerateWnd;
@@ -1339,7 +1567,8 @@ begin
     2: MainTabsNew.Style := tsFlatButtons;
   end;
   if AlwaysOnTop then FormStyle := fsStayOnTop else FormStyle := fsNormal;
-  ChangeWndSize;
+  ApplyDpiScaledLayout(FLGetWindowDpi(Handle));
+  RecalcLayout;
 end;
 
 procedure TFlaunchMainForm.FLPanelButtonClick(Sender: TObject;
@@ -1546,6 +1775,8 @@ end;
 procedure TFlaunchMainForm.FormActivate(Sender: TObject);
 begin
   nowactive := Active;
+  if not Active then
+    DismissNonClientHints;
 end;
 
 procedure TFlaunchMainForm.FormCloseQuery(Sender: TObject;
@@ -1592,7 +1823,6 @@ begin
   //initialize environment variables
   InitEnvironment;
   LoadSettings;
-  LoadLinksIconsFromCache;
   FLPanel.PageNumber := MainTabsNew.TabIndex;
   if not FileExists(ExtractFilePath(ParamStr(0)) + 'languages\' + lngfilename)
   then lngfilename := FindSysUserDefLangFile;
@@ -1601,7 +1831,10 @@ begin
   //--Разрешаем/запрешаем автозагрузку
   SetAutorun(Autorun);
   SetTabNames;
+  FLastDpi := FLGetWindowDpi(Handle);
   GenerateWnd;
+  RestoreWindowPosition;
+  LoadLinksIconsFromCache;
   //--Разрешено перетаскивание файлов в окно FreeLaunch, когда он запущен с правами Администратора
   ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
   ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);

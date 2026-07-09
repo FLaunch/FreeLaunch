@@ -12,6 +12,7 @@ object RenameTabForm: TRenameTabForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
+  Scaled = True
   Position = poScreenCenter
   OnShow = FormShow
   TextHeight = 13

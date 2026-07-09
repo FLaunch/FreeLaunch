@@ -12,6 +12,7 @@ object AboutForm: TAboutForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
+  Scaled = True
   Position = poScreenCenter
   OnClose = FormClose
   OnKeyDown = FormKeyDown

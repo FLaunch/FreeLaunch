@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{02D93137-42D0-4C3F-B8DB-C2FD000BD41D}</ProjectGuid>
         <MainSource>FLaunch.dpr</MainSource>
@@ -119,9 +119,9 @@
         <BRCC_Verbose>true</BRCC_Verbose>
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_Define>madExcept;$(DCC_Define)</DCC_Define>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.11.2026.708;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.11;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.11.2026.709;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.11;Comments=</VerInfo_Keys>
         <VerInfo_Release>2026</VerInfo_Release>
-        <VerInfo_Build>708</VerInfo_Build>
+        <VerInfo_Build>709</VerInfo_Build>
         <VerInfo_Debug>true</VerInfo_Debug>
         <VerInfo_PreRelease>true</VerInfo_PreRelease>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
@@ -152,6 +152,7 @@
             <Form>AboutForm</Form>
         </DCCReference>
         <DCCReference Include="FLFunctions.pas"/>
+        <DCCReference Include="FLDpi.pas"/>
         <DCCReference Include="FLClasses.pas"/>
         <DCCReference Include="FLLanguage.pas"/>
         <DCCReference Include="FLDialogs.pas"/>

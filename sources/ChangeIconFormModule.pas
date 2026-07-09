@@ -33,7 +33,7 @@ uses
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls,
   Vcl.StdCtrls, Vcl.ComCtrls,
   Vcl.Samples.Spin,
-  FLData, FLFunctions, FLLanguage;
+  FLData, FLFunctions, FLLanguage, FLDpi;
 
 type
   TChangeIconForm = class(TForm)
@@ -57,6 +57,7 @@ type
     procedure IndexEditChange(Sender: TObject);
   private
     icindex, iconcount, ncount: integer;
+    procedure SetIconPreviewSize;
   public
     procedure RefreshProps;
   end;
@@ -72,6 +73,18 @@ uses
 
 {$R *.dfm}
 
+procedure TChangeIconForm.SetIconPreviewSize;
+var
+  IconSize: Integer;
+begin
+  if FlaunchMainForm.HandleAllocated then
+    IconSize := FlaunchMainForm.GetLogicalIconPreviewSize
+  else
+    IconSize := FLScaleToDpi(ButtonWidth, FLGetWindowDpi(0));
+  IcImage.Width := IconSize;
+  IcImage.Height := IconSize;
+end;
+
 procedure TChangeIconForm.RefreshProps;
 begin
   icindex := 1;
@@ -84,6 +97,7 @@ begin
   IndexEdit.Enabled := iconcount > 1;
   NegativeBox.Enabled := (iconcount > 1) and (ncount > 1);
   NegativeBox.Checked := False;
+  SetIconPreviewSize;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text),
                                           Pred(icindex));
 end;
@@ -167,6 +181,7 @@ begin
     then IndexEdit.Enabled := ncount > 1
     else IndexEdit.Enabled := iconcount > 1;
   IndexEdit.MaxValue := IfThen(NegativeBox.Checked, ncount, iconcount);
+  SetIconPreviewSize;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
   IconEdit.SetFocus;
   showform := False;
@@ -183,6 +198,7 @@ begin
       IndexEdit.Enabled := ncount > 1;
     end;
   icindex := IfThen(NegativeBox.Checked, -IndexEdit.Value, IndexEdit.Value);
+  SetIconPreviewSize;
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
 end;
 

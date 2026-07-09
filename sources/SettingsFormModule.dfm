@@ -13,6 +13,7 @@ object SettingsForm: TSettingsForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
+  Scaled = True
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate

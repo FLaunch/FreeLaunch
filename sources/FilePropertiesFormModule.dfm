@@ -12,6 +12,7 @@ object FilePropertiesForm: TFilePropertiesForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
+  Scaled = True
   Position = poScreenCenter
   ShowHint = True
   OnShow = FormShow

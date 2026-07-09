@@ -426,6 +426,7 @@ begin
   fPushed := false;
   fCanClick := true;
   fCurPage := 255;
+  ShowHint := False;
 end;
 
 function TFLButton.DataToLink: TLink;

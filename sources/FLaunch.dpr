@@ -1,4 +1,4 @@
-﻿{
+{
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
@@ -38,6 +38,7 @@ uses
   SettingsFormModule in 'SettingsFormModule.pas' {SettingsForm},
   AboutFormModule in 'AboutFormModule.pas' {AboutForm},
   FLFunctions in 'FLFunctions.pas',
+  FLDpi in 'FLDpi.pas',
   FLClasses in 'FLClasses.pas',
   FLLanguage in 'FLLanguage.pas',
   FLDialogs in 'FLDialogs.pas',

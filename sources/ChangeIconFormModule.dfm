@@ -12,6 +12,7 @@ object ChangeIconForm: TChangeIconForm
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
+  Scaled = True
   Position = poScreenCenter
   OnClose = FormClose
   OnShow = FormShow
