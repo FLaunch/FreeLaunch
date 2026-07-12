@@ -1790,7 +1790,12 @@ end;
 procedure TFlaunchMainForm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
-  CanClose := false;
+  if Application.Terminated then
+  begin
+    CanClose := True;
+    Exit;
+  end;
+  CanClose := False;
   ChWinView(False);
 end;
 
