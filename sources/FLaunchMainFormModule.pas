@@ -147,6 +147,7 @@ type
     DraggedTabIndex: Integer;
     FLastDpi: Integer;
     FInUserMove: Boolean;
+    FPendingDpi: Integer;
     procedure WMSysMenuCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession);
       message WM_QUERYENDSESSION;
@@ -156,7 +157,6 @@ type
     procedure WMDisplayChange(var Msg: TWMDisplayChange);
       message WM_DISPLAYCHANGE;
     procedure WMDpiChanged(var Msg: TWMDpi); message WM_DPICHANGED;
-    procedure WMMoving(var Msg: TWMMoving); message WM_MOVING;
     procedure WMEnterSizeMove(var Msg: TMessage); message WM_ENTERSIZEMOVE;
     procedure WMExitSizeMove(var Msg: TMessage); message WM_EXITSIZEMOVE;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
@@ -1261,10 +1261,19 @@ begin
 end;
 
 procedure TFlaunchMainForm.WMExitSizeMove(var Msg: TMessage);
+var
+  CurrentDpi: Integer;
 begin
   FInUserMove := False;
   if not ChPos then
     SyncPositionPercents;
+  if FPendingDpi > 0 then
+    CurrentDpi := FPendingDpi
+  else
+    CurrentDpi := FLGetWindowDpi(Handle);
+  FPendingDpi := 0;
+  if CurrentDpi <> FLastDpi then
+    OnDpiEnvironmentChanged(FLastDpi, CurrentDpi);
   inherited;
 end;
 
@@ -1282,6 +1291,12 @@ var
   OldDpi: Integer;
   NewRect: PRect;
 begin
+  if FInUserMove then
+  begin
+    FPendingDpi := Msg.YDpi;
+    inherited;
+    Exit;
+  end;
   OldDpi := FLastDpi;
   NewRect := Msg.ScaledRect;
   if NewRect <> nil then
@@ -1296,32 +1311,6 @@ begin
     end;
   end;
   OnDpiEnvironmentChanged(OldDpi, Msg.YDpi);
-  inherited;
-end;
-
-procedure TFlaunchMainForm.WMMoving(var Msg: TWMMoving);
-var
-  DragRect, WinRect: TRect;
-  Center: TPoint;
-  TargetMon: TMonitor;
-begin
-  if ChPos or (Msg.DragRect = nil) then
-  begin
-    inherited;
-    Exit;
-  end;
-  DragRect := Msg.DragRect^;
-  WinRect := Rect(DragRect.Left, DragRect.Top, DragRect.Left + Width,
-    DragRect.Top + Height);
-  if FLRectSpansDpiMonitors(WinRect) then
-  begin
-    Center := Point((WinRect.Left + WinRect.Right) div 2,
-      (WinRect.Top + WinRect.Bottom) div 2);
-    TargetMon := FLMonitorFromPoint(Center);
-    WinRect := FLSnapRectToMonitorWorkArea(WinRect, TargetMon);
-    Msg.DragRect^.Left := WinRect.Left;
-    Msg.DragRect^.Top := WinRect.Top;
-  end;
   inherited;
 end;
 
@@ -1830,6 +1819,7 @@ begin
   FLPanel := TFLPanel.Create(MainTabsNew, 1);
   LaunchingButtons := TDictionary<Integer, TFLButton>.Create;
   DraggedTabIndex := -1;
+  FPendingDpi := 0;
   Randomize;
   //initialize environment variables
   InitEnvironment;
