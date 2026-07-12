@@ -1551,6 +1551,8 @@ begin
 end;
 
 procedure TFlaunchMainForm.GenerateWnd;
+var
+  ThemeBefore: string;
 begin
   case tabsview of
     0: MainTabsNew.Style := tsTabs;
@@ -1558,8 +1560,14 @@ begin
     2: MainTabsNew.Style := tsFlatButtons;
   end;
   if AlwaysOnTop then FormStyle := fsStayOnTop else FormStyle := fsNormal;
+  ThemeBefore := GetAppTheme;
   ApplyDpiScaledLayout(FLGetWindowDpi(Handle));
   RecalcLayout;
+  // After a theme switch, tab chrome and status bar metrics update only after
+  // the first layout pass (TrySetStyle inside RecalcLayout). A second pass
+  // matches the manual "Apply again" workaround from bug #69.
+  if ThemeBefore <> GetAppTheme then
+    RecalcLayout;
 end;
 
 procedure TFlaunchMainForm.FLPanelButtonClick(Sender: TObject;
