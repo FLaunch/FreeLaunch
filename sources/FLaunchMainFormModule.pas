@@ -47,6 +47,7 @@ const
   inisection = 'general';
 
   HOTKEY_ID = 1;
+  FL_CHECKDPI_MSG = WM_APP + 51;
 
   TabsCountMax = 50;
   PaddingMax = 100;
@@ -156,7 +157,10 @@ type
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
     procedure WMDisplayChange(var Msg: TWMDisplayChange);
       message WM_DISPLAYCHANGE;
+    procedure WMSettingChange(var Msg: TWMSettingChange);
+      message WM_SETTINGCHANGE;
     procedure WMDpiChanged(var Msg: TWMDpi); message WM_DPICHANGED;
+    procedure WMCheckDpi(var Msg: TMessage); message FL_CHECKDPI_MSG;
     procedure WMEnterSizeMove(var Msg: TMessage); message WM_ENTERSIZEMOVE;
     procedure WMExitSizeMove(var Msg: TMessage); message WM_EXITSIZEMOVE;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
@@ -206,6 +210,8 @@ type
     function PercentToPositionOnMonitor(const APercent: Integer;
       AMonitor: TMonitor; AIsWidth: Boolean): Integer;
     procedure OnDpiEnvironmentChanged(OldDpi, NewDpi: Integer);
+    procedure CheckDpiEnvironment;
+    procedure RequestDpiEnvironmentCheck;
     procedure ApplyDpiScaledLayout(ADpi: Integer);
     procedure RecalcLayout;
     procedure SyncPositionPercents;
@@ -449,6 +455,23 @@ begin
   FLPanel.ButtonWidth := FLScaleToDpi(ButtonWidth, ADpi);
   FLPanel.ButtonHeight := FLScaleToDpi(ButtonHeight, ADpi);
   FLPanel.Padding := FLScaleToDpi(lpadding, ADpi);
+end;
+
+procedure TFlaunchMainForm.CheckDpiEnvironment;
+var
+  NewDpi: Integer;
+begin
+  if not HandleAllocated then
+    Exit;
+  NewDpi := FLGetWindowDpi(Handle);
+  if (NewDpi > 0) and (NewDpi <> FLastDpi) then
+    OnDpiEnvironmentChanged(FLastDpi, NewDpi);
+end;
+
+procedure TFlaunchMainForm.RequestDpiEnvironmentCheck;
+begin
+  if HandleAllocated then
+    PostMessage(Handle, FL_CHECKDPI_MSG, 0, 0);
 end;
 
 procedure TFlaunchMainForm.OnDpiEnvironmentChanged(OldDpi, NewDpi: Integer);
@@ -756,6 +779,8 @@ begin
   if b = True then begin
     ShowWindow(Application.Handle, IfThen(taskbarvis, SW_SHOW, SW_HIDE));
     SetForegroundWindow(Application.Handle);
+    CheckDpiEnvironment;
+    RequestDpiEnvironmentCheck;
   end;
 end;
 
@@ -1278,12 +1303,29 @@ begin
 end;
 
 procedure TFlaunchMainForm.WMDisplayChange(var Msg: TWMDisplayChange);
-var
-  OldDpi: Integer;
 begin
-  OldDpi := FLastDpi;
-  OnDpiEnvironmentChanged(OldDpi, FLGetWindowDpi(Handle));
   inherited;
+  CheckDpiEnvironment;
+  RequestDpiEnvironmentCheck;
+end;
+
+procedure TFlaunchMainForm.WMSettingChange(var Msg: TWMSettingChange);
+begin
+  inherited;
+  if Msg.Section = nil then
+  begin
+    if (Msg.Flag = SPI_SETICONTITLELOGFONT) or
+      (Msg.Flag = SPI_SETNONCLIENTMETRICS) then
+      RequestDpiEnvironmentCheck;
+  end
+  else if SameText(Msg.Section, 'WindowMetrics') or
+    SameText(Msg.Section, 'Display') then
+    RequestDpiEnvironmentCheck;
+end;
+
+procedure TFlaunchMainForm.WMCheckDpi(var Msg: TMessage);
+begin
+  CheckDpiEnvironment;
 end;
 
 procedure TFlaunchMainForm.WMDpiChanged(var Msg: TWMDpi);
@@ -1774,17 +1816,16 @@ end;
 procedure TFlaunchMainForm.FormActivate(Sender: TObject);
 begin
   nowactive := Active;
-  if not Active then
+  if Active then
+    CheckDpiEnvironment
+  else
     DismissNonClientHints;
 end;
 
 procedure TFlaunchMainForm.FormShow(Sender: TObject);
-var
-  Dpi: Integer;
 begin
-  Dpi := FLGetWindowDpi(Handle);
-  if Dpi <> FLastDpi then
-    OnDpiEnvironmentChanged(FLastDpi, Dpi);
+  CheckDpiEnvironment;
+  RequestDpiEnvironmentCheck;
 end;
 
 procedure TFlaunchMainForm.FormCloseQuery(Sender: TObject;

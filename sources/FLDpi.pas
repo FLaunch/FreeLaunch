@@ -26,7 +26,8 @@ unit FLDpi;
 interface
 
 uses
-  Winapi.Windows, Winapi.MultiMon, System.SysUtils, System.Types, Vcl.Forms;
+  Winapi.Windows, Winapi.MultiMon, Winapi.ShellScaling, System.SysUtils,
+  System.Types, Vcl.Forms;
 
 const
   FLDefaultDpi = 96;
@@ -48,11 +49,28 @@ implementation
 function FLGetDpiForWindowSafe(AHandle: HWND): UINT; stdcall;
   external 'user32.dll' name 'GetDpiForWindow';
 
+function FLGetDpiForMonitorHandle(HMon: HMONITOR): Integer;
+var
+  Xdpi, Ydpi: UINT;
+begin
+  Result := 0;
+  if HMon = 0 then
+    Exit;
+  if GetDpiForMonitor(HMon, MDT_EFFECTIVE_DPI, Xdpi, Ydpi) = S_OK then
+    Result := Ydpi;
+end;
+
 function FLGetWindowDpi(AHandle: HWND): Integer;
+var
+  HMon: HMONITOR;
 begin
   if AHandle <> 0 then
   begin
     Result := FLGetDpiForWindowSafe(AHandle);
+    if Result > 0 then
+      Exit;
+    HMon := MonitorFromWindow(AHandle, MONITOR_DEFAULTTONEAREST);
+    Result := FLGetDpiForMonitorHandle(HMon);
     if Result > 0 then
       Exit;
   end;
