@@ -676,19 +676,24 @@ begin
   PersistFile.Load(PChar(string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile)), 0);
   with ShellLink do
     begin
-      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile), lpShellLinkInfoStruct^.FindData, SLGP_RAWPATH);
-      //32-bit app specific code for 64-bit Windows below
-      if not FileExists(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute) then
+      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), lpShellLinkInfoStruct^.FindData, SLGP_RAWPATH);
+      // 32-bit app on 64-bit Windows: .lnk may store Program Files target that
+      // only exists under ProgramW6432 after expansion of env vars in the path.
+      s_temp := ExpandEnvironmentVariables(string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute));
+      if (s_temp <> '') and (not FileExists(s_temp)) and (not DirectoryExists(s_temp)) then
         begin
-          ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ch_temp, SizeOf(ch_temp));
-          if ExpandedLen = 0 then
-            s_temp := ''
-          else
-            // ExpandedLen includes the trailing #0
-            SetString(s_temp, PChar(@ch_temp[0]), ExpandedLen - 1);
-          StrPCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, StringReplace(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, GetSpecialDir(CSIDL_PROGRAM_FILES), IncludeTrailingPathDelimiter(TrimRight(s_temp)), [rfReplaceAll, rfIgnoreCase]));
+          ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ch_temp, Length(ch_temp));
+          if ExpandedLen > 1 then
+            begin
+              SetString(s_temp, PChar(@ch_temp[0]), ExpandedLen - 1);
+              StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
+                StringReplace(string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute),
+                  GetSpecialDir(CSIDL_PROGRAM_FILES),
+                  IncludeTrailingPathDelimiter(s_temp),
+                  [rfReplaceAll, rfIgnoreCase]),
+                Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute) - 1);
+            end;
         end;
-      //end of specific code
       GetDescription(lpShellLinkInfoStruct^.Description, SizeOf(lpShellLinkInfoStruct^.Description));
       GetArguments(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute));
       GetWorkingDirectory(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));

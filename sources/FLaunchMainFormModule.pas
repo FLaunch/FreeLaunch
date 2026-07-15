@@ -809,10 +809,10 @@ begin
   LaunchingButtons.Add(LaunchID, AButton);
   TempLink := AButton.DataToLink;
   TempLink.AsAdminPerm := RunAsAdmin;
-  tempexec := StringReplace(TempLink.exec, '%FL_ROOT%\', fl_root,
-    [rfReplaceAll, rfIgnoreCase]);
-  tempexec := StringReplace(tempexec, '%FL_DIR%\', fl_dir,
-    [rfReplaceAll, rfIgnoreCase]);
+  // DataToLink keeps unexpanded env vars (%windir%, %ProgramFiles(x86)%,
+  // %FL_DIR%, ...). Existence check must expand them first — otherwise
+  // Start Menu .lnk targets resolve for icons but fail FileExists here.
+  tempexec := GetAbsolutePath(TempLink.exec);
   if (not FileExists(tempexec))
       and (not DirectoryExists(tempexec))
     then begin
