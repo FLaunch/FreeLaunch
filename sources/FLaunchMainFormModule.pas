@@ -527,7 +527,7 @@ begin
       for c := 0 to Pred(ColsCount) do
         if FLPanel.Buttons[t,r,c].IsActive then
         begin
-          if (not FileExists(FLPanel.Buttons[t,r,c].Data.Exec)) and ClearONF
+          if (not ObjectExists(FLPanel.Buttons[t,r,c].Data.Exec)) and ClearONF
             then FLPanel.Buttons[t,r,c].FreeData
             else FLPanel.Buttons[t,r,c].Data.AssignIcons;
         end;
@@ -802,20 +802,16 @@ end;
 procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
   ADroppedFile: string; RunAsAdmin: Boolean);
 var
-  tempexec: string;
   TempLink: TLink;
 begin
   Inc(LaunchID);
   LaunchingButtons.Add(LaunchID, AButton);
   TempLink := AButton.DataToLink;
   TempLink.AsAdminPerm := RunAsAdmin;
-  // DataToLink keeps unexpanded env vars (%windir%, %ProgramFiles(x86)%,
-  // %FL_DIR%, ...). Existence check must expand them first — otherwise
-  // Start Menu .lnk targets resolve for icons but fail FileExists here.
-  tempexec := GetAbsolutePath(TempLink.exec);
-  if (not FileExists(tempexec))
-      and (not DirectoryExists(tempexec))
-    then begin
+  // DataToLink keeps unexpanded env vars and shell GUIDs. ObjectExists expands
+  // env vars, resolves known folders, and accepts virtual shell items.
+  if not ObjectExists(TempLink.exec) then
+    begin
       if RequestMessage(Handle,
           Format(Language.Messages.NotFound, [TempLink.exec])) = IDYES
         then AButton.FreeData;

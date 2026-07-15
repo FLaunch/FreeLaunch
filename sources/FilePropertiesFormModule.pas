@@ -2,7 +2,7 @@
   ##########################################################################
   #  FreeLaunch is a free links manager for Microsoft Windows              #
   #                                                                        #
-  #  Copyright (C) 2023 Alexey Tatuyko <feedback@ta2i4.ru>                 #
+  #  Copyright (C) 2026 Alexey Tatuyko <feedback@ta2i4.ru>                 #
   #  Copyright (C) 2019 Mykola Petrivskiy                                  #
   #  Copyright (C) 2010 Joker-jar <joker-jar@yandex.ru>                    #
   #                                                                        #
@@ -67,6 +67,8 @@ type
     procedure WorkFolderClick(Sender: TObject);
   private
     Link: TLink;
+    FLoadingFields: Boolean;
+    procedure SyncIconFromObject;
   public
     procedure RefreshProps;
     class function Execute(ALink: TLink): TLink;
@@ -92,9 +94,36 @@ begin
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(ic), iconindex);
 end;
 
+procedure TFilePropertiesForm.SyncIconFromObject;
+var
+  Ext: string;
+begin
+  if FLoadingFields then
+    Exit;
+  if not ObjectExists(CommandEdit.Text) then
+    Exit;
+
+  Ext := ExtractFileExt(GetAbsolutePath(CommandEdit.Text)).ToLower;
+  if Ext = '.lnk' then
+  begin
+    FLoadingFields := True;
+    try
+      RefreshProps;
+    finally
+      FLoadingFields := False;
+    end;
+    Exit;
+  end;
+
+  Ic := CommandEdit.Text;
+  iconindex := 0;
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+end;
+
 procedure TFilePropertiesForm.CommandEditChange(Sender: TObject);
 begin
-  OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) or DirectoryExists(GetAbsolutePath(CommandEdit.Text));
+  OKButton.Enabled := ObjectExists(CommandEdit.Text);
+  SyncIconFromObject;
 end;
 
 class function TFilePropertiesForm.Execute(ALink: TLink): TLink;
@@ -111,7 +140,7 @@ end;
 
 procedure TFilePropertiesForm.OKButtonClick(Sender: TObject);
 begin
-  if (not FileExists(GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(GetAbsolutePath(CommandEdit.Text))) then
+  if not ObjectExists(CommandEdit.Text) then
     begin
       fillchar(Link, sizeof(TLink), 0);
       exit;
@@ -136,51 +165,61 @@ end;
 procedure TFilePropertiesForm.FormShow(Sender: TObject);
 begin
   if AlwaysOnTop then FormStyle := fsStayOnTop;
-  //--Loading language
-  OKButton.Caption := Language.BtnOk;
-  CancelButton.Caption := Language.BtnCancel;
-  PageControl1.Pages[0].Caption := Language.Properties.Caption;
-  Caption := Language.Properties.Caption;
-  Label9.Caption := Language.Properties.Folder + ':';
-  Label1.Caption := Language.Properties.LblObject + ':';
-  Label4.Caption := Language.Properties.Description + ':';
-  Label7.Caption := Language.Properties.View + ':';
-  WStyleBox.Items.Add(Language.Properties.ViewNormal);
-  WStyleBox.Items.Add(Language.Properties.ViewMax);
-  WStyleBox.Items.Add(Language.Properties.ViewMin);
-  WStyleBox.Items.Add(Language.Properties.ViewHidden);
-  CommandEdit.RightButton.Hint := Language.Properties.BeHint;
-  RefProps.Hint := Language.Properties.RpHint;
-  Label5.Caption := Language.Properties.Options;
-  Bevel2.Left := Label5.Left + Label5.Width + 7;
-  Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
-  Label6.Caption := Language.Properties.Icon;
-  Bevel3.Left := Label6.Left + Label6.Width + 7;
-  Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
-  ChangeIconButton.Caption := Language.Properties.Change;
-  QuesCheckBox.Caption := Language.Properties.ChbQuestion;
-  HideCheckBox.Caption := Language.Properties.ChbHide;
+  FLoadingFields := True;
+  try
+    //--Loading language
+    OKButton.Caption := Language.BtnOk;
+    CancelButton.Caption := Language.BtnCancel;
+    PageControl1.Pages[0].Caption := Language.Properties.Caption;
+    Caption := Language.Properties.Caption;
+    Label9.Caption := Language.Properties.Folder + ':';
+    Label1.Caption := Language.Properties.LblObject + ':';
+    Label4.Caption := Language.Properties.Description + ':';
+    Label7.Caption := Language.Properties.View + ':';
+    WStyleBox.Items.Add(Language.Properties.ViewNormal);
+    WStyleBox.Items.Add(Language.Properties.ViewMax);
+    WStyleBox.Items.Add(Language.Properties.ViewMin);
+    WStyleBox.Items.Add(Language.Properties.ViewHidden);
+    CommandEdit.RightButton.Hint := Language.Properties.BeHint;
+    RefProps.Hint := Language.Properties.RpHint;
+    Label5.Caption := Language.Properties.Options;
+    Bevel2.Left := Label5.Left + Label5.Width + 7;
+    Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
+    Label6.Caption := Language.Properties.Icon;
+    Bevel3.Left := Label6.Left + Label6.Width + 7;
+    Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
+    ChangeIconButton.Caption := Language.Properties.Change;
+    QuesCheckBox.Caption := Language.Properties.ChbQuestion;
+    HideCheckBox.Caption := Language.Properties.ChbHide;
 
-  CommandEdit.Text := Link.exec;
-  WorkFolderEdit.Text := Link.workdir;
-  DescrEdit.Text := Link.descr;
-  ic := Link.icon;
-  iconindex := Link.iconindex;
-  QuesCheckBox.Checked := Link.ques;
-  HideCheckBox.Checked := Link.hide;
-  WStyleBox.ItemIndex := Link.wst;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
-    Link.iconindex);
-  CommandEditChange(nil);
+    CommandEdit.Text := Link.exec;
+    WorkFolderEdit.Text := Link.workdir;
+    DescrEdit.Text := Link.descr;
+    ic := Link.icon;
+    iconindex := Link.iconindex;
+    QuesCheckBox.Checked := Link.ques;
+    HideCheckBox.Checked := Link.hide;
+    WStyleBox.ItemIndex := Link.wst;
+    FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
+      Link.iconindex);
+    CommandEditChange(nil);
+  finally
+    FLoadingFields := False;
+  end;
 end;
 
 procedure TFilePropertiesForm.RefreshProps;
 var
   lnkinfo: TShellLinkInfoStruct;
+  WasLoading: Boolean;
 begin
-  if (not FileExists(GetAbsolutePath(CommandEdit.Text))) and (not DirectoryExists(GetAbsolutePath(CommandEdit.Text))) then exit;
+  if not ObjectExists(CommandEdit.Text) then
+    Exit;
 
-  if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
+  WasLoading := FLoadingFields;
+  FLoadingFields := True;
+  try
+    if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
       StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
       GetLinkInfo(@lnkinfo);
@@ -191,18 +230,20 @@ begin
       WorkFolderEdit.Text := lnkinfo.FullPathAndNameOfWorkingDirectroy;
       DescrEdit.Text := lnkinfo.Description;
     end
-  else
+    else
     begin
-      //ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
-      //if not IsExecutable(ext) then exit;
       Ic := CommandEdit.Text;
-      //ParamsEdit.Text := '';
       DescrEdit.Text := '';
       iconindex := 0;
     end;
-  if DescrEdit.Text = '' then
-    DescrEdit.Text := ExtractFileName(GetAbsolutePath(CommandEdit.Text));
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+    if DescrEdit.Text = '' then
+      DescrEdit.Text := ExtractFileName(GetAbsolutePath(CommandEdit.Text));
+    FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+  finally
+    FLoadingFields := WasLoading;
+  end;
+  if not WasLoading then
+    CommandEditChange(nil);
 end;
 
 procedure TFilePropertiesForm.WorkFolderClick(Sender: TObject);

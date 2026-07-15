@@ -55,6 +55,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RefPropsClick(Sender: TObject);
     procedure IndexEditChange(Sender: TObject);
+    procedure IconEditChange(Sender: TObject);
   private
     icindex, iconcount, ncount: integer;
     procedure SetIconPreviewSize;
@@ -86,10 +87,13 @@ begin
 end;
 
 procedure TChangeIconForm.RefreshProps;
+var
+  IconPath: string;
 begin
+  IconPath := GetAbsolutePath(IconEdit.Text);
   icindex := 1;
-  iconcount := GetIconCount(GetAbsolutePath(IconEdit.Text));
-  ncount := GetNegativeCount(IconEdit.Text);
+  iconcount := GetIconCount(IconPath);
+  ncount := GetNegativeCount(IconPath);
   if iconcount = 0 then iconcount := 1;
   Label3.Caption := Format(Language.IconSelect.LblOf, [iconcount]);
   IndexEdit.Value := icindex;
@@ -98,8 +102,14 @@ begin
   NegativeBox.Enabled := (iconcount > 1) and (ncount > 1);
   NegativeBox.Checked := False;
   SetIconPreviewSize;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text),
-                                          Pred(icindex));
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, IconPath, Pred(icindex));
+end;
+
+procedure TChangeIconForm.IconEditChange(Sender: TObject);
+begin
+  if showform then
+    Exit;
+  RefreshProps;
 end;
 
 procedure TChangeIconForm.BrowseIconClick(Sender: TObject);

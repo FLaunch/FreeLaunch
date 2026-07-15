@@ -105,6 +105,17 @@ function GetFileIcon(FileName: string; Index: integer; Size: Integer = 32): HIco
 // Функция возвращает путь к специальным папкам в Windows
 function GetSpecialDir(const CSIDL: Byte): string;
 function GetAbsolutePath(s: string): string;
+/// Resolves shell GUID / known-folder parsing names to a filesystem path
+function ResolveShellPath(const APath: string): string;
+/// True for ::{GUID} / shell: parsing names
+function LooksLikeShellGuidPath(const APath: string): Boolean;
+/// File, directory, or resolvable shell namespace item
+function ObjectExists(const APath: string): Boolean;
+/// Prefix ::{GUID} with shell: for ShellExecute / SHGetFileInfo
+function NormalizeShellParsingName(const APath: string): string;
+/// Try to store a portable known-folder GUID form (:: {GUID}\relative)
+function TryPathToKnownFolderGuidForm(const APath: string;
+  out AGuidPath: string): Boolean;
 // Преобразование битмапа в PNG с сохранением альфы
 procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
 // Функция делает ресайз изображения
@@ -526,24 +537,68 @@ end;
 function GetShellIcon(FileName: string): HIcon;
 var
   SFI: TSHFileInfo;
+  Path: string;
+  Pidl: PItemIDList;
+  AttrIn, AttrOut: DWORD;
 begin
-  ShGetFileInfo(PChar(FileName), 0, SFI, SizeOf(TShFileInfo), SHGFI_ICON);
-  Result := SFI.hIcon;
+  Result := 0;
+  // Prefer a real filesystem path first (Documents / known folders resolve
+  // to a path; SHGetFileInfo on the path works reliably).
+  Path := GetAbsolutePath(FileName);
+  if (Path <> '') and (not LooksLikeShellGuidPath(Path)) then
+  begin
+    if SHGetFileInfo(PChar(Path), 0, SFI, SizeOf(SFI),
+      SHGFI_ICON or SHGFI_LARGEICON) <> 0 then
+      Result := SFI.hIcon;
+    if Result <> 0 then
+      Exit;
+  end;
+
+  // Virtual shell items (Control Panel, This PC): PIDL lookup like Explorer
+  Path := NormalizeShellParsingName(FileName);
+  if LooksLikeShellGuidPath(FileName) or StartsText('shell:', Path) then
+  begin
+    Pidl := nil;
+    AttrIn := 0;
+    AttrOut := 0;
+    if Succeeded(SHParseDisplayName(PChar(Path), nil, Pidl, AttrIn, AttrOut)) and
+      (Pidl <> nil) then
+    try
+      if (SHGetFileInfo(PChar(Pidl), 0, SFI, SizeOf(SFI),
+        SHGFI_PIDL or SHGFI_ICON or SHGFI_LARGEICON) <> 0) and
+        (SFI.hIcon <> 0) then
+        Result := SFI.hIcon;
+    finally
+      CoTaskMemFree(Pidl);
+    end;
+  end;
 end;
 
 //--Функция извлекает иконку из файла по индексу
 function GetFileIcon(FileName: string; Index, Size: Integer): HIcon;
 var
   LIC, SIC: HICON;
+  FsPath: string;
 begin
   Result := 0;
-  if GetIconCount(FileName) > 0 then begin
-    ExtractIconEx(PChar(FileName), Index, LIC, SIC, 1);
-    Result := LIC;
-    if Result = 0 then Result := SIC;
+  // Known-folder GUIDs often resolve to a real file/folder — use that for icons
+  FsPath := GetAbsolutePath(FileName);
+  if (FsPath <> '') and (not LooksLikeShellGuidPath(FsPath)) then
+  begin
+    if GetIconCount(FsPath) > 0 then
+    begin
+      ExtractIconEx(PChar(FsPath), Index, LIC, SIC, 1);
+      Result := LIC;
+      if Result = 0 then
+        Result := SIC;
+    end;
+    if Result = 0 then
+      Result := GetShellIcon(FsPath);
   end;
-  if Result = 0 then Result := GetShellIcon(FileName);
-  if Result = 0 then Result := LoadIcon(HInstance, 'RBLANKICON');
+  if Result = 0 then
+    Result := GetShellIcon(FileName);
+  if Result = 0 then
+    Result := LoadIcon(HInstance, 'RBLANKICON');
 end;
 
 //--Функция возвращает путь к специальным папкам в Windows
@@ -566,9 +621,220 @@ begin
   if Result[length(Result)] <> '\' then Result := Result + '\';
 end;
 
+function LooksLikeShellGuidPath(const APath: string): Boolean;
+begin
+  Result := (Pos('::{', APath) > 0) or StartsText('shell:', APath);
+end;
+
+function NormalizeShellParsingName(const APath: string): string;
+begin
+  Result := Trim(APath);
+  if StartsText('::{', Result) then
+    Result := 'shell:' + Result;
+end;
+
+function TryPathToKnownFolderGuidForm(const APath: string;
+  out AGuidPath: string): Boolean;
+var
+  Absolute, FolderFs, Suffix: string;
+  Mgr: IKnownFolderManager;
+  Folder: IKnownFolder;
+  FolderId: TKnownFolderID;
+  FolderPathPtr: LPWSTR;
+begin
+  Result := False;
+  AGuidPath := '';
+  Absolute := Trim(APath);
+  if (Absolute = '') or LooksLikeShellGuidPath(Absolute) then
+    Exit;
+  try
+    Absolute := ExpandEnvironmentVariables(Absolute);
+  except
+    // keep Absolute as-is
+  end;
+  Absolute := ExcludeTrailingPathDelimiter(Absolute);
+  if Absolute = '' then
+    Exit;
+
+  if Failed(CoCreateInstance(CLSID_KnownFolderManager, nil, CLSCTX_INPROC_SERVER,
+    IID_IKnownFolderManager, Mgr)) then
+    Exit;
+  if Failed(Mgr.FindFolderFromPath(PChar(Absolute), FFFP_NEARESTPARENTMATCH,
+    Folder)) then
+    Exit;
+  if Failed(Folder.GetId(FolderId)) then
+    Exit;
+
+  FolderPathPtr := nil;
+  if Failed(Folder.GetPath(0, FolderPathPtr)) or (FolderPathPtr = nil) then
+    Exit;
+  try
+    FolderFs := ExcludeTrailingPathDelimiter(string(FolderPathPtr));
+  finally
+    CoTaskMemFree(FolderPathPtr);
+  end;
+  if FolderFs = '' then
+    Exit;
+
+  if SameText(Absolute, FolderFs) then
+    Suffix := ''
+  else if StartsText(IncludeTrailingPathDelimiter(FolderFs), Absolute) or
+    StartsText(FolderFs + '\', Absolute) or StartsText(FolderFs + '/', Absolute) then
+    Suffix := Copy(Absolute, Length(FolderFs) + 1, MaxInt)
+  else
+    Exit; // path is outside the known folder
+
+  AGuidPath := '::' + GUIDToString(FolderId) + Suffix;
+  Result := AGuidPath <> '';
+end;
+
+function ShellItemExists(const APath: string): Boolean;
+var
+  Pidl: PItemIDList;
+  AttrIn, AttrOut: DWORD;
+  Candidate: string;
+begin
+  Result := False;
+  Candidate := NormalizeShellParsingName(APath);
+  if Candidate = '' then
+    Exit;
+  Pidl := nil;
+  AttrIn := 0;
+  AttrOut := 0;
+  if Succeeded(SHParseDisplayName(PChar(Candidate), nil, Pidl, AttrIn, AttrOut)) and
+    (Pidl <> nil) then
+  begin
+    Result := True;
+    CoTaskMemFree(Pidl);
+  end;
+end;
+
+function ObjectExists(const APath: string): Boolean;
+var
+  Absolute: string;
+begin
+  if Trim(APath) = '' then
+    Exit(False);
+  Absolute := GetAbsolutePath(APath);
+  if (Absolute <> '') and (FileExists(Absolute) or DirectoryExists(Absolute)) then
+    Exit(True);
+  if LooksLikeShellGuidPath(APath) or LooksLikeShellGuidPath(Absolute) then
+    Exit(ShellItemExists(APath) or ShellItemExists(Absolute));
+  Result := False;
+end;
+
+function TryResolveKnownFolderPath(const APath: string; out AResolved: string): Boolean;
+var
+  S, GuidStr, Suffix: string;
+  BraceOpen, BraceClose: Integer;
+  FolderId: TGUID;
+  FolderPath: LPWSTR;
+begin
+  Result := False;
+  AResolved := '';
+  S := Trim(APath);
+  if StartsText('shell:', S) then
+    Delete(S, 1, Length('shell:'));
+  // Expect ::{GUID} or ::{GUID}\relative\path
+  if not StartsText('::{', S) then
+    Exit;
+  BraceOpen := Pos('{', S);
+  BraceClose := Pos('}', S);
+  if (BraceOpen = 0) or (BraceClose <= BraceOpen) then
+    Exit;
+  GuidStr := Copy(S, BraceOpen, BraceClose - BraceOpen + 1);
+  try
+    FolderId := StringToGUID(GuidStr);
+  except
+    Exit;
+  end;
+  if BraceClose < Length(S) then
+    Suffix := Copy(S, BraceClose + 1, MaxInt)
+  else
+    Suffix := '';
+  FolderPath := nil;
+  if Failed(SHGetKnownFolderPath(FolderId, 0, 0, FolderPath)) or (FolderPath = nil) then
+    Exit;
+  try
+    AResolved := ExcludeTrailingPathDelimiter(string(FolderPath)) + Suffix;
+    Result := AResolved <> '';
+  finally
+    CoTaskMemFree(FolderPath);
+  end;
+end;
+
+function ResolveShellPath(const APath: string): string;
+var
+  Pidl: PItemIDList;
+  AttrIn, AttrOut: DWORD;
+  PathBuf: array[0..MAX_PATH] of Char;
+  Name: LPWSTR;
+  Candidate: string;
+  Resolved: string;
+
+  function UsableFsPath(const ACandidate: string): Boolean;
+  begin
+    Result := (ACandidate <> '') and
+      (FileExists(ACandidate) or DirectoryExists(ACandidate));
+  end;
+
+begin
+  Result := APath;
+  if APath = '' then
+    Exit;
+
+  // ::{GUID}\file — primary form from Win11 Start / known-folder links (bug #59)
+  if TryResolveKnownFolderPath(APath, Resolved) and UsableFsPath(Resolved) then
+    Exit(Resolved);
+
+  Candidate := NormalizeShellParsingName(APath);
+
+  Pidl := nil;
+  AttrIn := 0;
+  AttrOut := 0;
+  if Failed(SHParseDisplayName(PChar(Candidate), nil, Pidl, AttrIn, AttrOut)) then
+  begin
+    // Keep original GUID string when known-folder expand does not yield a real path
+    if TryResolveKnownFolderPath(APath, Resolved) and UsableFsPath(Resolved) then
+      Result := Resolved;
+    Exit;
+  end;
+  try
+    if SHGetPathFromIDList(Pidl, PathBuf) and (PathBuf[0] <> #0) then
+      Exit(PathBuf);
+    Name := nil;
+    // SIGDN_FILESYSPATH is $80058000; cast avoids W1012 on Integer param
+    if Succeeded(SHGetNameFromIDList(Pidl, Integer(Cardinal(SIGDN_FILESYSPATH)),
+      Name)) and (Name <> nil) then
+    try
+      if Name[0] <> #0 then
+        Exit(string(Name));
+    finally
+      CoTaskMemFree(Name);
+    end;
+    // Fall back: known-folder GUID parsing name from the PIDL
+    Name := nil;
+    if Succeeded(SHGetNameFromIDList(Pidl,
+      Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and (Name <> nil) then
+    try
+      if TryResolveKnownFolderPath(string(Name), Resolved) and UsableFsPath(Resolved) then
+        Exit(Resolved);
+    finally
+      CoTaskMemFree(Name);
+    end;
+  finally
+    CoTaskMemFree(Pidl);
+  end;
+
+  if TryResolveKnownFolderPath(APath, Resolved) and UsableFsPath(Resolved) then
+    Result := Resolved;
+end;
+
 function GetAbsolutePath(s: string): string;
 begin
-  result := ExpandEnvironmentVariables(s);
+  Result := ExpandEnvironmentVariables(s);
+  if LooksLikeShellGuidPath(Result) then
+    Result := ResolveShellPath(Result);
 end;
 
 type
@@ -667,8 +933,36 @@ var
   PersistFile: IPersistFile;
   AnObj: IUnknown;
   ch_temp: array [0..MAX_PATH] of Char;
-  s_temp: string;
+  RawPath, AbsolutePath, ParsingName, SelectedPath, ExpandedPath,
+    GuidForm, ProgramFiles64, IconPath: string;
   ExpandedLen: DWORD;
+  Pidl: PItemIDList;
+  Name: LPWSTR;
+
+  function TargetExists(const APath: string): Boolean;
+  begin
+    Result := (APath <> '') and (FileExists(APath) or DirectoryExists(APath));
+  end;
+
+  function PreferStoredTarget(const ARaw, AAbsolute, AParsing: string): string;
+  var
+    Candidate, GuidPath: string;
+  begin
+    // Priority: keep shell GUID forms (portable + Correct for virtual items).
+    if LooksLikeShellGuidPath(ARaw) then
+      Exit(ARaw);
+    if LooksLikeShellGuidPath(AParsing) then
+      Exit(AParsing);
+    Candidate := AAbsolute;
+    if Candidate = '' then
+      Candidate := ARaw;
+    if (Candidate <> '') and TryPathToKnownFolderGuidForm(Candidate, GuidPath) then
+      Exit(GuidPath);
+    if ARaw <> '' then
+      Exit(ARaw);
+    Result := AAbsolute;
+  end;
+
 begin
   AnObj  := CreateComObject(CLSID_ShellLink);
   ShellLink := AnObj as IShellLink;
@@ -676,28 +970,90 @@ begin
   PersistFile.Load(PChar(string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile)), 0);
   with ShellLink do
     begin
-      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), lpShellLinkInfoStruct^.FindData, SLGP_RAWPATH);
-      // 32-bit app on 64-bit Windows: .lnk may store Program Files target that
-      // only exists under ProgramW6432 after expansion of env vars in the path.
-      s_temp := ExpandEnvironmentVariables(string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute));
-      if (s_temp <> '') and (not FileExists(s_temp)) and (not DirectoryExists(s_temp)) then
-        begin
-          ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ch_temp, Length(ch_temp));
-          if ExpandedLen > 1 then
-            begin
-              SetString(s_temp, PChar(@ch_temp[0]), ExpandedLen - 1);
-              StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
-                StringReplace(string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute),
-                  GetSpecialDir(CSIDL_PROGRAM_FILES),
-                  IncludeTrailingPathDelimiter(s_temp),
-                  [rfReplaceAll, rfIgnoreCase]),
-                Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute) - 1);
-            end;
+      Resolve(0, SLR_NO_UI or SLR_NOUPDATE);
+
+      FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
+        SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), 0);
+      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
+        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute),
+        lpShellLinkInfoStruct^.FindData, SLGP_RAWPATH);
+      RawPath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute);
+
+      FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
+        SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), 0);
+      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
+        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute),
+        lpShellLinkInfoStruct^.FindData, 0);
+      AbsolutePath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute);
+
+      ParsingName := '';
+      Pidl := nil;
+      if Succeeded(GetIDList(Pidl)) and (Pidl <> nil) then
+      try
+        Name := nil;
+        if Succeeded(SHGetNameFromIDList(Pidl,
+          Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and
+          (Name <> nil) then
+        try
+          ParsingName := string(Name);
+        finally
+          CoTaskMemFree(Name);
         end;
-      GetDescription(lpShellLinkInfoStruct^.Description, SizeOf(lpShellLinkInfoStruct^.Description));
-      GetArguments(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute, SizeOf(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute));
-      GetWorkingDirectory(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
-      GetIconLocation(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon, SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon), lpShellLinkInfoStruct^.IconIndex);
+      finally
+        CoTaskMemFree(Pidl);
+      end;
+
+      SelectedPath := PreferStoredTarget(RawPath, AbsolutePath, ParsingName);
+
+      // 32-bit: remapping Program Files → ProgramW6432 (filesystem paths only)
+      if (SelectedPath <> '') and (not LooksLikeShellGuidPath(SelectedPath)) then
+      begin
+        ExpandedPath := '';
+        try
+          ExpandedPath := ExpandEnvironmentVariables(SelectedPath);
+        except
+          ExpandedPath := SelectedPath;
+        end;
+        if (ExpandedPath <> '') and (not TargetExists(ExpandedPath)) then
+        begin
+          ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ch_temp,
+            Length(ch_temp));
+          if ExpandedLen > 1 then
+          begin
+            SetString(ProgramFiles64, PChar(@ch_temp[0]), ExpandedLen - 1);
+            SelectedPath := StringReplace(SelectedPath,
+              GetSpecialDir(CSIDL_PROGRAM_FILES),
+              IncludeTrailingPathDelimiter(ProgramFiles64),
+              [rfReplaceAll, rfIgnoreCase]);
+          end;
+        end;
+      end;
+
+      StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
+        SelectedPath,
+        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute) - 1);
+
+      GetDescription(lpShellLinkInfoStruct^.Description,
+        Length(lpShellLinkInfoStruct^.Description));
+      GetArguments(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute,
+        Length(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute));
+      GetWorkingDirectory(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy,
+        Length(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
+      GetIconLocation(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
+        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon),
+        lpShellLinkInfoStruct^.IconIndex);
+
+      IconPath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon);
+      if IconPath = '' then
+        IconPath := SelectedPath
+      else if (not LooksLikeShellGuidPath(IconPath)) and
+        TryPathToKnownFolderGuidForm(IconPath, GuidForm) then
+        IconPath := GuidForm;
+      // Keep GUID icon locations as-is (do not resolve to FS)
+      StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
+        IconPath,
+        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon) - 1);
+
       GetHotKey(lpShellLinkInfoStruct^.HotKey);
       GetShowCmd(lpShellLinkInfoStruct^.ShowCommand);
     end;
@@ -851,10 +1207,41 @@ var
   end;
 
 begin
-  exec := GetAbsolutePath(ALink.exec);
-  path := GetAbsolutePath(ALink.workdir);
-  if path = '' then path := ExtractFilePath(exec);
   if not ALink.active then Exit;
+  path := GetAbsolutePath(ALink.workdir);
+
+  // GUID / shell: targets: use a real filesystem path when known-folder resolves
+  // (Documents, Windows\notepad, ...). shell:::ShellExecute often returns
+  // ERROR_NO_ASSOCIATION (1155) for those. Pure virtual items (Control Panel)
+  // stay on explorer.exe + shell::: parsing name.
+  if LooksLikeShellGuidPath(ALink.exec) then
+  begin
+    exec := ResolveShellPath(ALink.exec);
+    if not (FileExists(exec) or DirectoryExists(exec)) then
+    begin
+      exec := NormalizeShellParsingName(ALink.exec);
+      case ALink.wst of
+        0: WinType := SW_SHOW;
+        1: WinType := SW_SHOWMAXIMIZED;
+        2: WinType := SW_SHOWMINIMIZED;
+        3: WinType := SW_HIDE;
+      else
+        WinType := SW_SHOW;
+      end;
+      if (ALink.IsAdmin or ALink.AsAdminPerm) then
+        ShellExecuteFL(AMainHandle, 'runas', 'explorer.exe', exec, path, WinType)
+      else
+        ShellExecuteFL(AMainHandle, '', 'explorer.exe', exec, path, WinType);
+      if ALink.hide then
+        PostMessage(AMainHandle, UM_HideMainForm, 0, 0);
+      Exit;
+    end;
+    // else: fall through with resolved filesystem path in exec
+  end
+  else
+    exec := GetAbsolutePath(ALink.exec);
+
+  if path = '' then path := ExtractFilePath(exec);
   Ext := ExtractFileExt(exec).ToLower;
   case ALink.wst of
     0: WinType := SW_SHOW;

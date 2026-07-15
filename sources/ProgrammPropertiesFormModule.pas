@@ -76,6 +76,8 @@ type
     procedure WorkFolderClick(Sender: TObject);
   private
     Link: TLink;
+    FLoadingFields: Boolean;
+    procedure SyncIconFromObject;
   public
     procedure RefreshProps;
     class function Execute(ALink: TLink): TLink;
@@ -101,18 +103,45 @@ begin
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(ic), iconindex);
 end;
 
+procedure TProgrammPropertiesForm.SyncIconFromObject;
+var
+  Ext: string;
+begin
+  if FLoadingFields then
+    Exit;
+  if not ObjectExists(CommandEdit.Text) then
+    Exit;
+
+  Ext := ExtractFileExt(GetAbsolutePath(CommandEdit.Text)).ToLower;
+  if Ext = '.lnk' then
+  begin
+    FLoadingFields := True;
+    try
+      RefreshProps;
+    finally
+      FLoadingFields := False;
+    end;
+    Exit;
+  end;
+
+  Ic := CommandEdit.Text;
+  iconindex := 0;
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+end;
+
 procedure TProgrammPropertiesForm.CommandEditChange(Sender: TObject);
 var
   ext: string;
   IsBinary: Boolean;
 begin
   ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
-  OKButton.Enabled := FileExists(GetAbsolutePath(CommandEdit.Text)) and IsExecutable(ext);
+  OKButton.Enabled := ObjectExists(CommandEdit.Text) and IsExecutable(ext);
   IsBinary := (ext = '.exe') or (ext = '.com');
   Label3.Enabled := IsBinary;
   PriorBox.Enabled := IsBinary;
   if not IsBinary then
     PriorBox.ItemIndex := 0;
+  SyncIconFromObject;
 end;
 
 procedure TProgrammPropertiesForm.OKButtonClick(Sender: TObject);
@@ -120,7 +149,7 @@ var
   ext: string;
   IsBinary: Boolean;
 begin
-  if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then
+  if not ObjectExists(CommandEdit.Text) then
     begin
       fillchar(Link, sizeof(TLink), 0);
       exit;
@@ -179,59 +208,64 @@ end;
 procedure TProgrammPropertiesForm.FormShow(Sender: TObject);
 begin
   if AlwaysOnTop then FormStyle := fsStayOnTop;
-  //--Loading language
-  OKButton.Caption := Language.BtnOk;
-  CancelButton.Caption := Language.BtnCancel;
-  PageControl1.Pages[0].Caption := Language.Properties.Caption;
-  Caption := Language.Properties.Caption;
-  Label9.Caption := Language.Properties.Folder + ':';
-  Label1.Caption := Language.Properties.LblObject + ':';
-  Label2.Caption := Language.Properties.Parameters + ':';
-  Label8.Caption := Label2.Caption;
-  Label4.Caption := Language.Properties.Description + ':';
-  Label3.Caption := Language.Properties.Priority + ':';
-  PriorBox.Items.Add(Language.Properties.PriorityNormal);
-  PriorBox.Items.Add(Language.Properties.PriorityHigh);
-  PriorBox.Items.Add(Language.Properties.PriorityIdle);
-  PriorBox.Items.Add(Language.Properties.PriorityRealTime);
-  PriorBox.Items.Add(Language.Properties.PriorityBelowNormal);
-  PriorBox.Items.Add(Language.Properties.PriorityAboveNormal);
-  Label7.Caption := Language.Properties.View + ':';
-  WStyleBox.Items.Add(Language.Properties.ViewNormal);
-  WStyleBox.Items.Add(Language.Properties.ViewMax);
-  WStyleBox.Items.Add(Language.Properties.ViewMin);
-  WStyleBox.Items.Add(Language.Properties.ViewHidden);
-  CommandEdit.RightButton.Hint := Language.Properties.BeHint;
-  RefProps.Hint := Language.Properties.RpHint;
-  Label5.Caption := Language.Properties.Options;
-  Bevel2.Left := Label5.Left + Label5.Width + 7;
-  Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
-  Label6.Caption := Language.Properties.Icon;
-  Bevel3.Left := Label6.Left + Label6.Width + 7;
-  Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
-  ChangeIconButton.Caption := Language.Properties.Change;
-  DropBox.Caption := Language.Properties.ChbDrop;
-  QuesCheckBox.Caption := Language.Properties.ChbQuestion;
-  HideCheckBox.Caption := Language.Properties.ChbHide;
-  AdminBox.Caption := Language.Properties.ChbAdmin;
+  FLoadingFields := True;
+  try
+    //--Loading language
+    OKButton.Caption := Language.BtnOk;
+    CancelButton.Caption := Language.BtnCancel;
+    PageControl1.Pages[0].Caption := Language.Properties.Caption;
+    Caption := Language.Properties.Caption;
+    Label9.Caption := Language.Properties.Folder + ':';
+    Label1.Caption := Language.Properties.LblObject + ':';
+    Label2.Caption := Language.Properties.Parameters + ':';
+    Label8.Caption := Label2.Caption;
+    Label4.Caption := Language.Properties.Description + ':';
+    Label3.Caption := Language.Properties.Priority + ':';
+    PriorBox.Items.Add(Language.Properties.PriorityNormal);
+    PriorBox.Items.Add(Language.Properties.PriorityHigh);
+    PriorBox.Items.Add(Language.Properties.PriorityIdle);
+    PriorBox.Items.Add(Language.Properties.PriorityRealTime);
+    PriorBox.Items.Add(Language.Properties.PriorityBelowNormal);
+    PriorBox.Items.Add(Language.Properties.PriorityAboveNormal);
+    Label7.Caption := Language.Properties.View + ':';
+    WStyleBox.Items.Add(Language.Properties.ViewNormal);
+    WStyleBox.Items.Add(Language.Properties.ViewMax);
+    WStyleBox.Items.Add(Language.Properties.ViewMin);
+    WStyleBox.Items.Add(Language.Properties.ViewHidden);
+    CommandEdit.RightButton.Hint := Language.Properties.BeHint;
+    RefProps.Hint := Language.Properties.RpHint;
+    Label5.Caption := Language.Properties.Options;
+    Bevel2.Left := Label5.Left + Label5.Width + 7;
+    Bevel2.Width := TabSheet1.Width - Bevel2.Left - 7;
+    Label6.Caption := Language.Properties.Icon;
+    Bevel3.Left := Label6.Left + Label6.Width + 7;
+    Bevel3.Width := TabSheet1.Width - Bevel3.Left - 7;
+    ChangeIconButton.Caption := Language.Properties.Change;
+    DropBox.Caption := Language.Properties.ChbDrop;
+    QuesCheckBox.Caption := Language.Properties.ChbQuestion;
+    HideCheckBox.Caption := Language.Properties.ChbHide;
+    AdminBox.Caption := Language.Properties.ChbAdmin;
 
-  CommandEdit.Text := Link.exec;
-  WorkFolderEdit.Text := Link.workdir;
-  ParamsEdit.Text := Link.params;
-  DropBox.Checked := Link.dropfiles;
-  DropBoxClick(nil);
-  DropParamsEdit.Text := Link.dropparams;
-  DescrEdit.Text := Link.descr;
-  ic := Link.icon;
-  iconindex := Link.iconindex;
-  QuesCheckBox.Checked := Link.ques;
-  HideCheckBox.Checked := Link.hide;
-  PriorBox.ItemIndex := Link.pr;
-  WStyleBox.ItemIndex := Link.wst;
-  AdminBox.Checked := Link.IsAdmin;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
-    Link.iconindex);
-  CommandEditChange(nil);
+    CommandEdit.Text := Link.exec;
+    WorkFolderEdit.Text := Link.workdir;
+    ParamsEdit.Text := Link.params;
+    DropBox.Checked := Link.dropfiles;
+    DropBoxClick(nil);
+    DropParamsEdit.Text := Link.dropparams;
+    DescrEdit.Text := Link.descr;
+    ic := Link.icon;
+    iconindex := Link.iconindex;
+    QuesCheckBox.Checked := Link.ques;
+    HideCheckBox.Checked := Link.hide;
+    PriorBox.ItemIndex := Link.pr;
+    WStyleBox.ItemIndex := Link.wst;
+    AdminBox.Checked := Link.IsAdmin;
+    FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
+      Link.iconindex);
+    CommandEditChange(nil);
+  finally
+    FLoadingFields := False;
+  end;
 end;
 
 procedure TProgrammPropertiesForm.RefreshProps;
@@ -239,17 +273,22 @@ var
   lnkinfo: TShellLinkInfoStruct;
   FName: string;
   ext: string;
+  WasLoading: Boolean;
 begin
-  if (not fileexists(GetAbsolutePath(CommandEdit.Text))) then exit;
+  if not ObjectExists(CommandEdit.Text) then
+    Exit;
 
-  if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
+  WasLoading := FLoadingFields;
+  FLoadingFields := True;
+  try
+    if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
       StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
       GetLinkInfo(@lnkinfo);
       FName := lnkinfo.FullPathAndNameOfFileToExecute;
-      ext := extractfileext(FName).ToLower;
-      if not IsExecutable(ext) then
-        exit;
+      ext := extractfileext(GetAbsolutePath(FName)).ToLower;
+      if not IsExecutable(ext) and not LooksLikeShellGuidPath(FName) then
+        Exit;
       CommandEdit.Text := FName;
       Ic := lnkinfo.FullPathAndNameOfFileContiningIcon;
       if Ic = '' then Ic := CommandEdit.Text;
@@ -258,22 +297,25 @@ begin
       ParamsEdit.Text := lnkinfo.ParamStringsOfFileToExecute;
       DescrEdit.Text := lnkinfo.Description;
     end
-  else
+    else
     begin
       ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
-      if not IsExecutable(ext) then
+      if not IsExecutable(ext) and not LooksLikeShellGuidPath(CommandEdit.Text) then
         Exit;
       Ic := CommandEdit.Text;
-      //ParamsEdit.Text := '';
       DescrEdit.Text := '';
       iconindex := 0;
     end;
-  if DescrEdit.Text = '' then
-    DescrEdit.Text := GetFileDescription(GetAbsolutePath(CommandEdit.Text));
-  if DescrEdit.Text = '' then
-    DescrEdit.Text := ExtractFileNameNoExt(GetAbsolutePath(CommandEdit.Text));
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
-  CommandEditChange(nil);
+    if DescrEdit.Text = '' then
+      DescrEdit.Text := GetFileDescription(GetAbsolutePath(CommandEdit.Text));
+    if DescrEdit.Text = '' then
+      DescrEdit.Text := ExtractFileNameNoExt(GetAbsolutePath(CommandEdit.Text));
+    FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
+  finally
+    FLoadingFields := WasLoading;
+  end;
+  if not WasLoading then
+    CommandEditChange(nil);
 end;
 
 procedure TProgrammPropertiesForm.WorkFolderClick(Sender: TObject);

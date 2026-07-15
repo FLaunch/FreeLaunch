@@ -869,8 +869,8 @@ begin
   TempIcon := TIcon.Create;
   // AbsolutePath fIcon
 
-  //--Если объекта не существует
-  if (not FileExists(GetIcon)) and (not DirectoryExists(GetIcon)) then
+  //--Если объекта не существует (файлы, папки и shell GUID / Control Panel)
+  if not ObjectExists(GetIcon) then
     //--Загружаем стандартную иконку "белый лист"
     TempIcon.Handle := LoadIcon(HInstance, 'RBLANKICON')
   else

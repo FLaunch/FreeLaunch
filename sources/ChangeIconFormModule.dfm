@@ -83,6 +83,7 @@ object ChangeIconForm: TChangeIconForm
       RightButton.ImageIndex = 0
       RightButton.Visible = True
       TabOrder = 0
+      OnChange = IconEditChange
       OnRightButtonClick = BrowseIconClick
     end
     object NegativeBox: TCheckBox
