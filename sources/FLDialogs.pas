@@ -140,18 +140,19 @@ function TFileOrDirDialog.Execute: Boolean;
 var
   FilePath: string;
 begin
+  Result := False;
   FilePath := ExtractFilePath(FFileName);
   if DirectoryExists(FilePath) then
     FOpenDialog.DefaultFolder := FilePath;
-    FOpenDialog.FileName := 'Select file or directory';
-    Result := FOpenDialog.Execute;
-    if Result then
-    begin
-      if FileExists(FOpenDialog.FileName) then
-        FFileName := FOpenDialog.FileName
-      else
-        FFileName := ExtractFilePath(FOpenDialog.FileName);
-    end;
+  FOpenDialog.FileName := 'Select file or directory';
+  Result := FOpenDialog.Execute;
+  if Result then
+  begin
+    if FileExists(FOpenDialog.FileName) then
+      FFileName := FOpenDialog.FileName
+    else
+      FFileName := ExtractFilePath(FOpenDialog.FileName);
+  end;
 end;
 
 procedure TFileOrDirDialog.OpenDialogFolderChange(Sender: TObject);
