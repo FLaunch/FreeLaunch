@@ -109,15 +109,34 @@ function GetAbsolutePath(s: string): string;
 function ResolveShellPath(const APath: string): string;
 /// True for ::{GUID} / shell: parsing names
 function LooksLikeShellGuidPath(const APath: string): Boolean;
+/// True for AppUserModelID-like strings (e.g. Publisher.App_xxx), not file paths
+function LooksLikeAppUserModelId(const APath: string): Boolean;
 /// File, directory, or resolvable shell namespace item
 function ObjectExists(const APath: string): Boolean;
+/// True if file/dir exists; on Win32 also checks past WOW64 FS redirection
+function FsPathExists(const APath: string): Boolean;
+/// Return an existing filesystem path (WOW64 + ProgramW6432 remap), or ''
+function ResolveExistingFsPath(const APath: string): string;
+/// If APath is a known-folder GUID that resolves to a real file/dir, return that
+/// path for UI; otherwise return APath unchanged (This PC, Control Panel, …)
+function PreferFilesystemPath(const APath: string): string;
+/// Friendly name for a shell parsing path (AppsFolder AUMID, ::{GUID}, …)
+function GetShellDisplayName(const APath: string): string;
+/// Load display image for shell: / ::{GUID} into ABitmap (UWP AppsFolder etc.)
+function TryLoadShellItemImage(const APath: string; ASize: Integer;
+  ABitmap: TBitmap): Boolean;
 /// Prefix ::{GUID} with shell: for ShellExecute / SHGetFileInfo
 function NormalizeShellParsingName(const APath: string): string;
 /// Try to store a portable known-folder GUID form (:: {GUID}\relative)
 function TryPathToKnownFolderGuidForm(const APath: string;
   out AGuidPath: string): Boolean;
+/// Find a Start Menu .lnk by UI display name (Win11 Start often drops AUMID only)
+function FindStartMenuShortcutByName(const ADisplayName: string;
+  const AExtraHint: string = ''): string;
 // Преобразование битмапа в PNG с сохранением альфы
 procedure AlphaToPng(Src: TBitmap; Dest: TPngImage);
+/// Copy PNG pixels into a 32-bit bitmap including the alpha channel
+procedure CopyPngToBitmap32(Png: TPngImage; ABitmap: TBitmap);
 // Функция делает ресайз изображения
 procedure SmoothResize(Src, Dst: TBitmap);
 // Функция извлекает описание исполняемого файла
@@ -186,7 +205,6 @@ uses
   FLLanguage;
 
 type
-
   PBGRAInt = ^TBGRAInt;
 
   TBGRAInt = record
@@ -512,6 +530,9 @@ function GetIconCount(FileName: string): Integer;
 var
   LIC, SIC: HICON;
 begin
+  // Virtual shell items expose one display icon, not ExtractIconEx slots
+  if LooksLikeShellGuidPath(FileName) then
+    Exit(1);
   Result := ExtractIconEx(PChar(FileName), -1, LIC, SIC, 1);
 end;
 
@@ -521,6 +542,8 @@ var
   icount, I: Integer;
 begin
   Result := 0;
+  if LooksLikeShellGuidPath(FileName) then
+    Exit;
   icount := GetIconCount(FileName);
   LIC := 0;
   SIC := 0;
@@ -534,43 +557,713 @@ begin
   end;
 end;
 
-function GetShellIcon(FileName: string): HIcon;
+function GetPackagesByPackageFamily(PackageFamilyName: PWideChar;
+  var Count: UINT; PackageFullNames: Pointer; var BufferLength: UINT;
+  Buffer: PWideChar): LONG; stdcall;
+  external kernel32 name 'GetPackagesByPackageFamily';
+
+function GetPackagePathByFullName(PackageFullName: PWideChar;
+  var PathLength: UINT; Path: PWideChar): LONG; stdcall;
+  external kernel32 name 'GetPackagePathByFullName';
+
+function Wow64DisableWow64FsRedirection(out OldValue: Pointer): BOOL; stdcall;
+  external kernel32 name 'Wow64DisableWow64FsRedirection';
+
+function Wow64RevertWow64FsRedirection(OldValue: Pointer): BOOL; stdcall;
+  external kernel32 name 'Wow64RevertWow64FsRedirection';
+
+type
+  TWow64FsRedirGuard = record
+    Active: Boolean;
+    Old: Pointer;
+    procedure Enter;
+    procedure Leave;
+  end;
+
+procedure TWow64FsRedirGuard.Enter;
+begin
+  Active := False;
+  Old := nil;
+  // Win32 FreeLaunch: WOW64 redirects "C:\Program Files\WindowsApps" to
+  // "Program Files (x86)\WindowsApps" where package files are invisible.
+{$IFDEF WIN32}
+  Active := Wow64DisableWow64FsRedirection(Old);
+{$ENDIF}
+end;
+
+procedure TWow64FsRedirGuard.Leave;
+begin
+  if Active then
+  begin
+    Wow64RevertWow64FsRedirection(Old);
+    Active := False;
+  end;
+end;
+
+function TryGetShellItemBitmapHandle(const APath: string; ASize: Integer;
+  out AHbm: HBITMAP): Boolean;
+type
+  TGetImageProc = function(Self: Pointer; SizeCx, SizeCy: LongInt;
+    Flags: DWORD; out Bitmap: HBITMAP): HRESULT; stdcall;
+var
+  Item: IShellItem;
+  FactoryUnk: IUnknown;
+  Path: string;
+  Proc: TGetImageProc;
+  Hr: HRESULT;
+begin
+  Result := False;
+  AHbm := 0;
+  Path := NormalizeShellParsingName(Trim(APath));
+  if (Path = '') or
+    not (LooksLikeShellGuidPath(APath) or StartsText('shell:', Path)) then
+    Exit;
+  if ASize < 16 then
+    ASize := 16;
+
+  // Prefer creating IShellItemImageFactory directly (avoids Delphi TSize thunk)
+  FactoryUnk := nil;
+  Hr := SHCreateItemFromParsingName(PWideChar(Path), nil,
+    IID_IShellItemImageFactory, FactoryUnk);
+  if Failed(Hr) or (FactoryUnk = nil) then
+  begin
+    Item := nil;
+    if Failed(SHCreateItemFromParsingName(PWideChar(Path), nil, IID_IShellItem,
+      Item)) or (Item = nil) then
+      Exit;
+    if Failed(Item.QueryInterface(IID_IShellItemImageFactory, FactoryUnk)) or
+      (FactoryUnk = nil) then
+      Exit;
+  end;
+
+  // Raw vtable call: slot 3 = GetImage(SIZE{cx,cy}, flags, *hbm)
+  // VTable is Pointer to first slot; index via byte offset (PPointer is not an array)
+  Proc := TGetImageProc(PPointer(NativeUInt(PPointer(Pointer(FactoryUnk))^) +
+    3 * SizeOf(Pointer))^);
+  AHbm := 0;
+  Hr := Proc(Pointer(FactoryUnk), ASize, ASize,
+    SIIGBF_RESIZETOFIT or SIIGBF_BIGGERSIZEOK or SIIGBF_ICONONLY, AHbm);
+  if Failed(Hr) or (AHbm = 0) then
+  begin
+    AHbm := 0;
+    Hr := Proc(Pointer(FactoryUnk), ASize, ASize,
+      SIIGBF_RESIZETOFIT or SIIGBF_BIGGERSIZEOK, AHbm);
+    if Failed(Hr) then
+      AHbm := 0;
+  end;
+  Result := AHbm <> 0;
+end;
+
+function AppsFolderPackageFamily(const APath: string): string;
+var
+  S: string;
+  P: Integer;
+begin
+  Result := '';
+  S := Trim(APath);
+  if not StartsText('shell:AppsFolder\', S) then
+    Exit;
+  S := Copy(S, Length('shell:AppsFolder\') + 1, MaxInt);
+  P := Pos('!', S);
+  if P > 0 then
+    SetLength(S, P - 1);
+  Result := Trim(S);
+end;
+
+function TryGetPackagePathByFamily(const AFamily: string;
+  out APackagePath: string): Boolean;
+var
+  Count, BufLen, PathLen: UINT;
+  Buf: array of WideChar;
+  Names: array of PWideChar;
+  FullName: string;
+  PathBuf: array of WideChar;
+  Hr: LONG;
+begin
+  Result := False;
+  APackagePath := '';
+  if AFamily = '' then
+    Exit;
+  Count := 0;
+  BufLen := 0;
+  Hr := GetPackagesByPackageFamily(PWideChar(AFamily), Count, nil, BufLen, nil);
+  if ((Hr <> ERROR_INSUFFICIENT_BUFFER) and (Hr <> ERROR_SUCCESS)) or
+    (Count = 0) or (BufLen = 0) then
+    Exit;
+  SetLength(Names, Count);
+  SetLength(Buf, BufLen);
+  Hr := GetPackagesByPackageFamily(PWideChar(AFamily), Count, @Names[0], BufLen,
+    @Buf[0]);
+  if (Hr <> ERROR_SUCCESS) or (Count = 0) or (Names[0] = nil) then
+    Exit;
+  FullName := Names[0];
+  PathLen := 0;
+  Hr := GetPackagePathByFullName(PWideChar(FullName), PathLen, nil);
+  if ((Hr <> ERROR_INSUFFICIENT_BUFFER) and (Hr <> ERROR_SUCCESS)) or
+    (PathLen = 0) then
+    Exit;
+  SetLength(PathBuf, PathLen);
+  Hr := GetPackagePathByFullName(PWideChar(FullName), PathLen, @PathBuf[0]);
+  if Hr <> ERROR_SUCCESS then
+    Exit;
+  APackagePath := ExcludeTrailingPathDelimiter(PWideChar(@PathBuf[0]));
+  Result := APackagePath <> '';
+end;
+
+function ResolveAppxLogoFile(const APackagePath, ARelative: string): string;
+var
+  Rel, Base, Ext, NameOnly, Candidate: string;
+  Suffixes: array[0..7] of string;
+  I: Integer;
+begin
+  Result := '';
+  Rel := StringReplace(Trim(ARelative), '/', '\', [rfReplaceAll]);
+  if Rel = '' then
+    Exit;
+  while (Rel <> '') and ((Rel[1] = '\') or (Rel[1] = '/')) do
+    Delete(Rel, 1, 1);
+  Base := ChangeFileExt(Rel, '');
+  Ext := ExtractFileExt(Rel);
+  if Ext = '' then
+    Ext := '.png';
+  NameOnly := ExtractFileName(Base);
+  Suffixes[0] := '.scale-200';
+  Suffixes[1] := '.scale-100';
+  Suffixes[2] := '.scale-400';
+  Suffixes[3] := '.scale-150';
+  Suffixes[4] := '.targetsize-48';
+  Suffixes[5] := '.targetsize-32';
+  Suffixes[6] := '.targetsize-256';
+  Suffixes[7] := '';
+  for I := 0 to High(Suffixes) do
+  begin
+    Candidate := IncludeTrailingPathDelimiter(APackagePath) + Base +
+      Suffixes[I] + Ext;
+    if FileExists(Candidate) then
+      Exit(Candidate);
+    Candidate := IncludeTrailingPathDelimiter(APackagePath) + 'Assets\' +
+      NameOnly + Suffixes[I] + Ext;
+    if FileExists(Candidate) then
+      Exit(Candidate);
+  end;
+  Candidate := IncludeTrailingPathDelimiter(APackagePath) + Rel;
+  if FileExists(Candidate) then
+    Result := Candidate;
+end;
+
+function ExtractAppxManifestLogo(const AManifestXml: string): string;
+const
+  AttrKeys: array[0..3] of string = (
+    'Square44x44Logo="',
+    'Square150x150Logo="',
+    'Square83x83Logo="',
+    'StoreLogo="');
+  ElemKeys: array[0..1] of string = ('<Logo>', '<StoreLogo>');
+var
+  Key: string;
+  P, Q, I: Integer;
+begin
+  Result := '';
+  for I := 0 to High(AttrKeys) do
+  begin
+    Key := AttrKeys[I];
+    P := Pos(Key, AManifestXml);
+    if P = 0 then
+      Continue;
+    P := P + Length(Key);
+    Q := P;
+    while (Q <= Length(AManifestXml)) and (AManifestXml[Q] <> '"') do
+      Inc(Q);
+    if Q > P then
+      Exit(Copy(AManifestXml, P, Q - P));
+  end;
+  for I := 0 to High(ElemKeys) do
+  begin
+    Key := ElemKeys[I];
+    P := Pos(Key, AManifestXml);
+    if P = 0 then
+      Continue;
+    P := P + Length(Key);
+    Q := Pos('</', Copy(AManifestXml, P, MaxInt));
+    if Q > 1 then
+      Exit(Trim(Copy(AManifestXml, P, Q - 1)));
+  end;
+end;
+
+procedure CopyPngToBitmap32(Png: TPngImage; ABitmap: TBitmap);
+var
+  X, Y: Integer;
+  Dest: PRGBQuad;
+  Alpha: Vcl.Imaging.PNGImage.PByteArray;
+  C: TColor;
+  HasAlpha: Boolean;
+  TransRGB: Longint;
+begin
+  ABitmap.SetSize(0, 0);
+  ABitmap.PixelFormat := pf32bit;
+  ABitmap.AlphaFormat := afIgnored;
+  ABitmap.SetSize(Png.Width, Png.Height);
+  HasAlpha := Png.TransparencyMode = ptmPartial;
+  if Png.Transparent then
+    TransRGB := ColorToRGB(Png.TransparentColor)
+  else
+    TransRGB := -1;
+  for Y := 0 to Png.Height - 1 do
+  begin
+    Dest := ABitmap.ScanLine[Y];
+    if HasAlpha then
+      Alpha := Png.AlphaScanline[Y]
+    else
+      Alpha := nil;
+    for X := 0 to Png.Width - 1 do
+    begin
+      C := Png.Pixels[X, Y];
+      Dest^.rgbRed := GetRValue(C);
+      Dest^.rgbGreen := GetGValue(C);
+      Dest^.rgbBlue := GetBValue(C);
+      if Alpha <> nil then
+        Dest^.rgbReserved := Alpha[X]
+      else if (TransRGB >= 0) and (ColorToRGB(C) = TransRGB) then
+        Dest^.rgbReserved := 0
+      else
+        Dest^.rgbReserved := 255;
+      Inc(Dest);
+    end;
+  end;
+  ABitmap.AlphaFormat := afDefined;
+end;
+
+function TryLoadImageFileToBitmap(const AFile: string; ASize: Integer;
+  ABitmap: TBitmap): Boolean;
+var
+  Pic: TPicture;
+  Src: TBitmap;
+  Png: TPngImage;
+  X, Y: Integer;
+  Dest: PRGBQuad;
+begin
+  Result := False;
+  if (ABitmap = nil) or (not FileExists(AFile)) then
+    Exit;
+  Src := TBitmap.Create;
+  try
+    if SameText(ExtractFileExt(AFile), '.png') then
+    begin
+      Png := TPngImage.Create;
+      try
+        try
+          Png.LoadFromFile(AFile);
+        except
+          Exit;
+        end;
+        if (Png.Width <= 0) or (Png.Height <= 0) then
+          Exit;
+        CopyPngToBitmap32(Png, Src);
+      finally
+        Png.Free;
+      end;
+    end
+    else
+    begin
+      Pic := TPicture.Create;
+      try
+        try
+          Pic.LoadFromFile(AFile);
+        except
+          Exit;
+        end;
+        if (Pic.Width <= 0) or (Pic.Height <= 0) then
+          Exit;
+        Src.PixelFormat := pf32bit;
+        Src.AlphaFormat := afIgnored;
+        Src.SetSize(Pic.Width, Pic.Height);
+        Src.Canvas.Draw(0, 0, Pic.Graphic);
+        for Y := 0 to Src.Height - 1 do
+        begin
+          Dest := Src.ScanLine[Y];
+          for X := 0 to Src.Width - 1 do
+          begin
+            Dest^.rgbReserved := 255;
+            Inc(Dest);
+          end;
+        end;
+        Src.AlphaFormat := afDefined;
+      finally
+        Pic.Free;
+      end;
+    end;
+    if (Src.Width = ASize) and (Src.Height = ASize) then
+      ABitmap.Assign(Src)
+    else
+    begin
+      ABitmap.PixelFormat := pf32bit;
+      ABitmap.SetSize(ASize, ASize);
+      SmoothResize(Src, ABitmap);
+    end;
+    ABitmap.AlphaFormat := afDefined;
+    Result := (ABitmap.Width > 0) and (ABitmap.Height > 0);
+  finally
+    Src.Free;
+  end;
+end;
+
+function TryLoadAppxLogoImage(const APath: string; ASize: Integer;
+  ABitmap: TBitmap): Boolean;
+var
+  Family, PackagePath, Manifest, LogoRel, LogoFile: string;
+  Guard: TWow64FsRedirGuard;
+begin
+  Result := False;
+  Family := AppsFolderPackageFamily(APath);
+  if Family = '' then
+    Exit;
+  if not TryGetPackagePathByFamily(Family, PackagePath) then
+    Exit;
+
+  Guard.Enter;
+  try
+    Manifest := IncludeTrailingPathDelimiter(PackagePath) + 'AppxManifest.xml';
+    if not FileExists(Manifest) then
+      Exit;
+    try
+      LogoRel := ExtractAppxManifestLogo(TFile.ReadAllText(Manifest, TEncoding.UTF8));
+    except
+      try
+        LogoRel := ExtractAppxManifestLogo(TFile.ReadAllText(Manifest));
+      except
+        Exit;
+      end;
+    end;
+    if LogoRel = '' then
+      LogoRel := 'Assets\StoreLogo.png';
+    LogoFile := ResolveAppxLogoFile(PackagePath, LogoRel);
+    if LogoFile = '' then
+      LogoFile := ResolveAppxLogoFile(PackagePath, 'Assets\Square44x44Logo.png');
+    if LogoFile = '' then
+      LogoFile := ResolveAppxLogoFile(PackagePath, 'Assets\StoreLogo.png');
+    if LogoFile = '' then
+      Exit;
+    Result := TryLoadImageFileToBitmap(LogoFile, ASize, ABitmap);
+  finally
+    Guard.Leave;
+  end;
+end;
+
+function CopyHBitmapToBitmap(hbm: HBITMAP; ABitmap: TBitmap): Boolean;
+var
+  BM: BITMAP;
+  SrcDC: HDC;
+  OldBmp: HGDIOBJ;
+  W, H: Integer;
+  BI: TBitmapInfo;
+  DC: HDC;
+begin
+  Result := False;
+  if (hbm = 0) or (ABitmap = nil) then
+    Exit;
+  FillChar(BM, SizeOf(BM), 0);
+  if GetObject(hbm, SizeOf(BM), @BM) = 0 then
+    Exit;
+  W := BM.bmWidth;
+  H := Abs(BM.bmHeight);
+  if (W <= 0) or (H <= 0) then
+    Exit;
+
+  // Do not assign Shell HBITMAP via TBitmap.Handle — VCL often rejects those
+  // DIB sections (UWP logos become empty).
+  ABitmap.SetSize(0, 0);
+  ABitmap.PixelFormat := pf32bit;
+  ABitmap.AlphaFormat := afIgnored;
+  ABitmap.SetSize(W, H);
+
+  SrcDC := CreateCompatibleDC(0);
+  if SrcDC <> 0 then
+  try
+    OldBmp := SelectObject(SrcDC, hbm);
+    if OldBmp <> 0 then
+    try
+      Result := BitBlt(ABitmap.Canvas.Handle, 0, 0, W, H, SrcDC, 0, 0, SRCCOPY);
+    finally
+      SelectObject(SrcDC, OldBmp);
+    end;
+  finally
+    DeleteDC(SrcDC);
+  end;
+
+  // Shell DIB sections sometimes refuse SelectObject — copy pixels via GetDIBits
+  if not Result then
+  begin
+    FillChar(BI, SizeOf(BI), 0);
+    BI.bmiHeader.biSize := SizeOf(TBitmapInfoHeader);
+    BI.bmiHeader.biWidth := W;
+    BI.bmiHeader.biHeight := -H; // top-down, matches ScanLine[0]
+    BI.bmiHeader.biPlanes := 1;
+    BI.bmiHeader.biBitCount := 32;
+    BI.bmiHeader.biCompression := BI_RGB;
+    DC := GetDC(0);
+    if DC <> 0 then
+    try
+      Result := GetDIBits(DC, hbm, 0, Cardinal(H), ABitmap.ScanLine[0], BI,
+        DIB_RGB_COLORS) <> 0;
+    finally
+      ReleaseDC(0, DC);
+    end;
+  end;
+
+  if Result then
+    ABitmap.AlphaFormat := afDefined;
+end;
+
+function DrawIconToBitmap(AIcon: HICON; ASize: Integer; ABitmap: TBitmap): Boolean;
+begin
+  Result := False;
+  if (AIcon = 0) or (ABitmap = nil) or (ASize < 1) then
+    Exit;
+  ABitmap.SetSize(0, 0);
+  ABitmap.PixelFormat := pf32bit;
+  ABitmap.AlphaFormat := afIgnored;
+  ABitmap.SetSize(ASize, ASize);
+  // Transparent clear
+  ABitmap.Canvas.Brush.Style := bsClear;
+  ABitmap.Canvas.FillRect(Rect(0, 0, ASize, ASize));
+  Result := DrawIconEx(ABitmap.Canvas.Handle, 0, 0, AIcon, ASize, ASize, 0, 0,
+    DI_NORMAL);
+  if Result then
+    ABitmap.AlphaFormat := afDefined;
+end;
+
+function TryExtractShellIcon(const APath: string; ASize: Integer;
+  out AIcon: HICON): Boolean;
+var
+  Path: string;
+  Pidl, Child: PItemIDList;
+  AttrIn, AttrOut: DWORD;
+  Folder: IShellFolder;
+  FolderPtr: Pointer;
+  Extract: IExtractIconW;
+  Loc: array[0..MAX_PATH] of WideChar;
+  Idx: Integer;
+  Flags: UINT;
+  Large, Small: HICON;
+  Hr: HRESULT;
+begin
+  Result := False;
+  AIcon := 0;
+  Path := NormalizeShellParsingName(Trim(APath));
+  if Path = '' then
+    Exit;
+  if ASize < 16 then
+    ASize := 16;
+
+  Pidl := nil;
+  AttrIn := 0;
+  AttrOut := 0;
+  if Failed(SHParseDisplayName(PChar(Path), nil, Pidl, AttrIn, AttrOut)) or
+    (Pidl = nil) then
+    Exit;
+  try
+    Child := nil;
+    FolderPtr := nil;
+    Folder := nil;
+    // SHBindToParent takes var ppv: Pointer (not an interface out-param)
+    if Failed(SHBindToParent(Pidl, IID_IShellFolder, FolderPtr, Child)) or
+      (FolderPtr = nil) or (Child = nil) then
+      Exit;
+    // Take ownership of the refcount returned by SHBindToParent
+    Pointer(Folder) := FolderPtr;
+    Extract := nil;
+    if Failed(Folder.GetUIObjectOf(0, 1, Child, IID_IExtractIconW, nil, Extract)) or
+      (Extract = nil) then
+      Exit;
+
+    FillChar(Loc, SizeOf(Loc), 0);
+    Idx := 0;
+    Flags := 0;
+    if Failed(Extract.GetIconLocation(GIL_FORSHELL, Loc, MAX_PATH, Idx, Flags)) then
+      Exit;
+
+    Large := 0;
+    Small := 0;
+    Hr := Extract.Extract(Loc, Cardinal(Idx), Large, Small,
+      MakeLong(Word(ASize), Word(ASize)));
+    // S_FALSE = caller should ExtractIconEx from Loc; S_OK = icons returned
+    if (Large = 0) and (Small = 0) and Succeeded(Hr) and (Loc[0] <> #0) and
+      ((Flags and GIL_NOTFILENAME) = 0) then
+      ExtractIconEx(Loc, Idx, Large, Small, 1);
+
+    if Large <> 0 then
+    begin
+      AIcon := Large;
+      if (Small <> 0) and (Small <> Large) then
+        DestroyIcon(Small);
+    end
+    else if Small <> 0 then
+      AIcon := Small;
+    Result := AIcon <> 0;
+  finally
+    CoTaskMemFree(Pidl);
+  end;
+end;
+
+function TryLoadShellItemImage(const APath: string; ASize: Integer;
+  ABitmap: TBitmap): Boolean;
+var
+  Hbm: HBITMAP;
+  Icon: HICON;
+  Path: string;
+  Pidl: PItemIDList;
+  AttrIn, AttrOut: DWORD;
+  SFI: TSHFileInfo;
+  IsAppsFolder: Boolean;
+begin
+  Result := False;
+  if ABitmap = nil then
+    Exit;
+  if ASize < 16 then
+    ASize := 16;
+  Path := NormalizeShellParsingName(Trim(APath));
+  if Path = '' then
+    Exit;
+  IsAppsFolder := StartsText('shell:AppsFolder\', Path);
+
+  // 1) UWP: read package logo with WOW64 FS redirection disabled
+  if IsAppsFolder and TryLoadAppxLogoImage(APath, ASize, ABitmap) then
+    Exit(True);
+
+  // 2) IShellItemImageFactory via raw vtable
+  if TryGetShellItemBitmapHandle(APath, ASize, Hbm) then
+  try
+    Result := CopyHBitmapToBitmap(Hbm, ABitmap);
+  finally
+    DeleteObject(Hbm);
+  end;
+  if Result then
+    Exit;
+
+  // 3) IExtractIcon
+  if TryExtractShellIcon(APath, ASize, Icon) then
+  try
+    Result := DrawIconToBitmap(Icon, ASize, ABitmap);
+  finally
+    DestroyIcon(Icon);
+  end;
+  if Result then
+    Exit;
+
+  // 4) SHGetFileInfo — not for AppsFolder (often blank stub under WOW64)
+  if IsAppsFolder then
+    Exit;
+
+  Pidl := nil;
+  AttrIn := 0;
+  AttrOut := 0;
+  if Succeeded(SHParseDisplayName(PChar(Path), nil, Pidl, AttrIn, AttrOut)) and
+    (Pidl <> nil) then
+  try
+    FillChar(SFI, SizeOf(SFI), 0);
+    if (SHGetFileInfo(PChar(Pidl), 0, SFI, SizeOf(SFI),
+      SHGFI_PIDL or SHGFI_ICON or SHGFI_LARGEICON) <> 0) and
+      (SFI.hIcon <> 0) then
+    try
+      Result := DrawIconToBitmap(SFI.hIcon, ASize, ABitmap);
+    finally
+      DestroyIcon(SFI.hIcon);
+    end;
+  finally
+    CoTaskMemFree(Pidl);
+  end;
+end;
+
+function BitmapHandleToIcon(hbm: HBITMAP): HICON;
+var
+  BM: BITMAP;
+  Himl: HIMAGELIST;
+begin
+  Result := 0;
+  // CreateIconIndirect on 32-bpp Shell bitmaps yields a fully transparent
+  // icon; ImageList COLOR32 preserves alpha correctly.
+  if (hbm = 0) or (GetObject(hbm, SizeOf(BM), @BM) = 0) then
+    Exit;
+  Himl := ImageList_Create(BM.bmWidth, BM.bmHeight, ILC_COLOR32, 1, 1);
+  if Himl = 0 then
+    Exit;
+  try
+    if ImageList_Add(Himl, hbm, 0) >= 0 then
+      Result := ImageList_GetIcon(Himl, 0, ILD_NORMAL);
+  finally
+    ImageList_Destroy(Himl);
+  end;
+end;
+
+function GetShellIcon(FileName: string; Size: Integer = 32): HIcon;
 var
   SFI: TSHFileInfo;
   Path: string;
   Pidl: PItemIDList;
   AttrIn, AttrOut: DWORD;
+  Flags: UINT;
+  Bmp: TBitmap;
+  Himl: HIMAGELIST;
 begin
   Result := 0;
-  // Prefer a real filesystem path first (Documents / known folders resolve
-  // to a path; SHGetFileInfo on the path works reliably).
-  Path := GetAbsolutePath(FileName);
-  if (Path <> '') and (not LooksLikeShellGuidPath(Path)) then
-  begin
-    if SHGetFileInfo(PChar(Path), 0, SFI, SizeOf(SFI),
-      SHGFI_ICON or SHGFI_LARGEICON) <> 0 then
-      Result := SFI.hIcon;
-    if Result <> 0 then
-      Exit;
-  end;
+  if Size < 16 then
+    Size := 16;
 
-  // Virtual shell items (Control Panel, This PC): PIDL lookup like Explorer
-  Path := NormalizeShellParsingName(FileName);
+  Path := NormalizeShellParsingName(Trim(FileName));
   if LooksLikeShellGuidPath(FileName) or StartsText('shell:', Path) then
   begin
+    Bmp := TBitmap.Create;
+    try
+      if TryLoadShellItemImage(FileName, Size, Bmp) and (Bmp.Width > 0) then
+      begin
+        Himl := ImageList_Create(Bmp.Width, Bmp.Height, ILC_COLOR32, 1, 1);
+        if Himl <> 0 then
+        try
+          if ImageList_Add(Himl, Bmp.Handle, 0) >= 0 then
+            Result := ImageList_GetIcon(Himl, 0, ILD_NORMAL);
+        finally
+          ImageList_Destroy(Himl);
+        end;
+      end;
+    finally
+      Bmp.Free;
+    end;
+    if Result <> 0 then
+      Exit;
+
     Pidl := nil;
     AttrIn := 0;
     AttrOut := 0;
     if Succeeded(SHParseDisplayName(PChar(Path), nil, Pidl, AttrIn, AttrOut)) and
       (Pidl <> nil) then
     try
-      if (SHGetFileInfo(PChar(Pidl), 0, SFI, SizeOf(SFI),
-        SHGFI_PIDL or SHGFI_ICON or SHGFI_LARGEICON) <> 0) and
+      FillChar(SFI, SizeOf(SFI), 0);
+      Flags := SHGFI_PIDL or SHGFI_ICON;
+      if Size <= 16 then
+        Flags := Flags or SHGFI_SMALLICON
+      else
+        Flags := Flags or SHGFI_LARGEICON;
+      if (SHGetFileInfo(PChar(Pidl), 0, SFI, SizeOf(SFI), Flags) <> 0) and
         (SFI.hIcon <> 0) then
         Result := SFI.hIcon;
     finally
       CoTaskMemFree(Pidl);
     end;
+    if Result <> 0 then
+      Exit;
+  end;
+
+  Path := GetAbsolutePath(FileName);
+  if (Path <> '') and (not LooksLikeShellGuidPath(Path)) then
+  begin
+    FillChar(SFI, SizeOf(SFI), 0);
+    Flags := SHGFI_ICON;
+    if Size <= 16 then
+      Flags := Flags or SHGFI_SMALLICON
+    else
+      Flags := Flags or SHGFI_LARGEICON;
+    if SHGetFileInfo(PChar(Path), 0, SFI, SizeOf(SFI), Flags) <> 0 then
+      Result := SFI.hIcon;
   end;
 end;
 
@@ -578,25 +1271,60 @@ end;
 function GetFileIcon(FileName: string; Index, Size: Integer): HIcon;
 var
   LIC, SIC: HICON;
-  FsPath: string;
+  FsPath, Norm: string;
+  Guard: TWow64FsRedirGuard;
 begin
   Result := 0;
-  // Known-folder GUIDs often resolve to a real file/folder — use that for icons
+  Norm := NormalizeShellParsingName(FileName);
+
+  // Virtual shell items (AppsFolder, Control Panel applets, This PC, …)
+  if LooksLikeShellGuidPath(FileName) or StartsText('shell:', Norm) then
+  begin
+    FsPath := GetAbsolutePath(FileName);
+    if (FsPath <> '') and (not LooksLikeShellGuidPath(FsPath)) then
+    begin
+      Guard.Enter;
+      try
+        if GetIconCount(FsPath) > 0 then
+        begin
+          ExtractIconEx(PChar(FsPath), Index, LIC, SIC, 1);
+          Result := LIC;
+          if Result = 0 then
+            Result := SIC;
+        end;
+      finally
+        Guard.Leave;
+      end;
+      if Result = 0 then
+        Result := GetShellIcon(FsPath, Size);
+    end;
+    if Result = 0 then
+      Result := GetShellIcon(FileName, Size);
+    if Result = 0 then
+      Result := LoadIcon(HInstance, 'RBLANKICON');
+    Exit;
+  end;
+
   FsPath := GetAbsolutePath(FileName);
   if (FsPath <> '') and (not LooksLikeShellGuidPath(FsPath)) then
   begin
-    if GetIconCount(FsPath) > 0 then
-    begin
-      ExtractIconEx(PChar(FsPath), Index, LIC, SIC, 1);
-      Result := LIC;
-      if Result = 0 then
-        Result := SIC;
+    Guard.Enter;
+    try
+      if GetIconCount(FsPath) > 0 then
+      begin
+        ExtractIconEx(PChar(FsPath), Index, LIC, SIC, 1);
+        Result := LIC;
+        if Result = 0 then
+          Result := SIC;
+      end;
+    finally
+      Guard.Leave;
     end;
     if Result = 0 then
-      Result := GetShellIcon(FsPath);
+      Result := GetShellIcon(FsPath, Size);
   end;
   if Result = 0 then
-    Result := GetShellIcon(FileName);
+    Result := GetShellIcon(FileName, Size);
   if Result = 0 then
     Result := LoadIcon(HInstance, 'RBLANKICON');
 end;
@@ -626,6 +1354,21 @@ begin
   Result := (Pos('::{', APath) > 0) or StartsText('shell:', APath);
 end;
 
+function LooksLikeAppUserModelId(const APath: string): Boolean;
+var
+  S: string;
+begin
+  // AUMID: "Publisher.Product_hash" / "Embarcadero.DesktopToasts.C5E43BD0"
+  // — has dots, no drive/path separators, not a shell GUID form.
+  S := Trim(APath);
+  Result := (S <> '') and
+    (not LooksLikeShellGuidPath(S)) and
+    (Pos('\', S) = 0) and
+    (Pos('/', S) = 0) and
+    (Pos(':', S) = 0) and
+    (Pos('.', S) > 0);
+end;
+
 function NormalizeShellParsingName(const APath: string): string;
 begin
   Result := Trim(APath);
@@ -636,11 +1379,13 @@ end;
 function TryPathToKnownFolderGuidForm(const APath: string;
   out AGuidPath: string): Boolean;
 var
-  Absolute, FolderFs, Suffix: string;
+  Absolute, FolderFs, Suffix, Pf64: string;
   Mgr: IKnownFolderManager;
   Folder: IKnownFolder;
   FolderId: TKnownFolderID;
   FolderPathPtr: LPWSTR;
+  Buf: array[0..MAX_PATH] of Char;
+  Len: DWORD;
 begin
   Result := False;
   AGuidPath := '';
@@ -655,6 +1400,26 @@ begin
   Absolute := ExcludeTrailingPathDelimiter(Absolute);
   if Absolute = '' then
     Exit;
+
+  // Win32: IKnownFolderManager often maps "C:\Program Files\..." to
+  // ProgramFilesX86. Prefer ProgramFilesX64 when under %ProgramW6432%.
+  Len := ExpandEnvironmentStrings('%ProgramW6432%', Buf, Length(Buf));
+  if Len > 1 then
+  begin
+    SetString(Pf64, PChar(@Buf[0]), Len - 1);
+    Pf64 := ExcludeTrailingPathDelimiter(Pf64);
+    if (Pf64 <> '') and
+      (SameText(Absolute, Pf64) or
+       StartsText(IncludeTrailingPathDelimiter(Pf64), Absolute)) then
+    begin
+      if SameText(Absolute, Pf64) then
+        Suffix := ''
+      else
+        Suffix := Copy(Absolute, Length(Pf64) + 1, MaxInt);
+      AGuidPath := '::{6D809377-6AF0-444B-8957-A3773F02200E}' + Suffix;
+      Exit(True);
+    end;
+  end;
 
   if Failed(CoCreateInstance(CLSID_KnownFolderManager, nil, CLSCTX_INPROC_SERVER,
     IID_IKnownFolderManager, Mgr)) then
@@ -688,6 +1453,177 @@ begin
   Result := AGuidPath <> '';
 end;
 
+function FindStartMenuShortcutByName(const ADisplayName: string;
+  const AExtraHint: string = ''): string;
+var
+  Hint, Extra, Root, Lnk, Base, ChosenLnk: string;
+  Roots: array[0..3] of string;
+  Tokens: TArray<string>;
+  Files: TArray<string>;
+  R, I, T, Score, BestScore: Integer;
+
+  procedure AddToken(const AToken: string; AllowGeneric: Boolean = False);
+  var
+    S: string;
+    K: Integer;
+
+    function IsGenericToken(const A: string): Boolean;
+    begin
+      // Publisher fragments like "Microsoft" match Edge and break Settings / mstsc
+      Result := SameText(A, 'Microsoft') or SameText(A, 'Windows') or
+        SameText(A, 'System') or SameText(A, 'App') or SameText(A, 'Application') or
+        SameText(A, 'Shell') or SameText(A, 'Immersive') or SameText(A, 'Host') or
+        SameText(A, 'Desktop') or SameText(A, 'Experience') or
+        SameText(A, 'Inc') or SameText(A, 'Corp') or SameText(A, 'Corporation') or
+        SameText(A, 'Client') or SameText(A, 'Server') or SameText(A, 'Service') or
+        SameText(A, 'UI') or SameText(A, 'UWP') or SameText(A, 'Win32');
+    end;
+
+  begin
+    S := Trim(AToken);
+    if S = '' then
+      Exit;
+    if (not AllowGeneric) and IsGenericToken(S) then
+      Exit;
+    for K := 0 to High(Tokens) do
+      if SameText(Tokens[K], S) then
+        Exit;
+    SetLength(Tokens, Length(Tokens) + 1);
+    Tokens[High(Tokens)] := S;
+  end;
+
+  function AnyTokenIn(const S: string): Boolean;
+  var
+    K: Integer;
+  begin
+    Result := False;
+    if S = '' then
+      Exit;
+    for K := 0 to High(Tokens) do
+      if (Tokens[K] <> '') and
+        (ContainsText(S, Tokens[K]) or ContainsText(Tokens[K], S)) then
+        Exit(True);
+  end;
+
+  function MatchScore(const ABase, ADescr, ATarget, APath: string): Integer;
+  var
+    K: Integer;
+  begin
+    Result := 0;
+    if (ABase <> '') and SameText(ABase, Hint) then
+      Exit(100);
+    if (ADescr <> '') and SameText(ADescr, Hint) then
+      Exit(95);
+    if (ABase <> '') and AnyTokenIn(ABase) then
+      Result := Max(Result, 80);
+    if (ADescr <> '') and AnyTokenIn(ADescr) then
+      Result := Max(Result, 75);
+    if (APath <> '') and AnyTokenIn(APath) then
+      Result := Max(Result, 70);
+    if (ATarget <> '') and AnyTokenIn(ATarget) then
+      Result := Max(Result, 72);
+    // Brand / product heuristics
+    for K := 0 to High(Tokens) do
+    begin
+      if SameText(Tokens[K], 'Yandex') or ContainsText(Tokens[K], 'Яндекс') then
+      begin
+        if ContainsText(ATarget, 'YandexBrowser') or
+          ContainsText(ATarget, 'browser.exe') or
+          ContainsText(APath, 'Yandex') or ContainsText(APath, 'Яндекс') then
+          Result := Max(Result, 88);
+      end;
+      if ContainsText(Tokens[K], 'RAD Studio') or SameText(Tokens[K], 'Delphi') or
+        SameText(Tokens[K], 'Embarcadero') then
+      begin
+        if ContainsText(ATarget, 'bds.exe') then
+          Result := Max(Result, 90);
+      end;
+    end;
+  end;
+
+  procedure Consider(const ALnk: string; AScore: Integer);
+  begin
+    if AScore <= BestScore then
+      Exit;
+    if FileExists(ALnk) then
+    begin
+      BestScore := AScore;
+      Result := ALnk;
+      ChosenLnk := ALnk;
+    end;
+  end;
+
+begin
+  Result := '';
+  ChosenLnk := '';
+  BestScore := 0;
+  Hint := Trim(ADisplayName);
+  Extra := Trim(AExtraHint);
+  if (Hint = '') and (Extra = '') then
+    Exit;
+
+  SetLength(Tokens, 0);
+  AddToken(Hint, True);
+  AddToken(Extra, True);
+  // First word / AUMID publisher segment (Yandex.Browser_… → Yandex)
+  if Pos(' ', Hint) > 0 then
+    AddToken(Copy(Hint, 1, Pos(' ', Hint) - 1));
+  if Pos('.', Extra) > 0 then
+  begin
+    AddToken(Copy(Extra, 1, Pos('.', Extra) - 1)); // often "Microsoft" — filtered
+    // SimonTatham.PuTTY → also token "PuTTY" (product leaf)
+    AddToken(Copy(Extra, LastDelimiter('.', Extra) + 1, MaxInt));
+  end
+  else if Pos('_', Extra) > 0 then
+    AddToken(Copy(Extra, 1, Pos('_', Extra) - 1));
+  // Common localized aliases
+  if AnyTokenIn('Yandex') then
+    AddToken('Яндекс', True);
+  if AnyTokenIn('Яндекс') then
+    AddToken('Yandex', True);
+
+  Roots[0] := GetSpecialDir(CSIDL_PROGRAMS);
+  Roots[1] := GetSpecialDir(CSIDL_COMMON_PROGRAMS);
+  Roots[2] := GetSpecialDir(CSIDL_DESKTOPDIRECTORY);
+  Roots[3] := GetSpecialDir(CSIDL_COMMON_DESKTOPDIRECTORY);
+
+  // Filename match only via token masks — do NOT enumerate every *.lnk
+  // (that + GetLinkInfo was freezing DragEnter for UWP apps like Armoury Crate).
+  for R := Low(Roots) to High(Roots) do
+  begin
+    Root := Roots[R];
+    if (Root = '') or not DirectoryExists(Root) then
+      Continue;
+    for T := 0 to High(Tokens) do
+    begin
+      if Length(Tokens[T]) < 3 then
+        Continue;
+      // AUMID strings are unsafe as file masks (!, _, long ids)
+      if (Pos('!', Tokens[T]) > 0) or (Pos('*', Tokens[T]) > 0) or
+        (Pos('?', Tokens[T]) > 0) or (Length(Tokens[T]) > 40) then
+        Continue;
+      try
+        Files := TDirectory.GetFiles(Root, '*' + Tokens[T] + '*.lnk',
+          TSearchOption.soAllDirectories);
+      except
+        Continue;
+      end;
+      for I := 0 to High(Files) do
+      begin
+        Lnk := Files[I];
+        Base := ExtractFileNameNoExt(Lnk);
+        Score := MatchScore(Base, '', '', Lnk);
+        // Only strong name matches — weak token hits mapped Control Panel → Edge
+        if Score >= 95 then
+          Consider(Lnk, Score);
+      end;
+    end;
+  end;
+
+  if (BestScore >= 95) and (ChosenLnk <> '') then
+    Result := ChosenLnk;
+end;
+
 function ShellItemExists(const APath: string): Boolean;
 var
   Pidl: PItemIDList;
@@ -716,19 +1652,176 @@ begin
   if Trim(APath) = '' then
     Exit(False);
   Absolute := GetAbsolutePath(APath);
-  if (Absolute <> '') and (FileExists(Absolute) or DirectoryExists(Absolute)) then
+  if (Absolute <> '') and FsPathExists(Absolute) then
     Exit(True);
   if LooksLikeShellGuidPath(APath) or LooksLikeShellGuidPath(Absolute) then
     Exit(ShellItemExists(APath) or ShellItemExists(Absolute));
   Result := False;
 end;
 
+function FsPathExists(const APath: string): Boolean;
+begin
+  Result := ResolveExistingFsPath(APath) <> '';
+end;
+
+function MapProgramFiles32To64(const APath: string): string;
+var
+  Pf32, Pf64: string;
+  Buf: array[0..MAX_PATH] of Char;
+  Len: DWORD;
+begin
+  Result := APath;
+{$IFDEF WIN32}
+  // 32-bit IShellLink/SHGetNameFromIDList rewrite "Program Files" → "(x86)"
+  Pf32 := GetSpecialDir(CSIDL_PROGRAM_FILES);
+  if (Pf32 = '') or (not StartsText(Pf32, APath)) then
+    Exit;
+  Len := ExpandEnvironmentStrings('%ProgramW6432%', Buf, Length(Buf));
+  if Len <= 1 then
+    Exit;
+  SetString(Pf64, PChar(@Buf[0]), Len - 1);
+  Pf64 := IncludeTrailingPathDelimiter(Pf64);
+  if SameText(Pf32, Pf64) then
+    Exit;
+  Result := Pf64 + Copy(APath, Length(Pf32) + 1, MaxInt);
+{$ENDIF}
+end;
+
+function ResolveExistingFsPath(const APath: string): string;
+var
+  Guard: TWow64FsRedirGuard;
+  Candidate: string;
+
+  function ExistsPlain(const P: string): Boolean;
+  begin
+    Result := (P <> '') and (FileExists(P) or DirectoryExists(P));
+  end;
+
+  function ExistsWithWow64(const P: string): Boolean;
+  begin
+    if ExistsPlain(P) then
+      Exit(True);
+    Guard.Enter;
+    try
+      Result := ExistsPlain(P);
+    finally
+      Guard.Leave;
+    end;
+  end;
+
+begin
+  Result := '';
+  if Trim(APath) = '' then
+    Exit;
+  if ExistsWithWow64(APath) then
+    Exit(APath);
+  // Git Extensions etc.: link APIs yield (x86) path that does not exist
+  Candidate := MapProgramFiles32To64(APath);
+  if (Candidate <> '') and (not SameText(Candidate, APath)) and
+    ExistsWithWow64(Candidate) then
+    Exit(Candidate);
+end;
+
+function PreferFilesystemPath(const APath: string): string;
+var
+  Abs: string;
+begin
+  Result := Trim(APath);
+  if (Result = '') or (not LooksLikeShellGuidPath(Result)) then
+    Exit;
+  Abs := GetAbsolutePath(Result);
+  if (Abs <> '') and (not LooksLikeShellGuidPath(Abs)) and FsPathExists(Abs) then
+    Result := Abs;
+end;
+
+function GetShellDisplayName(const APath: string): string;
+var
+  Candidate, Leaf: string;
+  I, LastGuid: Integer;
+
+  function TryName(const AParsing: string): string;
+  var
+    It: IShellItem;
+    Nm: LPWSTR;
+    Pid: PItemIDList;
+    Ain, Aout: DWORD;
+    Info: TSHFileInfo;
+  begin
+    Result := '';
+    if AParsing = '' then
+      Exit;
+    It := nil;
+    if Succeeded(SHCreateItemFromParsingName(PWideChar(AParsing), nil,
+      IID_IShellItem, It)) and (It <> nil) then
+    begin
+      Nm := nil;
+      if Succeeded(It.GetDisplayName(SIGDN_NORMALDISPLAY, Nm)) and (Nm <> nil) then
+      try
+        Result := Trim(Nm);
+        if Result <> '' then
+          Exit;
+      finally
+        CoTaskMemFree(Nm);
+      end;
+    end;
+    Pid := nil;
+    Ain := 0;
+    Aout := 0;
+    if Failed(SHParseDisplayName(PChar(AParsing), nil, Pid, Ain, Aout)) or
+      (Pid = nil) then
+      Exit;
+    try
+      Nm := nil;
+      if Succeeded(SHGetNameFromIDList(Pid,
+        Integer(Cardinal(SIGDN_NORMALDISPLAY)), Nm)) and (Nm <> nil) then
+      try
+        Result := Trim(Nm);
+        if Result <> '' then
+          Exit;
+      finally
+        CoTaskMemFree(Nm);
+      end;
+      FillChar(Info, SizeOf(Info), 0);
+      if SHGetFileInfo(PChar(Pid), 0, Info, SizeOf(Info),
+        SHGFI_PIDL or SHGFI_DISPLAYNAME) <> 0 then
+        Result := Trim(Info.szDisplayName);
+    finally
+      CoTaskMemFree(Pid);
+    end;
+  end;
+
+begin
+  Result := '';
+  Candidate := NormalizeShellParsingName(Trim(APath));
+  if Candidate = '' then
+    Exit;
+
+  Result := TryName(Candidate);
+  if Result <> '' then
+    Exit;
+
+  // Control Panel applet: ::{AllControlPanel}\0\::{AppletId} → try leaf GUID
+  LastGuid := 0;
+  for I := 1 to Length(Candidate) - 2 do
+    if (Candidate[I] = ':') and (Candidate[I + 1] = ':') and
+      (Candidate[I + 2] = '{') then
+      LastGuid := I;
+  if LastGuid > 1 then
+  begin
+    Leaf := 'shell:' + Copy(Candidate, LastGuid, MaxInt);
+    if not SameText(Leaf, Candidate) then
+      Result := TryName(Leaf);
+  end;
+end;
+
 function TryResolveKnownFolderPath(const APath: string; out AResolved: string): Boolean;
 var
-  S, GuidStr, Suffix: string;
+  S, GuidStr, Suffix, Base: string;
   BraceOpen, BraceClose: Integer;
   FolderId: TGUID;
   FolderPath: LPWSTR;
+  Buf: array[0..MAX_PATH] of Char;
+  Len: DWORD;
 begin
   Result := False;
   AResolved := '';
@@ -753,13 +1846,28 @@ begin
   else
     Suffix := '';
   FolderPath := nil;
-  if Failed(SHGetKnownFolderPath(FolderId, 0, 0, FolderPath)) or (FolderPath = nil) then
-    Exit;
+  if Succeeded(SHGetKnownFolderPath(FolderId, 0, 0, FolderPath)) and
+    (FolderPath <> nil) then
   try
     AResolved := ExcludeTrailingPathDelimiter(string(FolderPath)) + Suffix;
     Result := AResolved <> '';
   finally
     CoTaskMemFree(FolderPath);
+  end;
+  if Result then
+    Exit;
+
+  // 32-bit: FOLDERID_ProgramFilesX64 fails with HRESULT 0x80070002 —
+  // fall back to %ProgramW6432% (same physical folder).
+  if IsEqualGUID(FolderId, StringToGUID('{6D809377-6AF0-444B-8957-A3773F02200E}')) then
+  begin
+    Len := ExpandEnvironmentStrings('%ProgramW6432%', Buf, Length(Buf));
+    if Len > 1 then
+    begin
+      SetString(Base, PChar(@Buf[0]), Len - 1);
+      AResolved := ExcludeTrailingPathDelimiter(Base) + Suffix;
+      Result := AResolved <> '';
+    end;
   end;
 end;
 
@@ -770,12 +1878,12 @@ var
   PathBuf: array[0..MAX_PATH] of Char;
   Name: LPWSTR;
   Candidate: string;
-  Resolved: string;
+  Resolved, Existing: string;
 
-  function UsableFsPath(const ACandidate: string): Boolean;
+  function TakeExisting(const ACandidate: string): string;
   begin
-    Result := (ACandidate <> '') and
-      (FileExists(ACandidate) or DirectoryExists(ACandidate));
+    // May remap Program Files (x86) → ProgramW6432 when the x86 path is missing
+    Result := ResolveExistingFsPath(ACandidate);
   end;
 
 begin
@@ -784,8 +1892,12 @@ begin
     Exit;
 
   // ::{GUID}\file — primary form from Win11 Start / known-folder links (bug #59)
-  if TryResolveKnownFolderPath(APath, Resolved) and UsableFsPath(Resolved) then
-    Exit(Resolved);
+  if TryResolveKnownFolderPath(APath, Resolved) then
+  begin
+    Existing := TakeExisting(Resolved);
+    if Existing <> '' then
+      Exit(Existing);
+  end;
 
   Candidate := NormalizeShellParsingName(APath);
 
@@ -794,21 +1906,34 @@ begin
   AttrOut := 0;
   if Failed(SHParseDisplayName(PChar(Candidate), nil, Pidl, AttrIn, AttrOut)) then
   begin
-    // Keep original GUID string when known-folder expand does not yield a real path
-    if TryResolveKnownFolderPath(APath, Resolved) and UsableFsPath(Resolved) then
-      Result := Resolved;
+    if TryResolveKnownFolderPath(APath, Resolved) then
+    begin
+      Existing := TakeExisting(Resolved);
+      if Existing <> '' then
+        Result := Existing;
+    end;
     Exit;
   end;
   try
     if SHGetPathFromIDList(Pidl, PathBuf) and (PathBuf[0] <> #0) then
+    begin
+      Existing := TakeExisting(PathBuf);
+      if Existing <> '' then
+        Exit(Existing);
       Exit(PathBuf);
+    end;
     Name := nil;
     // SIGDN_FILESYSPATH is $80058000; cast avoids W1012 on Integer param
     if Succeeded(SHGetNameFromIDList(Pidl, Integer(Cardinal(SIGDN_FILESYSPATH)),
       Name)) and (Name <> nil) then
     try
       if Name[0] <> #0 then
+      begin
+        Existing := TakeExisting(string(Name));
+        if Existing <> '' then
+          Exit(Existing);
         Exit(string(Name));
+      end;
     finally
       CoTaskMemFree(Name);
     end;
@@ -817,8 +1942,12 @@ begin
     if Succeeded(SHGetNameFromIDList(Pidl,
       Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and (Name <> nil) then
     try
-      if TryResolveKnownFolderPath(string(Name), Resolved) and UsableFsPath(Resolved) then
-        Exit(Resolved);
+      if TryResolveKnownFolderPath(string(Name), Resolved) then
+      begin
+        Existing := TakeExisting(Resolved);
+        if Existing <> '' then
+          Exit(Existing);
+      end;
     finally
       CoTaskMemFree(Name);
     end;
@@ -826,15 +1955,32 @@ begin
     CoTaskMemFree(Pidl);
   end;
 
-  if TryResolveKnownFolderPath(APath, Resolved) and UsableFsPath(Resolved) then
-    Result := Resolved;
+  if TryResolveKnownFolderPath(APath, Resolved) then
+  begin
+    Existing := TakeExisting(Resolved);
+    if Existing <> '' then
+      Result := Existing;
+  end;
 end;
 
 function GetAbsolutePath(s: string): string;
+var
+  Resolved: string;
 begin
   Result := ExpandEnvironmentVariables(s);
+  // Keep AppsFolder AUMIDs as Shell parsing names. Resolving them to
+  // C:\Program Files\WindowsApps\... breaks icon extraction and previews.
+  if StartsText('shell:AppsFolder\', Result) then
+    Exit;
   if LooksLikeShellGuidPath(Result) then
-    Result := ResolveShellPath(Result);
+  begin
+    // Control Panel / This PC stay as parsing names. Only replace when the
+    // known-folder form resolves to a real filesystem path (Program Files\…).
+    Resolved := ResolveShellPath(Result);
+    if (Resolved <> '') and (not LooksLikeShellGuidPath(Resolved)) and
+      FsPathExists(Resolved) then
+      Result := Resolved;
+  end;
 end;
 
 type
@@ -933,44 +2079,122 @@ var
   PersistFile: IPersistFile;
   AnObj: IUnknown;
   ch_temp: array [0..MAX_PATH] of Char;
-  RawPath, AbsolutePath, ParsingName, SelectedPath, ExpandedPath,
-    GuidForm, ProgramFiles64, IconPath: string;
+  LinkFilePath, RawPath, AbsolutePath, ParsingName, FileSysPath, SelectedPath,
+    ExpandedPath, ProgramFiles64, IconPath, FriendlyName, LeafName,
+    WorkDir: string;
   ExpandedLen: DWORD;
   Pidl: PItemIDList;
   Name: LPWSTR;
 
   function TargetExists(const APath: string): Boolean;
   begin
-    Result := (APath <> '') and (FileExists(APath) or DirectoryExists(APath));
+    Result := FsPathExists(APath);
   end;
 
-  function PreferStoredTarget(const ARaw, AAbsolute, AParsing: string): string;
-  var
-    Candidate, GuidPath: string;
+  function ExpandTarget(const APath: string): string;
   begin
-    // Priority: keep shell GUID forms (portable + Correct for virtual items).
-    if LooksLikeShellGuidPath(ARaw) then
-      Exit(ARaw);
-    if LooksLikeShellGuidPath(AParsing) then
+    Result := APath;
+    if Result = '' then
+      Exit;
+    try
+      Result := ExpandEnvironmentVariables(Result);
+    except
+      Result := APath;
+    end;
+  end;
+
+  function PreferStoredTarget(const ARaw, AAbsolute, AParsing,
+    AFileSys: string): string;
+  var
+    Candidate, Expanded: string;
+
+    function IsAppsFolderTarget(const APath: string): Boolean;
+    begin
+      Result := StartsText('shell:AppsFolder\', APath) or
+        LooksLikeAppUserModelId(APath);
+    end;
+
+    function TryTakePath(const APath: string): string;
+    begin
+      Result := '';
+      if APath = '' then
+        Exit;
+      // PuTTY etc.: Start .lnk IDList often has AppsFolder AUMID alongside a
+      // real putty.exe path — never prefer AppsFolder here (wrong generic icon).
+      if IsAppsFolderTarget(APath) then
+        Exit;
+      if LooksLikeShellGuidPath(APath) then
+        Exit(APath);
+      Expanded := ExpandTarget(APath);
+      Expanded := ResolveExistingFsPath(Expanded);
+      if Expanded = '' then
+        Exit;
+      // Keep filesystem path (not known-folder GUID) for readable Properties
+      Exit(Expanded);
+    end;
+
+  begin
+    // 1) Real filesystem / non-AppsFolder GUID targets first
+    Result := TryTakePath(AFileSys);
+    if Result <> '' then
+      Exit;
+    Result := TryTakePath(AAbsolute);
+    if Result <> '' then
+      Exit;
+    Result := TryTakePath(ARaw);
+    if Result <> '' then
+      Exit;
+    Result := TryTakePath(AParsing);
+    if Result <> '' then
+      Exit;
+
+    // 2) GUID parsing names (Control Panel, …) — not AppsFolder
+    if LooksLikeShellGuidPath(AParsing) and (not IsAppsFolderTarget(AParsing)) then
       Exit(AParsing);
+    if LooksLikeShellGuidPath(ARaw) and (not IsAppsFolderTarget(ARaw)) then
+      Exit(ARaw);
+
+    // 3) Non-AUMID leftovers
     Candidate := AAbsolute;
     if Candidate = '' then
       Candidate := ARaw;
-    if (Candidate <> '') and TryPathToKnownFolderGuidForm(Candidate, GuidPath) then
-      Exit(GuidPath);
-    if ARaw <> '' then
-      Exit(ARaw);
-    Result := AAbsolute;
+    if Candidate = '' then
+      Candidate := AFileSys;
+    if (Candidate <> '') and (not IsAppsFolderTarget(Candidate)) then
+    begin
+      if LooksLikeShellGuidPath(Candidate) then
+        Exit(Candidate);
+      Expanded := ResolveExistingFsPath(ExpandTarget(Candidate));
+      if Expanded <> '' then
+        Exit(Expanded);
+      Exit(Candidate);
+    end;
+    if (AParsing <> '') and LooksLikeShellGuidPath(AParsing) and
+      (not IsAppsFolderTarget(AParsing)) then
+      Exit(AParsing);
+
+    // Do not promote AppsFolder / bare AUMIDs — caller falls back to the .lnk
+    Result := '';
   end;
 
 begin
   AnObj  := CreateComObject(CLSID_ShellLink);
   ShellLink := AnObj as IShellLink;
   PersistFile := AnObj as IPersistFile;
-  PersistFile.Load(PChar(string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile)), 0);
+  // ::{GUID}\file.lnk must be resolved to a filesystem path before IPersistFile.Load
+  LinkFilePath := Trim(string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile));
+  if LooksLikeShellGuidPath(LinkFilePath) then
+  begin
+    ExpandedPath := GetAbsolutePath(LinkFilePath);
+    if (ExpandedPath <> '') and FileExists(ExpandedPath) then
+      LinkFilePath := ExpandedPath;
+  end;
+  PersistFile.Load(PChar(LinkFilePath), 0);
   with ShellLink do
     begin
-      Resolve(0, SLR_NO_UI or SLR_NOUPDATE);
+      // Skip IShellLink.Resolve: GetPath/IDList already return the stored target.
+      // Resolve can hang for seconds when WOW64 rewrites the path to a missing
+      // Program Files (x86) location (AmneziaVPN and other 64-bit apps).
 
       FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
         SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), 0);
@@ -987,9 +2211,18 @@ begin
       AbsolutePath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute);
 
       ParsingName := '';
+      FileSysPath := '';
       Pidl := nil;
       if Succeeded(GetIDList(Pidl)) and (Pidl <> nil) then
       try
+        Name := nil;
+        if Succeeded(SHGetNameFromIDList(Pidl,
+          Integer(Cardinal(SIGDN_FILESYSPATH)), Name)) and (Name <> nil) then
+        try
+          FileSysPath := string(Name);
+        finally
+          CoTaskMemFree(Name);
+        end;
         Name := nil;
         if Succeeded(SHGetNameFromIDList(Pidl,
           Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and
@@ -1003,10 +2236,18 @@ begin
         CoTaskMemFree(Pidl);
       end;
 
-      SelectedPath := PreferStoredTarget(RawPath, AbsolutePath, ParsingName);
+      SelectedPath := PreferStoredTarget(RawPath, AbsolutePath, ParsingName,
+        FileSysPath);
+      // Never keep AppsFolder/AUMID as the .lnk target — FLPanelDropFile will
+      // fall back to the .lnk itself (correct PuTTY icon from the shortcut).
+      if StartsText('shell:AppsFolder\', SelectedPath) or
+        LooksLikeAppUserModelId(SelectedPath) then
+        SelectedPath := '';
 
       // 32-bit: remapping Program Files → ProgramW6432 (filesystem paths only)
-      if (SelectedPath <> '') and (not LooksLikeShellGuidPath(SelectedPath)) then
+      if (SelectedPath <> '') and (not LooksLikeShellGuidPath(SelectedPath)) and
+        (not LooksLikeAppUserModelId(SelectedPath)) and
+        (not StartsText('shell:AppsFolder\', SelectedPath)) then
       begin
         ExpandedPath := '';
         try
@@ -1039,17 +2280,37 @@ begin
         Length(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute));
       GetWorkingDirectory(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy,
         Length(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
+
+      // AppsFolder targets: .lnk Description is often the AUMID leaf; WorkDir is
+      // usually shell:AppsFolder\ — prefer Shell friendly name, clear WorkDir.
+      if StartsText('shell:AppsFolder\', SelectedPath) then
+      begin
+        FriendlyName := Trim(string(lpShellLinkInfoStruct^.Description));
+        LeafName := ExtractFileName(SelectedPath);
+        if (FriendlyName = '') or SameText(FriendlyName, LeafName) or
+          LooksLikeAppUserModelId(FriendlyName) then
+        begin
+          FriendlyName := GetShellDisplayName(SelectedPath);
+          if FriendlyName <> '' then
+            StrPLCopy(lpShellLinkInfoStruct^.Description, FriendlyName,
+              Length(lpShellLinkInfoStruct^.Description) - 1);
+        end;
+        WorkDir := Trim(string(
+          lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
+        if (WorkDir = '') or StartsText('shell:AppsFolder', WorkDir) then
+          FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy,
+            SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy), 0);
+      end;
+
       GetIconLocation(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
         Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon),
         lpShellLinkInfoStruct^.IconIndex);
 
       IconPath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon);
-      if IconPath = '' then
+      if (IconPath = '') or LooksLikeAppUserModelId(IconPath) then
         IconPath := SelectedPath
-      else if (not LooksLikeShellGuidPath(IconPath)) and
-        TryPathToKnownFolderGuidForm(IconPath, GuidForm) then
-        IconPath := GuidForm;
-      // Keep GUID icon locations as-is (do not resolve to FS)
+      else
+        IconPath := PreferFilesystemPath(IconPath);
       StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
         IconPath,
         Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon) - 1);

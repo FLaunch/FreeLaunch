@@ -192,10 +192,10 @@ begin
     QuesCheckBox.Caption := Language.Properties.ChbQuestion;
     HideCheckBox.Caption := Language.Properties.ChbHide;
 
-    CommandEdit.Text := Link.exec;
-    WorkFolderEdit.Text := Link.workdir;
+    CommandEdit.Text := PreferFilesystemPath(Link.exec);
+    WorkFolderEdit.Text := PreferFilesystemPath(Link.workdir);
     DescrEdit.Text := Link.descr;
-    ic := Link.icon;
+    ic := PreferFilesystemPath(Link.icon);
     iconindex := Link.iconindex;
     QuesCheckBox.Checked := Link.ques;
     HideCheckBox.Checked := Link.hide;

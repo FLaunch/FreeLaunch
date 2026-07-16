@@ -300,7 +300,7 @@ implementation
 uses
   Xml.XMLDoc, Xml.XMLIntf,
   Vcl.Imaging.pngimage,
-  System.IOUtils, System.Math;
+  System.IOUtils, System.Math, System.StrUtils;
 
 var
   LaunchID: Integer = 0;
@@ -983,7 +983,7 @@ begin
               // Cache stores IconBmp-sized PNG (ButtonWidth-4 x ButtonHeight-4).
               if (PngImg.Width = TempData.IconBmp.Width) and (PngImg.Height = TempData.IconBmp.Height) then
               begin
-                TempData.IconBmp.Assign(PngImg);
+                CopyPngToBitmap32(PngImg, TempData.IconBmp);
                 FLPanel.Buttons[t,r,c].HasIcon := true;
                 // PushedIconBmp has different size; rebuild it from IconBmp.
                 SmoothResize(TempData.IconBmp, TempData.PushedIconBmp);
@@ -1379,11 +1379,28 @@ end;
 procedure TFlaunchMainForm.LoadIcFromFileNoModif(var Im: TImage; FileName: string; Index: integer);
 var
   icon: TIcon;
+  Bmp: TBitmap;
 begin
+  if LooksLikeShellGuidPath(FileName) then
+  begin
+    Bmp := TBitmap.Create;
+    try
+      if TryLoadShellItemImage(FileName, Im.Height, Bmp) then
+      begin
+        Im.Picture.Assign(Bmp);
+        Exit;
+      end;
+    finally
+      Bmp.Free;
+    end;
+  end;
   icon := TIcon.Create;
-  icon.Handle := GetFileIcon(FileName, Index, Im.Height);
-  Im.Picture.Assign(icon);
-  icon.Free;
+  try
+    icon.Handle := GetFileIcon(FileName, Index, Im.Height);
+    Im.Picture.Assign(icon);
+  finally
+    icon.Free;
+  end;
 end;
 
 procedure TFlaunchMainForm.FormDestroy(Sender: TObject);
@@ -1673,9 +1690,43 @@ var
   ext{, reqstr}: string;
   //crow, ccol: Integer;
   TempButton : TFLButton;
-  //test: TGUID;
+  OriginalFileName: string;
+  IsTempDrop: Boolean;
+  TempDropRoot: string;
+  PermLnk: string;
+  FriendlyName, LeafName: string;
+
+  function PersistDroppedLinkFile(const ATempLnk: string): string;
+  var
+    Dir, Base, Dest: string;
+    N: Integer;
+  begin
+    Result := '';
+    if not FileExists(ATempLnk) then
+      Exit;
+    Dir := IncludeTrailingPathDelimiter(fl_WorkDir) + 'DroppedLinks';
+    ForceDirectories(Dir);
+    Base := ChangeFileExt(ExtractFileName(ATempLnk), '');
+    if Base = '' then
+      Base := 'shortcut';
+    Dest := IncludeTrailingPathDelimiter(Dir) + Base + '.lnk';
+    N := 1;
+    while FileExists(Dest) do
+    begin
+      Dest := IncludeTrailingPathDelimiter(Dir) + Base + '_' + IntToStr(N) + '.lnk';
+      Inc(N);
+    end;
+    if CopyFile(PChar(ATempLnk), PChar(Dest), False) then
+      Result := Dest;
+  end;
+
 begin
   TempButton := Button;
+  OriginalFileName := FileName;
+  TempDropRoot := IncludeTrailingPathDelimiter(
+    TPath.Combine(TPath.GetTempPath, 'FreeLaunchDrop'));
+  IsTempDrop := SameText(Copy(FileName, 1, Length(TempDropRoot)), TempDropRoot);
+  PermLnk := '';
   //if current button can open dropped files
   if (TempButton.IsActive) and (TempButton.Data.DropFiles) then begin
     LaunchButton(Button, FileName);
@@ -1743,8 +1794,35 @@ begin
     then ImportButton(TempButton, FileName);
     Exit;
   end;
+
+  // Reject unresolved Start Menu AUMIDs / empty drops before occupying the slot
+  if (Trim(FileName) = '') or LooksLikeAppUserModelId(FileName) then
+  begin
+    if IsTempDrop and FileExists(OriginalFileName) then
+      DeleteFile(OriginalFileName);
+    Exit;
+  end;
+
+  try
   //--Инициализируем ячейку данных
   if not TempButton.IsActive then TempButton.InitializeData;
+
+  Ext := ExtractFileExt(FileName).ToLower;
+  // AppsFolder AUMID from Start: prefer a real Start Menu .lnk (PuTTY icon)
+  if (Ext <> '.lnk') and StartsText('shell:AppsFolder\', FileName) then
+  begin
+    FriendlyName := GetShellDisplayName(FileName);
+    LeafName := Copy(FileName, Length('shell:AppsFolder\') + 1, MaxInt);
+    PermLnk := FindStartMenuShortcutByName(FriendlyName, LeafName);
+    if (PermLnk <> '') and
+      (FileExists(PermLnk) or
+       ((not StartsText('shell:AppsFolder\', PermLnk)) and ObjectExists(PermLnk))) then
+    begin
+      FileName := PermLnk;
+      Ext := ExtractFileExt(FileName).ToLower;
+    end;
+  end;
+
   //--Если был перетянут ярлык
   if Ext = '.lnk' then begin
     StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, Pred(MAX_PATH));
@@ -1754,19 +1832,91 @@ begin
     TempButton.Data.Exec := LnkInfo.FullPathAndNameOfFileToExecute;
     TempButton.Data.IconIndex := LnkInfo.IconIndex;
     TempButton.Data.Icon := LnkInfo.FullPathAndNameOfFileContiningIcon;
-    if TempButton.Data.Icon = '' then begin
-      FLPanel.ExpandStrings := False;
-      try
-        TempButton.Data.Icon := TempButton.Data.Exec;
-      finally
-        FLPanel.ExpandStrings := True;
-      end;
-    end;
     TempButton.Data.WorkDir := LnkInfo.FullPathAndNameOfWorkingDirectroy;
     TempButton.Data.Params := LnkInfo.ParamStringsOfFileToExecute;
-    TempButton.Data.Descr := LnkInfo.Description;
+    TempButton.Data.Descr := Trim(string(LnkInfo.Description));
+    // Start Menu shows the .lnk title ("Delphi 12"), while bds.exe FileDescription
+    // / empty link description often yield "BDS" or a generic version string.
+    if (TempButton.Data.Descr = '') or
+      SameText(TempButton.Data.Descr, ExtractFileNameNoExt(TempButton.Data.Exec)) then
+    begin
+      FriendlyName := GetShellDisplayName(FileName);
+      if FriendlyName = '' then
+        FriendlyName := ExtractFileNameNoExt(OriginalFileName);
+      if FriendlyName = '' then
+        FriendlyName := ExtractFileNameNoExt(FileName);
+      if FriendlyName <> '' then
+        TempButton.Data.Descr := FriendlyName;
+    end;
+    // Start Menu links often expose AUMID via GetPath; ShellExecute on the
+    // .lnk itself still works. Persist FileContents payloads out of %TEMP%.
+    if LooksLikeAppUserModelId(TempButton.Data.Exec) or
+      StartsText('shell:AppsFolder\', TempButton.Data.Exec) or
+      (Trim(TempButton.Data.Exec) = '') or
+      (not ObjectExists(TempButton.Data.Exec)) then
+    begin
+      if IsTempDrop then
+      begin
+        PermLnk := PersistDroppedLinkFile(OriginalFileName);
+        if PermLnk = '' then
+        begin
+          TempButton.FreeData;
+          TempButton.Repaint;
+          Exit;
+        end;
+        TempButton.Data.Exec := PermLnk;
+        TempButton.Data.Icon := PermLnk;
+      end
+      else
+        TempButton.Data.Exec := FileName;
+      TempButton.Data.Icon := TempButton.Data.Exec;
+      TempButton.Data.IconIndex := 0;
+      TempButton.Data.WorkDir := ExtractFilePath(TempButton.Data.Exec);
+      TempButton.Data.Params := '';
+    end
+    else if (TempButton.Data.Icon = '') or
+      LooksLikeAppUserModelId(TempButton.Data.Icon) or
+      StartsText('shell:AppsFolder\', TempButton.Data.Icon) then
+    begin
+      // AppsFolder icon paths are unreliable in Win32 (WOW64 / UWP). Prefer the
+      // original .lnk, which Shell can icon-extract normally.
+      if IsTempDrop then
+      begin
+        if PermLnk = '' then
+          PermLnk := PersistDroppedLinkFile(OriginalFileName);
+        if PermLnk <> '' then
+        begin
+          TempButton.Data.Icon := PermLnk;
+          TempButton.Data.IconIndex := 0;
+        end
+        else
+        begin
+          FLPanel.ExpandStrings := False;
+          try
+            TempButton.Data.Icon := TempButton.Data.Exec;
+          finally
+            FLPanel.ExpandStrings := True;
+          end;
+        end;
+      end
+      else if FileExists(OriginalFileName) and
+        SameText(ExtractFileExt(OriginalFileName), '.lnk') then
+      begin
+        TempButton.Data.Icon := OriginalFileName;
+        TempButton.Data.IconIndex := 0;
+      end
+      else
+      begin
+        FLPanel.ExpandStrings := False;
+        try
+          TempButton.Data.Icon := TempButton.Data.Exec;
+        finally
+          FLPanel.ExpandStrings := True;
+        end;
+      end;
+    end;
     //need to delete filename here
-    if FileExists(FileName) and deletelnk then
+    if FileExists(FileName) and deletelnk and (not IsTempDrop) then
       try
         DeleteFile(FileName);
       finally
@@ -1778,10 +1928,26 @@ begin
     TempButton.Data.Exec := FileName;
     TempButton.Data.IconIndex := 0;
     TempButton.Data.Icon := FileName;
-    TempButton.Data.WorkDir := ExtractFilePath(FileName);
     TempButton.Data.Params := '';
     TempButton.Data.Descr := '';
+    // ExtractFilePath mangles ::{GUID}\… paths (e.g. Control Panel applets)
+    if LooksLikeShellGuidPath(FileName) or
+      StartsText('shell:AppsFolder\', FileName) then
+      TempButton.Data.WorkDir := ''
+    else
+      TempButton.Data.WorkDir := ExtractFilePath(FileName);
   end;
+
+  // Do not leave an occupied empty button
+  if LooksLikeAppUserModelId(TempButton.Data.Exec) or
+    (Trim(TempButton.Data.Exec) = '') or
+    (not ObjectExists(TempButton.Data.Exec)) then
+  begin
+    TempButton.FreeData;
+    TempButton.Repaint;
+    Exit;
+  end;
+
   if IsExecutable(Ext) then begin
     TempButton.Data.LType := 0;
     if TempButton.Data.Descr = ''
@@ -1790,14 +1956,31 @@ begin
     then TempButton.Data.Descr := ExtractFileNameNoExt(FileName);
   end else begin
     TempButton.Data.LType := 1;
-    if TempButton.Data.Descr = ''
-    then TempButton.Data.Descr := ExtractFileName(FileName);
+    if TempButton.Data.Descr = '' then
+      TempButton.Data.Descr := ExtractFileName(FileName);
+  end;
+
+  // Shell namespace items (:: {This PC}, Control Panel applets, AppsFolder, …):
+  // ExtractFileName leaves the raw GUID — use the Shell display name instead.
+  if LooksLikeShellGuidPath(TempButton.Data.Exec) then
+  begin
+    FriendlyName := GetShellDisplayName(TempButton.Data.Exec);
+    if FriendlyName <> '' then
+    begin
+      LeafName := ExtractFileName(TempButton.Data.Exec);
+      if (TempButton.Data.Descr = '') or SameText(TempButton.Data.Descr, LeafName) or
+        SameText(TempButton.Data.Descr, TempButton.Data.Exec) or
+        LooksLikeAppUserModelId(TempButton.Data.Descr) or
+        (Pos('::{', TempButton.Data.Descr) > 0) then
+        TempButton.Data.Descr := FriendlyName;
+    end;
+    TempButton.Data.WorkDir := '';
   end;
 
   if IsPortable then begin
-    TempButton.Data.Exec := PathToPortable(Button.Data.Exec);
-    TempButton.Data.WorkDir := PathToPortable(Button.Data.WorkDir);
-    TempButton.Data.Icon := PathToPortable(Button.Data.Icon);
+    TempButton.Data.Exec := PathToPortable(TempButton.Data.Exec);
+    TempButton.Data.WorkDir := PathToPortable(TempButton.Data.WorkDir);
+    TempButton.Data.Icon := PathToPortable(TempButton.Data.Icon);
   end;
   TempButton.Data.Hide := hideafterlaunch;
   TempButton.Data.Ques := queryonlaunch;
@@ -1807,6 +1990,10 @@ begin
   TempButton.Data.Pr := PriorDef;
   TempButton.Data.AssignIcons;
   TempButton.Repaint;
+  finally
+    if IsTempDrop and FileExists(OriginalFileName) then
+      DeleteFile(OriginalFileName);
+  end;
 end;
 
 procedure TFlaunchMainForm.FormActivate(Sender: TObject);

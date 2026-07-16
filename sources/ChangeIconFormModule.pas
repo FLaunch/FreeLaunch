@@ -74,6 +74,14 @@ uses
 
 {$R *.dfm}
 
+function IconPathForLoad(const AText: string): string;
+begin
+  // Keep shell:AppsFolder / ::{GUID} — ResolveShellPath breaks UWP icons
+  Result := Trim(AText);
+  if not LooksLikeShellGuidPath(Result) then
+    Result := GetAbsolutePath(Result);
+end;
+
 procedure TChangeIconForm.SetIconPreviewSize;
 var
   IconSize: Integer;
@@ -90,7 +98,7 @@ procedure TChangeIconForm.RefreshProps;
 var
   IconPath: string;
 begin
-  IconPath := GetAbsolutePath(IconEdit.Text);
+  IconPath := IconPathForLoad(IconEdit.Text);
   icindex := 1;
   iconcount := GetIconCount(IconPath);
   ncount := GetNegativeCount(IconPath);
@@ -170,17 +178,17 @@ begin
   //---------------------------
   if PropertiesMode = 0 then begin
       IconEdit.Text := ProgrammPropertiesFormModule.ic;
-      iconcount     := GetIconCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+      iconcount     := GetIconCount(IconPathForLoad(ProgrammPropertiesFormModule.Ic));
       icindex       := ProgrammPropertiesFormModule.iconindex +
                       IfThen(ProgrammPropertiesFormModule.iconindex < 0, -1, 1);
-      ncount        := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+      ncount        := GetNegativeCount(IconPathForLoad(ProgrammPropertiesFormModule.Ic));
   end;
   if PropertiesMode = 1 then begin
       IconEdit.Text := FilePropertiesFormModule.ic;
-      iconcount     := GetIconCount(GetAbsolutePath(FilePropertiesFormModule.Ic));
+      iconcount     := GetIconCount(IconPathForLoad(FilePropertiesFormModule.Ic));
       icindex       := FilePropertiesFormModule.iconindex +
                           IfThen(FilePropertiesFormModule.iconindex < 0, -1, 1);
-      ncount        := GetNegativeCount(GetAbsolutePath(ProgrammPropertiesFormModule.Ic));
+      ncount        := GetNegativeCount(IconPathForLoad(FilePropertiesFormModule.Ic));
   end;
   NegativeBox.Enabled := (iconcount > 1) and (ncount > 1);
   if iconcount = 0 then iconcount := 1;
@@ -192,7 +200,7 @@ begin
     else IndexEdit.Enabled := iconcount > 1;
   IndexEdit.MaxValue := IfThen(NegativeBox.Checked, ncount, iconcount);
   SetIconPreviewSize;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, IconPathForLoad(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
   IconEdit.SetFocus;
   showform := False;
 end;
@@ -209,7 +217,7 @@ begin
     end;
   icindex := IfThen(NegativeBox.Checked, -IndexEdit.Value, IndexEdit.Value);
   SetIconPreviewSize;
-  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
+  FlaunchMainForm.LoadIcFromFileNoModif(IcImage, IconPathForLoad(IconEdit.Text), icindex + IfThen(icindex < 0, 1, -1));
 end;
 
 end.

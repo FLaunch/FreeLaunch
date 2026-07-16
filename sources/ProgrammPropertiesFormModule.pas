@@ -246,14 +246,14 @@ begin
     HideCheckBox.Caption := Language.Properties.ChbHide;
     AdminBox.Caption := Language.Properties.ChbAdmin;
 
-    CommandEdit.Text := Link.exec;
-    WorkFolderEdit.Text := Link.workdir;
+    CommandEdit.Text := PreferFilesystemPath(Link.exec);
+    WorkFolderEdit.Text := PreferFilesystemPath(Link.workdir);
     ParamsEdit.Text := Link.params;
     DropBox.Checked := Link.dropfiles;
     DropBoxClick(nil);
     DropParamsEdit.Text := Link.dropparams;
     DescrEdit.Text := Link.descr;
-    ic := Link.icon;
+    ic := PreferFilesystemPath(Link.icon);
     iconindex := Link.iconindex;
     QuesCheckBox.Checked := Link.ques;
     HideCheckBox.Checked := Link.hide;

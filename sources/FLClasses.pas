@@ -28,7 +28,7 @@ unit FLClasses;
 interface
 
 uses
-  Winapi.Windows, Winapi.ShellAPI, Winapi.Messages,
+  Winapi.Windows, Winapi.ShellAPI, Winapi.ShlObj, Winapi.ActiveX, Winapi.Messages,
   System.SysUtils, System.Classes, System.Generics.Collections,
   Vcl.Controls, Vcl.ExtCtrls, Vcl.Graphics, Vcl.Menus, Vcl.Dialogs, VCL.Buttons,
   FLFunctions;
@@ -291,6 +291,8 @@ type
       fButtonMouseLeave: TButtonMouseLeaveEvent;
       //--Событие при перетаскивании файла на кнопку
       fDropFile: TDropFileEvent;
+      //--OLE drop target (Start Menu / Explorer shell DnD); kept alive while HWND exists
+      fOleDropTarget: IDropTarget;
       //--Контекстное меню для кнопок
       fButtonsPopup: TPopupMenu;
       //--Номер страницы, на которой начали перетаскивать кнопку
@@ -309,6 +311,10 @@ type
       procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
       //--Метод генерируется при потере кнопкой фокуса
       procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
+      /// Resolve drop target button under screen coordinates (nearest empty preferred)
+      function FindButtonForDrop(const AScreenPos: TPoint): TFLButton;
+      /// Fire OnDropFile for a filesystem path at screen position
+      procedure NotifyDropFile(const AFileName: string; const AScreenPos: TPoint);
       //--Определение актуального размера компонента (согласно количеству строк и колонок кнопок, а также их размера. write для ActualSize)
       function GetActualSize: TSize;
       //--Метод возвращает указатель на страницу данных по номеру страницы
@@ -326,7 +332,8 @@ type
       procedure SetFocusedButton(const Value: TFLButton);
       procedure UpdateSize;
     protected
-
+      procedure CreateWnd; override;
+      procedure DestroyWnd; override;
     public
       //--Конструктор
       constructor Create(AOwner: TComponent; PagesCount: integer = 3; ColsCount: integer = 10;
@@ -405,8 +412,658 @@ type
 implementation
 
 uses
-  System.IOUtils,
+  System.IOUtils, System.StrUtils, Winapi.PropSys,
   FLaunchMainFormModule;
+
+const
+  FLDropTempDirName = 'FreeLaunchDrop';
+
+type
+  /// OLE IDropTarget for Explorer / Start Menu drops.
+  /// Accepts filesystem paths only (regular .lnk / files); UWP later.
+  TFLOleDropTarget = class(TInterfacedObject, IDropTarget)
+  private
+    FPanel: TFLPanel;
+    FCanAccept: Boolean;
+    FLastEffect: Longint;
+    class function SelectDropEffect(Available: Longint): Longint; static;
+    class function PathIsDroppable(const APath: string): Boolean; static;
+    class function AcceptResolvedTarget(const APath: string;
+      out FileName: string): Boolean; static;
+    class function TryPathFromShellItem(const Item: IShellItem;
+      out FileName: string): Boolean; static;
+    class function TryExtractFileContents(const DataObj: IDataObject;
+      out FileName: string): Boolean; static;
+    function ExtractDropPath(const DataObj: IDataObject; out FileName: string): Boolean;
+  public
+    constructor Create(APanel: TFLPanel);
+    function DragEnter(const dataObj: IDataObject; grfKeyState: Longint;
+      pt: TPoint; var dwEffect: Longint): HResult; stdcall;
+    function DragOver(grfKeyState: Longint; pt: TPoint;
+      var dwEffect: Longint): HResult; stdcall;
+    function DragLeave: HResult; stdcall;
+    function Drop(const dataObj: IDataObject; grfKeyState: Longint; pt: TPoint;
+      var dwEffect: Longint): HResult; stdcall;
+  end;
+
+{ TFLOleDropTarget }
+
+constructor TFLOleDropTarget.Create(APanel: TFLPanel);
+begin
+  inherited Create;
+  FPanel := APanel;
+end;
+
+class function TFLOleDropTarget.SelectDropEffect(Available: Longint): Longint;
+begin
+  // Start Menu / shortcuts often offer LINK only — COPY-only reject breaks drop
+  if (Available and DROPEFFECT_COPY) <> 0 then
+    Result := DROPEFFECT_COPY
+  else if (Available and DROPEFFECT_LINK) <> 0 then
+    Result := DROPEFFECT_LINK
+  else if (Available and DROPEFFECT_MOVE) <> 0 then
+    Result := DROPEFFECT_MOVE
+  else
+    Result := DROPEFFECT_NONE;
+end;
+
+class function TFLOleDropTarget.PathIsDroppable(const APath: string): Boolean;
+begin
+  Result := (APath <> '') and
+    (not LooksLikeAppUserModelId(APath)) and
+    FsPathExists(APath);
+end;
+
+class function TFLOleDropTarget.AcceptResolvedTarget(const APath: string;
+  out FileName: string): Boolean;
+var
+  Expanded, AppsTarget, Resolved: string;
+
+  function IsBadToastAumid(const S: string): Boolean;
+  begin
+    // Delphi/RAD Studio Start tiles sometimes expose the toast helper AUMID
+    Result := ContainsText(S, 'DesktopToasts');
+  end;
+
+begin
+  Result := False;
+  FileName := '';
+  if Trim(APath) = '' then
+    Exit;
+
+  // Store / AppsFolder apps (Excel, Armoury Crate, many Yandex builds): no Win32 path
+  AppsTarget := '';
+  if LooksLikeAppUserModelId(APath) then
+    AppsTarget := 'shell:AppsFolder\' + APath
+  else if SameText(Copy(APath, 1, Length('shell:AppsFolder\')), 'shell:AppsFolder\') then
+    AppsTarget := APath;
+  if AppsTarget <> '' then
+  begin
+    if IsBadToastAumid(AppsTarget) then
+      Exit;
+    if ObjectExists(AppsTarget) then
+    begin
+      FileName := AppsTarget;
+      Exit(True);
+    end;
+    Exit;
+  end;
+
+  // Prefer a path that actually exists (ProgramW6432 remap for 32-bit Shell).
+  // Keep the filesystem path — known-folder GUID form is cryptic in Properties
+  // (Desktop\file.lnk → ::{B4BFCC3A-…}\file.lnk).
+  Resolved := ResolveExistingFsPath(APath);
+  if Resolved <> '' then
+  begin
+    FileName := Resolved;
+    Exit(True);
+  end;
+
+  Expanded := APath;
+  try
+    Expanded := ExpandEnvironmentVariables(APath);
+  except
+    Expanded := APath;
+  end;
+  if Expanded <> APath then
+  begin
+    Resolved := ResolveExistingFsPath(Expanded);
+    if Resolved <> '' then
+    begin
+      // Keep env-var form when possible; else store resolved filesystem path
+      if Pos('%', APath) > 0 then
+        FileName := APath
+      else
+        FileName := Resolved;
+      Exit(True);
+    end;
+  end;
+
+  if LooksLikeShellGuidPath(APath) and ObjectExists(APath) then
+  begin
+    FileName := APath;
+    Exit(True);
+  end;
+end;
+
+class function TFLOleDropTarget.TryPathFromShellItem(const Item: IShellItem;
+  out FileName: string): Boolean;
+var
+  Name: PWideChar;
+  Attr: DWORD;
+  LinkTarget: IShellItem;
+  ShellLink: IShellLink;
+  Item2: IShellItem2;
+  Buf: array[0..MAX_PATH] of Char;
+  FindData: TWin32FindData;
+  Pidl: PItemIDList;
+  PropKey: TPropertyKey;
+  PropStr: LPWSTR;
+  Candidate: string;
+  DisplayHint, AumidHint: string;
+  PropNames: array[0..5] of string;
+  I: Integer;
+
+  function TakeFileSysName(const AItem: IShellItem): Boolean;
+  var
+    N: PWideChar;
+  begin
+    Result := False;
+    N := nil;
+    if Failed(AItem.GetDisplayName(SIGDN_FILESYSPATH, N)) or (N = nil) then
+      Exit;
+    try
+      Result := AcceptResolvedTarget(N, FileName);
+    finally
+      CoTaskMemFree(N);
+    end;
+  end;
+
+  function TryShellLink(const Link: IShellLink): Boolean;
+  begin
+    Result := False;
+    if Link = nil then
+      Exit;
+    // Do not call IShellLink.Resolve here: when the 32-bit Shell rewrites the
+    // target to a missing Program Files (x86) path (AmneziaVPN etc.), Resolve
+    // searches the disk/network for a long time and freezes DragEnter.
+    FillChar(Buf, SizeOf(Buf), 0);
+    FillChar(FindData, SizeOf(FindData), 0);
+    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, SLGP_RAWPATH)) and
+      AcceptResolvedTarget(Buf, FileName) then
+      Exit(True);
+    FillChar(Buf, SizeOf(Buf), 0);
+    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, 0)) and
+      AcceptResolvedTarget(Buf, FileName) then
+      Exit(True);
+    Pidl := nil;
+    if Succeeded(Link.GetIDList(Pidl)) and (Pidl <> nil) then
+    try
+      Name := nil;
+      if Succeeded(SHGetNameFromIDList(Pidl,
+        Integer(Cardinal(SIGDN_FILESYSPATH)), Name)) and (Name <> nil) then
+      try
+        Result := AcceptResolvedTarget(Name, FileName);
+      finally
+        CoTaskMemFree(Name);
+      end;
+      if Result then
+        Exit;
+      Name := nil;
+      if Succeeded(SHGetNameFromIDList(Pidl,
+        Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and
+        (Name <> nil) then
+      try
+        Result := AcceptResolvedTarget(Name, FileName);
+      finally
+        CoTaskMemFree(Name);
+      end;
+    finally
+      CoTaskMemFree(Pidl);
+    end;
+  end;
+
+begin
+  Result := False;
+  FileName := '';
+  if Item = nil then
+    Exit;
+
+  // 1) Item is a real file/folder (typical .lnk under Start Menu\Programs)
+  if TakeFileSysName(Item) then
+    Exit(True);
+
+  // 2) Shortcut → resolve link target item
+  Attr := 0;
+  if Succeeded(Item.GetAttributes(SFGAO_LINK, Attr)) and
+    ((Attr and SFGAO_LINK) <> 0) then
+  begin
+    LinkTarget := nil;
+    if Succeeded(Item.BindToHandler(nil, BHID_LinkTargetItem, IID_IShellItem,
+      LinkTarget)) and (LinkTarget <> nil) then
+      if TakeFileSysName(LinkTarget) then
+        Exit(True);
+  end;
+
+  // 3) IShellLink via UI object / folder object
+  ShellLink := nil;
+  if Succeeded(Item.BindToHandler(nil, BHID_SFUIObject, IID_IShellLink, ShellLink)) and
+    TryShellLink(ShellLink) then
+    Exit(True);
+  ShellLink := nil;
+  if Succeeded(Item.BindToHandler(nil, BHID_SFObject, IID_IShellLink, ShellLink)) and
+    TryShellLink(ShellLink) then
+    Exit(True);
+
+  // 4) Property store: filesystem / URL targets first.
+  // Defer AppUserModelID / AppsFolder — Win32 apps like PuTTY often expose an
+  // AUMID that resolves to AppsFolder with a generic icon, while a real
+  // Start Menu .lnk still exists (PuTTY.lnk → putty.exe).
+  PropNames[0] := 'System.Link.TargetParsingPath';
+  PropNames[1] := 'System.ParsingPath';
+  PropNames[2] := 'System.ItemPathDisplay';
+  PropNames[3] := 'System.AppUserModel.RelaunchCommand';
+  PropNames[4] := 'System.Link.TargetUrl';
+  PropNames[5] := 'System.AppUserModel.ID';
+  DisplayHint := '';
+  AumidHint := '';
+  Item2 := nil;
+  if Supports(Item, IShellItem2, Item2) then
+  begin
+    for I := Low(PropNames) to High(PropNames) do
+    begin
+      if Failed(PSGetPropertyKeyFromName(PWideChar(PropNames[I]), PropKey)) then
+        Continue;
+      PropStr := nil;
+      if Failed(Item2.GetString(PropKey, PropStr)) or (PropStr = nil) then
+        Continue;
+      try
+        Candidate := Trim(PropStr);
+        if Candidate = '' then
+          Continue;
+        // Collect AUMID / AppsFolder for later; do not accept yet
+        if SameText(PropNames[I], 'System.AppUserModel.ID') or
+          LooksLikeAppUserModelId(Candidate) or
+          StartsText('shell:AppsFolder\', Candidate) then
+        begin
+          if AumidHint = '' then
+          begin
+            if StartsText('shell:AppsFolder\', Candidate) then
+              AumidHint := Copy(Candidate, Length('shell:AppsFolder\') + 1, MaxInt)
+            else
+              AumidHint := Candidate;
+          end;
+          Continue;
+        end;
+        // RelaunchCommand may be: "C:\Path\app.exe" arg1
+        if (Length(Candidate) > 0) and (Candidate[1] = '"') then
+        begin
+          Candidate := Copy(Candidate, 2, MaxInt);
+          if Pos('"', Candidate) > 0 then
+            Candidate := Copy(Candidate, 1, Pos('"', Candidate) - 1);
+        end
+        else if Pos(' ', Candidate) > 0 then
+          Candidate := Copy(Candidate, 1, Pos(' ', Candidate) - 1);
+        if AcceptResolvedTarget(Candidate, FileName) then
+          Exit(True);
+      finally
+        CoTaskMemFree(PropStr);
+      end;
+    end;
+  end;
+
+  // 5) GUID / shell: parsing names — skip AppsFolder / bare AUMID (handled below)
+  Name := nil;
+  if Succeeded(Item.GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, Name)) and
+    (Name <> nil) then
+  try
+    Candidate := Trim(Name);
+    if LooksLikeAppUserModelId(Candidate) then
+    begin
+      if AumidHint = '' then
+        AumidHint := Candidate;
+    end
+    else if StartsText('shell:AppsFolder\', Candidate) then
+    begin
+      if AumidHint = '' then
+        AumidHint := Copy(Candidate, Length('shell:AppsFolder\') + 1, MaxInt);
+    end
+    else if AcceptResolvedTarget(Candidate, FileName) then
+      Exit(True);
+  finally
+    CoTaskMemFree(Name);
+  end;
+
+  // 6) Prefer a real Start Menu / Desktop .lnk over AppsFolder (correct icons)
+  Name := nil;
+  if Succeeded(Item.GetDisplayName(SIGDN_NORMALDISPLAY, Name)) and (Name <> nil) then
+  try
+    DisplayHint := Trim(Name);
+  finally
+    CoTaskMemFree(Name);
+  end;
+  Candidate := FindStartMenuShortcutByName(DisplayHint, AumidHint);
+  if AcceptResolvedTarget(Candidate, FileName) then
+    Exit(True);
+
+  // 7) Last resort: Store / AppsFolder app (Excel, Armoury Crate, …)
+  if AumidHint <> '' then
+  begin
+    if LooksLikeAppUserModelId(AumidHint) then
+      Candidate := 'shell:AppsFolder\' + AumidHint
+    else
+      Candidate := AumidHint;
+    if AcceptResolvedTarget(Candidate, FileName) then
+      Exit(True);
+  end;
+end;
+
+class function TFLOleDropTarget.TryExtractFileContents(const DataObj: IDataObject;
+  out FileName: string): Boolean;
+var
+  FormatEtc: TFormatEtc;
+  Medium: TStgMedium;
+  Group: PFileGroupDescriptorW;
+  Stream: IStream;
+  TempDir, DestName, DestPath: string;
+  FS: TFileStream;
+  BytesRead: FixedUInt;
+  Buf: array[0..8191] of Byte;
+  HGlob: HGLOBAL;
+  P: Pointer;
+  Size, Done: NativeUInt;
+  Chunk: Longint;
+begin
+  Result := False;
+  FileName := '';
+  if DataObj = nil then
+    Exit;
+
+  FillChar(FormatEtc, SizeOf(FormatEtc), 0);
+  FormatEtc.cfFormat := RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW);
+  FormatEtc.dwAspect := DVASPECT_CONTENT;
+  FormatEtc.lindex := -1;
+  FormatEtc.tymed := TYMED_HGLOBAL;
+  if Failed(DataObj.GetData(FormatEtc, Medium)) then
+    Exit;
+  try
+    if Medium.tymed <> TYMED_HGLOBAL then
+      Exit;
+    Group := GlobalLock(Medium.hGlobal);
+    if (Group = nil) or (Group.cItems < 1) then
+      Exit;
+    try
+      DestName := Group.fgd[0].cFileName;
+    finally
+      GlobalUnlock(Medium.hGlobal);
+    end;
+  finally
+    ReleaseStgMedium(Medium);
+  end;
+
+  DestName := ExtractFileName(DestName);
+  if DestName = '' then
+    DestName := 'drop.lnk';
+
+  TempDir := TPath.Combine(TPath.GetTempPath, FLDropTempDirName);
+  ForceDirectories(TempDir);
+  DestPath := TPath.Combine(TempDir, DestName);
+  if FileExists(DestPath) then
+    DeleteFile(DestPath);
+
+  FillChar(FormatEtc, SizeOf(FormatEtc), 0);
+  FormatEtc.cfFormat := RegisterClipboardFormat(CFSTR_FILECONTENTS);
+  FormatEtc.dwAspect := DVASPECT_CONTENT;
+  FormatEtc.lindex := 0; // first file in the group
+  FormatEtc.tymed := TYMED_ISTREAM or TYMED_HGLOBAL;
+  if Failed(DataObj.GetData(FormatEtc, Medium)) then
+    Exit;
+  try
+    if Medium.tymed = TYMED_ISTREAM then
+    begin
+      Stream := IStream(Medium.stm);
+      if Stream = nil then
+        Exit;
+      FS := TFileStream.Create(DestPath, fmCreate);
+      try
+        repeat
+          BytesRead := 0;
+          if Failed(Stream.Read(@Buf[0], SizeOf(Buf), @BytesRead)) then
+            Break;
+          if BytesRead > 0 then
+            FS.WriteBuffer(Buf[0], BytesRead);
+        until BytesRead = 0;
+      finally
+        FS.Free;
+      end;
+    end
+    else if Medium.tymed = TYMED_HGLOBAL then
+    begin
+      HGlob := Medium.hGlobal;
+      Size := GlobalSize(HGlob);
+      P := GlobalLock(HGlob);
+      if (P = nil) or (Size = 0) then
+        Exit;
+      try
+        FS := TFileStream.Create(DestPath, fmCreate);
+        try
+          Done := 0;
+          while Done < Size do
+          begin
+            Chunk := Size - Done;
+            if Chunk > SizeOf(Buf) then
+              Chunk := SizeOf(Buf);
+            Move(Pointer(NativeUInt(P) + Done)^, Buf[0], Chunk);
+            FS.WriteBuffer(Buf[0], Chunk);
+            Inc(Done, NativeUInt(Chunk));
+          end;
+        finally
+          FS.Free;
+        end;
+      finally
+        GlobalUnlock(HGlob);
+      end;
+    end
+    else
+      Exit;
+  finally
+    ReleaseStgMedium(Medium);
+  end;
+
+  if PathIsDroppable(DestPath) then
+  begin
+    FileName := DestPath;
+    Result := True;
+  end
+  else if FileExists(DestPath) then
+    DeleteFile(DestPath);
+end;
+
+function TFLOleDropTarget.ExtractDropPath(const DataObj: IDataObject;
+  out FileName: string): Boolean;
+var
+  FormatEtc: TFormatEtc;
+  Medium: TStgMedium;
+  Buf: array[0..MAX_PATH] of Char;
+  PCida: PIDA;
+  Offsets: PUINT;
+  FolderPidl, ItemPidl, AbsolutePidl: PItemIDList;
+  Len: UINT;
+  Raw: Pointer;
+  ItemArray: IShellItemArray;
+  Item: IShellItem;
+  Count: DWORD;
+  ShellItem: IShellItem;
+  Candidate: string;
+begin
+  Result := False;
+  FileName := '';
+  if DataObj = nil then
+    Exit;
+
+  // 1) CF_HDROP
+  FillChar(FormatEtc, SizeOf(FormatEtc), 0);
+  FormatEtc.cfFormat := CF_HDROP;
+  FormatEtc.dwAspect := DVASPECT_CONTENT;
+  FormatEtc.lindex := -1;
+  FormatEtc.tymed := TYMED_HGLOBAL;
+  if Succeeded(DataObj.GetData(FormatEtc, Medium)) then
+  try
+    if Medium.tymed = TYMED_HGLOBAL then
+    begin
+      Len := DragQueryFile(Medium.hGlobal, 0, Buf, Length(Buf));
+      if Len > 0 then
+      begin
+        SetString(Candidate, Buf, Len);
+        if AcceptResolvedTarget(Candidate, FileName) then
+          Exit(True);
+      end;
+    end;
+  finally
+    ReleaseStgMedium(Medium);
+  end;
+
+  // 2) FileNameW
+  FillChar(FormatEtc, SizeOf(FormatEtc), 0);
+  FormatEtc.cfFormat := RegisterClipboardFormat(CFSTR_FILENAMEW);
+  FormatEtc.dwAspect := DVASPECT_CONTENT;
+  FormatEtc.lindex := -1;
+  FormatEtc.tymed := TYMED_HGLOBAL;
+  if Succeeded(DataObj.GetData(FormatEtc, Medium)) then
+  try
+    if (Medium.tymed = TYMED_HGLOBAL) and (Medium.hGlobal <> 0) then
+    begin
+      Candidate := PWideChar(GlobalLock(Medium.hGlobal));
+      GlobalUnlock(Medium.hGlobal);
+      if AcceptResolvedTarget(Candidate, FileName) then
+        Exit(True);
+    end;
+  finally
+    ReleaseStgMedium(Medium);
+  end;
+
+  // 3) FileGroupDescriptor + FileContents (virtual .lnk from Start Menu)
+  if TryExtractFileContents(DataObj, FileName) then
+    Exit(True);
+
+  // 4) Shell IDList
+  FillChar(FormatEtc, SizeOf(FormatEtc), 0);
+  FormatEtc.cfFormat := RegisterClipboardFormat(CFSTR_SHELLIDLIST);
+  FormatEtc.dwAspect := DVASPECT_CONTENT;
+  FormatEtc.lindex := -1;
+  FormatEtc.tymed := TYMED_HGLOBAL;
+  if Succeeded(DataObj.GetData(FormatEtc, Medium)) then
+  try
+    if Medium.tymed = TYMED_HGLOBAL then
+    begin
+      PCida := GlobalLock(Medium.hGlobal);
+      if PCida <> nil then
+      try
+        if PCida.cidl >= 1 then
+        begin
+          Offsets := @PCida.aoffset[0];
+          FolderPidl := PItemIDList(NativeUInt(PCida) + Offsets^);
+          Inc(Offsets);
+          ItemPidl := PItemIDList(NativeUInt(PCida) + Offsets^);
+          AbsolutePidl := ILCombine(FolderPidl, ItemPidl);
+          if AbsolutePidl <> nil then
+          try
+            FillChar(Buf, SizeOf(Buf), 0);
+            if SHGetPathFromIDList(AbsolutePidl, Buf) and
+              AcceptResolvedTarget(Buf, FileName) then
+              Exit(True);
+            ShellItem := nil;
+            if Succeeded(SHCreateItemFromIDList(AbsolutePidl, IID_IShellItem,
+              ShellItem)) and TryPathFromShellItem(ShellItem, FileName) then
+              Exit(True);
+          finally
+            ILFree(AbsolutePidl);
+          end;
+        end;
+      finally
+        GlobalUnlock(Medium.hGlobal);
+      end;
+    end;
+  finally
+    ReleaseStgMedium(Medium);
+  end;
+
+  // 5) IShellItemArray (resolve via link/properties; reject bare AUMID)
+  Raw := nil;
+  if Succeeded(SHCreateShellItemArrayFromDataObject(DataObj, IID_IShellItemArray, Raw)) and
+    (Raw <> nil) then
+  begin
+    ItemArray := IShellItemArray(Raw);
+    Count := 0;
+    if Succeeded(ItemArray.GetCount(Count)) and (Count > 0) then
+    begin
+      Item := nil;
+      if Succeeded(ItemArray.GetItemAt(0, Item)) and
+        TryPathFromShellItem(Item, FileName) then
+        Exit(True);
+    end;
+  end;
+end;
+
+function TFLOleDropTarget.DragEnter(const dataObj: IDataObject;
+  grfKeyState: Longint; pt: TPoint; var dwEffect: Longint): HResult;
+var
+  Dummy: string;
+begin
+  // Cursor must match Drop: only accept when a real path/.lnk can be extracted now
+  FCanAccept := ExtractDropPath(dataObj, Dummy);
+  if FCanAccept and (FPanel.FindButtonForDrop(pt) <> nil) then
+  begin
+    FLastEffect := SelectDropEffect(dwEffect);
+    dwEffect := FLastEffect;
+  end
+  else
+  begin
+    FLastEffect := DROPEFFECT_NONE;
+    dwEffect := DROPEFFECT_NONE;
+  end;
+  Result := S_OK;
+end;
+
+function TFLOleDropTarget.DragOver(grfKeyState: Longint; pt: TPoint;
+  var dwEffect: Longint): HResult;
+begin
+  if FCanAccept and (FPanel.FindButtonForDrop(pt) <> nil) then
+  begin
+    FLastEffect := SelectDropEffect(dwEffect);
+    dwEffect := FLastEffect;
+  end
+  else
+  begin
+    FLastEffect := DROPEFFECT_NONE;
+    dwEffect := DROPEFFECT_NONE;
+  end;
+  Result := S_OK;
+end;
+
+function TFLOleDropTarget.DragLeave: HResult;
+begin
+  FCanAccept := False;
+  FLastEffect := DROPEFFECT_NONE;
+  Result := S_OK;
+end;
+
+function TFLOleDropTarget.Drop(const dataObj: IDataObject; grfKeyState: Longint;
+  pt: TPoint; var dwEffect: Longint): HResult;
+var
+  FileName: string;
+  Effect: Longint;
+begin
+  Result := S_OK;
+  Effect := SelectDropEffect(dwEffect);
+  dwEffect := DROPEFFECT_NONE;
+  if not ExtractDropPath(dataObj, FileName) then
+    Exit;
+  if FPanel.FindButtonForDrop(pt) = nil then
+    Exit;
+  FPanel.NotifyDropFile(FileName, pt);
+  dwEffect := Effect;
+end;
 
 {*******************************}
 {*****-- Класс TFLButton --*****}
@@ -852,6 +1509,7 @@ procedure TFLDataItem.AssignIcons;
 var
   TempIcon: TIcon;
   TempBmp: TBitMap;
+  ShellOk: Boolean;
 
   procedure DrawShield(ABitmap: TBitmap);
   var
@@ -866,32 +1524,37 @@ var
     DrawShieldIcon(ABitmap.Canvas, Position, Size);
   end;
 begin
-  TempIcon := TIcon.Create;
-  // AbsolutePath fIcon
+  TempBmp := TBitMap.Create;
+  ShellOk := False;
+  // Virtual shell items (AppsFolder, Control Panel applets, This PC, …)
+  if LooksLikeShellGuidPath(GetIcon) then
+    ShellOk := TryLoadShellItemImage(GetIcon, IconBmp.Height, TempBmp);
 
-  //--Если объекта не существует (файлы, папки и shell GUID / Control Panel)
-  if not ObjectExists(GetIcon) then
-    //--Загружаем стандартную иконку "белый лист"
-    TempIcon.Handle := LoadIcon(HInstance, 'RBLANKICON')
+  if not ShellOk then
+  begin
+    TempIcon := TIcon.Create;
+    try
+      if not ObjectExists(GetIcon) then
+        TempIcon.Handle := LoadIcon(HInstance, 'RBLANKICON')
+      else
+        TempIcon.Handle := GetFileIcon(GetIcon, fIconIndex, IconBmp.Height);
+      if TempIcon.Handle = 0 then
+        TempIcon.Handle := LoadIcon(HInstance, 'RBLANKICON');
+      TempBmp.Assign(TempIcon);
+    finally
+      TempIcon.Free;
+    end;
+  end;
+
+  if (TempBmp.Width = IconBmp.Width) and (TempBmp.Height = IconBmp.Height) then
+    IconBmp.Assign(TempBmp)
   else
-    //--Иначе загружаем иконку из файла
-    TempIcon.Handle := GetFileIcon(GetIcon, fIconIndex, IconBmp.Height);
-  if TempIcon.Handle = 0 then
-    TempIcon.Handle := LoadIcon(hinstance, 'RBLANKICON');
-  {*--Рисуем иконку на битмапе с заданным фоном, сохраняя альфа канал--*}
-  {**} TempBmp := TBitMap.Create;
-  {**} TempBmp.Assign(TempIcon);
-  {*--Изменяем размер иконки, если это требуется--*}
-  {**} if (TempBmp.Width = IconBmp.Width) and (TempBmp.Height = IconBmp.Height) then
-  {**}   IconBmp.Assign(TempBmp)
-  {**} else
-  {**}   SmoothResize(TempBmp, IconBmp);
-  {*--Таким же образом создаем "нажатую" кнопку--*}
-  {**} if (TempBmp.Width = PushedIconBmp.Width) and (TempBmp.Height = PushedIconBmp.Height) then
-  {**}   PushedIconBmp.Assign(TempBmp)
-  {**} else
-  {**}   SmoothResize(TempBmp, PushedIconBmp);
-  {*---------------------------------------------*}
+    SmoothResize(TempBmp, IconBmp);
+  if (TempBmp.Width = PushedIconBmp.Width) and (TempBmp.Height = PushedIconBmp.Height) then
+    PushedIconBmp.Assign(TempBmp)
+  else
+    SmoothResize(TempBmp, PushedIconBmp);
+
   if FIsAdmin then
   begin
     DrawShield(IconBmp);
@@ -905,7 +1568,6 @@ begin
     TPath.GetGUIDFileName() + '.png';
 
   fHasIcon := true;
-  TempIcon.Free;
   TempBmp.Free;
 end;
 
@@ -1130,6 +1792,25 @@ begin
         {*-----------------------------------------*}
       end;
   UpdateSize;
+end;
+
+procedure TFLPanel.CreateWnd;
+begin
+  inherited;
+  // OLE drop for Start Menu / shell ID lists; WM_DROPFILES remains for classic HDROP
+  fOleDropTarget := TFLOleDropTarget.Create(Self);
+  if Failed(RegisterDragDrop(Handle, fOleDropTarget)) then
+    fOleDropTarget := nil;
+end;
+
+procedure TFLPanel.DestroyWnd;
+begin
+  if fOleDropTarget <> nil then
+  begin
+    RevokeDragDrop(Handle);
+    fOleDropTarget := nil;
+  end;
+  inherited;
 end;
 
 //--Деструктор
@@ -1470,14 +2151,11 @@ begin
   UpdateSize;
 end;
 
-//--Метод генерируется при перетаскивании файла на кнопку
-procedure TFLPanel.WMDropFiles(var Msg: TWMDropFiles);
+function TFLPanel.FindButtonForDrop(const AScreenPos: TPoint): TFLButton;
 var
-  buf: array [0..MAX_PATH] of char;
-  Button: TFLButton;
-  tempctrl: TControl;
-  tempcp, newcp: TPoint;
-  i: Integer;
+  TempCtrl: TControl;
+  NewPos: TPoint;
+  I: Integer;
   BestButton: TFLButton;
   BestDist: Integer;
 
@@ -1505,38 +2183,56 @@ var
   end;
 
 begin
-  if Assigned(fDropFile) then
+  TempCtrl := ControlAtPos(ScreenToClient(AScreenPos), False);
+  if TempCtrl is TFLButton then
+    Exit(TempCtrl as TFLButton);
+
+  BestButton := nil;
+  BestDist := MaxInt;
+  // Search horizontally: prefer empty buttons, then nearest to cursor
+  for I := AScreenPos.X - Padding - ButtonWidth to AScreenPos.X + Padding
+    + ButtonWidth do
   begin
-    DragQueryFile(Msg.Drop, 0, buf, SizeOf(buf));
-    tempcp := Mouse.CursorPos;
-    tempctrl := ControlAtPos(ScreenToClient(tempcp), False);
-    if (tempctrl is TFLButton) then begin
-      Button := tempctrl as TFLButton;
-      fDropFile(Self, Button, buf);
-    end else begin
-      BestButton := nil;
-      BestDist := MaxInt;
-      // Search horizontally: prefer empty buttons, then nearest to cursor
-      for I := tempcp.X - Padding - ButtonWidth to tempcp.X + Padding
-        + ButtonWidth
-        do begin
-          newcp := tempcp;
-          newcp.X := I;
-          ConsiderButton(ButtonAtScreenPos(newcp), Abs(I - tempcp.X));
-        end;
-      // Search vertically if no button found yet
-      if BestButton = nil then
-        for I := tempcp.Y - Padding - ButtonHeight to tempcp.Y + Padding
-          + ButtonHeight
-          do begin
-            newcp := tempcp;
-            newcp.Y := I;
-            ConsiderButton(ButtonAtScreenPos(newcp), Abs(I - tempcp.Y));
-          end;
-      if BestButton <> nil then
-        fDropFile(Self, BestButton, buf);
+    NewPos := AScreenPos;
+    NewPos.X := I;
+    ConsiderButton(ButtonAtScreenPos(NewPos), Abs(I - AScreenPos.X));
+  end;
+  // Search vertically if no button found yet
+  if BestButton = nil then
+    for I := AScreenPos.Y - Padding - ButtonHeight to AScreenPos.Y + Padding
+      + ButtonHeight do
+    begin
+      NewPos := AScreenPos;
+      NewPos.Y := I;
+      ConsiderButton(ButtonAtScreenPos(NewPos), Abs(I - AScreenPos.Y));
     end;
-    //--Генерируем событие родительской панели OnDropFile, передавая текущую кнопку и путь к файлу
+  Result := BestButton;
+end;
+
+procedure TFLPanel.NotifyDropFile(const AFileName: string;
+  const AScreenPos: TPoint);
+var
+  Button: TFLButton;
+begin
+  if not Assigned(fDropFile) or (AFileName = '') then
+    Exit;
+  Button := FindButtonForDrop(AScreenPos);
+  if Button <> nil then
+    fDropFile(Self, Button, AFileName);
+end;
+
+//--Метод генерируется при перетаскивании файла на кнопку
+procedure TFLPanel.WMDropFiles(var Msg: TWMDropFiles);
+var
+  Buf: array [0..MAX_PATH] of Char;
+begin
+  try
+    if Assigned(fDropFile) then
+    begin
+      DragQueryFile(Msg.Drop, 0, Buf, SizeOf(Buf));
+      NotifyDropFile(Buf, Mouse.CursorPos);
+    end;
+  finally
     DragFinish(Msg.Drop);
   end;
 end;
