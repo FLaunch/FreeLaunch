@@ -1022,7 +1022,7 @@ var
   RootNode, WindowsNode, WindowNode, PositionNode, TabRootNode,
   LinkNode, IconNode, TabNode, IconsNode,
   PanelRootNode, PanelNode, DropNode: IXMLNode;
-  TabNumber, Row, Column: Integer;
+  TabNumber, Row, Column, PanelOrdinal, PanelTab: Integer;
   TempData: TFLDataItem;
   XMLDocument: IXMLDocument;
 
@@ -1188,11 +1188,13 @@ begin
       //panels node
       PanelRootNode := RootNode.ChildNodes.FindNode('Panels');
       if Assigned(PanelRootNode) and PanelRootNode.HasChildNodes then begin
-        //panel N node
-        //where is tabnumber value?
+        // Map each Panel by TabNumber (1-based in XML). Fall back to document
+        // order when TabNumber is missing (legacy configs).
         PanelNode := PanelRootNode.ChildNodes.First;
-        for TabNumber := 0 to TabsCount - 1 do begin
-          if Assigned(PanelNode) and PanelNode.HasChildNodes then begin
+        PanelOrdinal := 0;
+        while Assigned(PanelNode) do begin
+          if SameText(PanelNode.NodeName, 'Panel') and PanelNode.HasChildNodes then
+          begin
             colscount := ToMaxInt(GetInt(PanelNode, 'Columns', 10), 0,
               ColsCountMax);
             rowscount := ToMaxInt(GetInt(PanelNode, 'Rows', 2), 0,
@@ -1210,46 +1212,59 @@ begin
                 MinIconParam, MaxIconParam);
             end;
             //icons node end
-            //link node
-            LinkNode := PanelNode.ChildNodes.FindNode('Link');
-            while Assigned(LinkNode) and LinkNode.HasChildNodes do begin
-              Column := GetInt(LinkNode, 'Column') - 1;
-              Row := GetInt(LinkNode, 'Row') - 1;
-              if not IsTRCInRange(TabNumber, Row, Column) then Continue;
-              TempData :=
-                FLPanel.Buttons[TabNumber, Row, Column].InitializeData;
-              TempData.LType := GetInt(LinkNode, 'Type');
-              TempData.Exec := GetStr(LinkNode, 'Execute');
-              TempData.WorkDir := GetStr(LinkNode, 'WorkingDir');
-              //link icon node
-              IconNode := LinkNode.ChildNodes.FindNode('Icon');
-              if Assigned(IconNode) and IconNode.HasChildNodes then begin
-                TempData.Icon := GetStr(IconNode, 'File');
-                TempData.IconIndex := GetInt(IconNode, 'Index');
-                TempData.IconCache := GetStr(IconNode, 'Cache');
+
+            PanelTab := GetInt(PanelNode, 'TabNumber', 0) - 1;
+            if PanelTab < 0 then
+              PanelTab := PanelOrdinal;
+
+            if (PanelTab >= 0) and (PanelTab < TabsCount) then
+            begin
+              //link node
+              LinkNode := PanelNode.ChildNodes.FindNode('Link');
+              while Assigned(LinkNode) and LinkNode.HasChildNodes do begin
+                Column := GetInt(LinkNode, 'Column') - 1;
+                Row := GetInt(LinkNode, 'Row') - 1;
+                if not IsTRCInRange(PanelTab, Row, Column) then
+                begin
+                  LinkNode := LinkNode.NextSibling;
+                  Continue;
+                end;
+                TempData :=
+                  FLPanel.Buttons[PanelTab, Row, Column].InitializeData;
+                TempData.LType := GetInt(LinkNode, 'Type');
+                TempData.Exec := GetStr(LinkNode, 'Execute');
+                TempData.WorkDir := GetStr(LinkNode, 'WorkingDir');
+                //link icon node
+                IconNode := LinkNode.ChildNodes.FindNode('Icon');
+                if Assigned(IconNode) and IconNode.HasChildNodes then begin
+                  TempData.Icon := GetStr(IconNode, 'File');
+                  TempData.IconIndex := GetInt(IconNode, 'Index');
+                  TempData.IconCache := GetStr(IconNode, 'Cache');
+                end;
+                //link icon node end
+                TempData.Params := GetStr(LinkNode, 'Parameters');
+                //link drop node
+                DropNode := LinkNode.ChildNodes.FindNode('Drop');
+                if Assigned(DropNode) and DropNode.HasChildNodes then begin
+                  TempData.DropFiles := GetBool(DropNode, 'Allow');
+                  TempData.DropParams := GetStr(DropNode, 'Parameters');
+                end;
+                //link drop node end
+                TempData.Descr := GetStr(LinkNode, 'Description');
+                TempData.Ques := GetBool(LinkNode, 'NeedQuestion');
+                TempData.Hide := GetBool(LinkNode, 'HideContainer');
+                TempData.Pr := NormalizeLinkPriority(GetInt(LinkNode, 'Priority'));
+                TempData.WSt := GetInt(LinkNode, 'WindowState');
+                TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
+                // Icons are loaded from cache later in LoadLinksIconsFromCache.
+                // Calling AssignIcons here would delete cached files and defeat caching.
+                LinkNode := LinkNode.NextSibling;
               end;
-              //link icon node end
-              TempData.Params := GetStr(LinkNode, 'Parameters');
-              //link drop node
-              DropNode := LinkNode.ChildNodes.FindNode('Drop');
-              if Assigned(DropNode) and DropNode.HasChildNodes then begin
-                TempData.DropFiles := GetBool(DropNode, 'Allow');
-                TempData.DropParams := GetStr(DropNode, 'Parameters');
-              end;
-              //link drop node end
-              TempData.Descr := GetStr(LinkNode, 'Description');
-              TempData.Ques := GetBool(LinkNode, 'NeedQuestion');
-              TempData.Hide := GetBool(LinkNode, 'HideContainer');
-              TempData.Pr := NormalizeLinkPriority(GetInt(LinkNode, 'Priority'));
-              TempData.WSt := GetInt(LinkNode, 'WindowState');
-              TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
-              // Icons are loaded from cache later in LoadLinksIconsFromCache.
-              // Calling AssignIcons here would delete cached files and defeat caching.
-              LinkNode := LinkNode.NextSibling;
+              //link node end
             end;
-            //link node end
-            PanelNode := PanelNode.NextSibling;
+            Inc(PanelOrdinal);
           end;
+          PanelNode := PanelNode.NextSibling;
         end;
         //panel N node end
       end;
