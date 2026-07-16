@@ -1360,13 +1360,17 @@ end;
 procedure TFLButton.DragDrop(Source: TObject; X, Y: Integer);
 var
   TempDataItem: TFLDataItem;
+  SrcButton: TFLButton;
 begin
   inherited DragDrop(Source, X, Y);
+  SrcButton := Source as TFLButton;
   {*--Меняем местами две ячейки памяти--*}
   {**} TempDataItem := Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber];
-  {**} Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber] := Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber];
-  {**} Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[(Source as TFLButton).fRowNumber, (Source as TFLButton).fColNumber] := TempDataItem;
+  {**} Father.GetCurrentDataPage.fItems[fRowNumber, fColNumber] := Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[SrcButton.fRowNumber, SrcButton.fColNumber];
+  {**} Father.GetDataPageByPageNumber(Father.fDraggedButtonPageNumber).fItems[SrcButton.fRowNumber, SrcButton.fColNumber] := TempDataItem;
   {*----------------------------------------------------*}
+  Invalidate;
+  SrcButton.Invalidate;
 end;
 
 //--Метод генерируется при прекращении перетягивания объекта
