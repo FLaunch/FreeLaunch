@@ -169,7 +169,7 @@ begin
   link.ques := QuesCheckBox.Checked;
   link.hide := HideCheckBox.Checked;
   if IsBinary then
-    link.pr := PriorBox.ItemIndex
+    link.pr := ComboIndexToPriority(PriorBox.ItemIndex)
   else
     link.pr := 0;
   link.wst := WStyleBox.ItemIndex;
@@ -224,7 +224,6 @@ begin
     PriorBox.Items.Add(Language.Properties.PriorityNormal);
     PriorBox.Items.Add(Language.Properties.PriorityHigh);
     PriorBox.Items.Add(Language.Properties.PriorityIdle);
-    PriorBox.Items.Add(Language.Properties.PriorityRealTime);
     PriorBox.Items.Add(Language.Properties.PriorityBelowNormal);
     PriorBox.Items.Add(Language.Properties.PriorityAboveNormal);
     Label7.Caption := Language.Properties.View + ':';
@@ -257,7 +256,7 @@ begin
     iconindex := Link.iconindex;
     QuesCheckBox.Checked := Link.ques;
     HideCheckBox.Checked := Link.hide;
-    PriorBox.ItemIndex := Link.pr;
+    PriorBox.ItemIndex := PriorityToComboIndex(Link.pr);
     WStyleBox.ItemIndex := Link.wst;
     AdminBox.Checked := Link.IsAdmin;
     FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),

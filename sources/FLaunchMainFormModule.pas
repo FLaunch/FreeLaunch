@@ -897,7 +897,7 @@ begin
   WindowNode.AddChild('DeleteLNK').NodeValue := deletelnk;
   WindowNode.AddChild('DefAcceptDropFiles').NodeValue := defdrop;
   WindowNode.AddChild('DefWinState').NodeValue := WStateDef;
-  WindowNode.AddChild('DefPriority').NodeValue := PriorDef;
+  WindowNode.AddChild('DefPriority').NodeValue := NormalizeLinkPriority(PriorDef);
   WindowNode.AddChild('ClearBtnIfONF').NodeValue := ClearONF;
   WindowNode.AddChild('CurrentThemeID').NodeValue := CurrAppTheme;
   WindowNode.AddChild('LastTabInSettings').NodeValue := lotabinsettings;
@@ -952,7 +952,7 @@ begin
         LinkNode.AddChild('Description').NodeValue := TempData.Descr;
         LinkNode.AddChild('NeedQuestion').NodeValue := TempData.Ques;
         LinkNode.AddChild('HideContainer').NodeValue := TempData.Hide;
-        LinkNode.AddChild('Priority').NodeValue := TempData.Pr;
+        LinkNode.AddChild('Priority').NodeValue := NormalizeLinkPriority(TempData.Pr);
         LinkNode.AddChild('WindowState').NodeValue := TempData.WSt;
         LinkNode.AddChild('RequireAdmin').NodeValue := TempData.IsAdmin;
       end;
@@ -1136,7 +1136,8 @@ begin
               Low(FLThemes), High(FLThemes));
           dtimeinstbar := GetBool(WindowNode, 'DateTimeInStatusBar');
           defdrop := GetBool(WindowNode, 'DefAcceptDropFiles');
-          PriorDef := ToMinInt(GetInt(WindowNode, 'DefPriority'), 0, 5);
+          PriorDef := NormalizeLinkPriority(
+            ToMinInt(GetInt(WindowNode, 'DefPriority'), 0, 5));
           WStateDef := ToMinInt(GetInt(WindowNode, 'DefWinState'), 0, 3);
           deletelnk := GetBool(WindowNode, 'DeleteLNK');
           hideafterlaunch := GetBool(WindowNode, 'HideAfterLaunchBtn');
@@ -1239,7 +1240,7 @@ begin
               TempData.Descr := GetStr(LinkNode, 'Description');
               TempData.Ques := GetBool(LinkNode, 'NeedQuestion');
               TempData.Hide := GetBool(LinkNode, 'HideContainer');
-              TempData.Pr := GetInt(LinkNode, 'Priority');
+              TempData.Pr := NormalizeLinkPriority(GetInt(LinkNode, 'Priority'));
               TempData.WSt := GetInt(LinkNode, 'WindowState');
               TempData.IsAdmin := GetBool(LinkNode, 'RequireAdmin');
               // Icons are loaded from cache later in LoadLinksIconsFromCache.

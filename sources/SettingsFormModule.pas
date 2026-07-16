@@ -164,7 +164,6 @@ begin
   PriorityBox.Items.Add(Language.Settings.PriorityNormal);
   PriorityBox.Items.Add(Language.Settings.PriorityHigh);
   PriorityBox.Items.Add(Language.Settings.PriorityIdle);
-  PriorityBox.Items.Add(Language.Settings.PriorityRealTime);
   PriorityBox.Items.Add(Language.Settings.PriorityBelowNormal);
   PriorityBox.Items.Add(Language.Settings.PriorityAboveNormal);
   TabsBox.Items.Add(Language.Settings.TabStylePages);
@@ -179,7 +178,7 @@ begin
   WSBox.Items.Add(Language.Settings.WSHidden);
   for i := Low(FLThemes) to High(FLThemes)
     do ThemesBox.Items.Add(FLThemes[i].NameForGUI);
-  PriorityBox.ItemIndex := PriorDef;
+  PriorityBox.ItemIndex := PriorityToComboIndex(PriorDef);
   TabsBox.ItemIndex := tabsview;
   TBarBox.ItemIndex := titlebar;
   ThemesBox.ItemIndex := CurrAppTheme;
@@ -211,7 +210,7 @@ begin
   ABOffOnHover := ABOffCheckBox.Checked;
   ABlendVal := 255 - Round(2.55 * ABlendBar.Position);
   WStateDef := WSBox.ItemIndex;
-  PriorDef := PriorityBox.ItemIndex;
+  PriorDef := ComboIndexToPriority(PriorityBox.ItemIndex);
   CurrAppTheme := ThemesBox.ItemIndex;
   FlaunchMainForm.SetAutorun(Autorun);
   if LanguagesBox.ItemIndex >= 0 then

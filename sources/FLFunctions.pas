@@ -153,6 +153,12 @@ procedure WarningMessage(AHandle: HWND; AText: string);
 function RequestMessage(AHandle: HWND; AText: string): Integer;
 // Определение типа файла
 function IsExecutable(Ext: string): Boolean;
+/// Legacy Realtime (3) → High (1); keep Below/Above as 4/5
+function NormalizeLinkPriority(APr: Integer): Integer;
+/// Map stored priority to combo index (Realtime removed from UI)
+function PriorityToComboIndex(APr: Integer): Integer;
+/// Map combo index to stored priority
+function ComboIndexToPriority(AIndex: Integer): Integer;
 // Обертка над CreateProcess
 function CreateProcessFL(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
@@ -2366,6 +2372,45 @@ begin
     MB_ICONWARNING or MB_OK);
 end;
 
+function NormalizeLinkPriority(APr: Integer): Integer;
+begin
+  // Old configs may still store Realtime as 3 — map to High silently.
+  if APr = 3 then
+    Exit(1);
+  case APr of
+    0, 1, 2, 4, 5:
+      Result := APr;
+  else
+    Result := 0;
+  end;
+end;
+
+function PriorityToComboIndex(APr: Integer): Integer;
+begin
+  case NormalizeLinkPriority(APr) of
+    0: Result := 0; // Normal
+    1: Result := 1; // High
+    2: Result := 2; // Idle
+    4: Result := 3; // Below normal
+    5: Result := 4; // Above normal
+  else
+    Result := 0;
+  end;
+end;
+
+function ComboIndexToPriority(AIndex: Integer): Integer;
+begin
+  case AIndex of
+    0: Result := 0;
+    1: Result := 1;
+    2: Result := 2;
+    3: Result := 4;
+    4: Result := 5;
+  else
+    Result := 0;
+  end;
+end;
+
 function IsExecutable(Ext: string): Boolean;
 var
   Pathext: string;
@@ -2551,13 +2596,14 @@ begin
     3: WinType := SW_HIDE;
   end;
   if ALink.ltype = 0 then begin
-    case ALink.pr of
+    case NormalizeLinkPriority(ALink.pr) of
       0: Prior := NORMAL_PRIORITY_CLASS;
       1: Prior := HIGH_PRIORITY_CLASS;
       2: Prior := IDLE_PRIORITY_CLASS;
-      3: Prior := REALTIME_PRIORITY_CLASS;
       4: Prior := BELOW_NORMAL_PRIORITY_CLASS;
       5: Prior := ABOVE_NORMAL_PRIORITY_CLASS;
+    else
+      Prior := NORMAL_PRIORITY_CLASS;
     end;
     params := GetAbsolutePath(IfThen(
                 ADroppedFile <> '',
@@ -2682,7 +2728,8 @@ begin
     Ini.WriteString(BUTTON_INI_SECTION, 'describe', ALink.Descr);
     Ini.WriteBool(BUTTON_INI_SECTION, 'question', ALink.Ques);
     Ini.WriteBool(BUTTON_INI_SECTION, 'hide', ALink.Hide);
-    Ini.WriteInteger(BUTTON_INI_SECTION, 'priority', ALink.Pr);
+    Ini.WriteInteger(BUTTON_INI_SECTION, 'priority',
+      NormalizeLinkPriority(ALink.Pr));
     Ini.WriteInteger(BUTTON_INI_SECTION, 'windowstate', ALink.WSt);
     Ini.WriteBool(BUTTON_INI_SECTION, 'IsAdmin', ALink.IsAdmin);
 
@@ -2711,7 +2758,8 @@ begin
     Result.Descr := Ini.ReadString(BUTTON_INI_SECTION, 'describe', '');
     Result.Ques := Ini.ReadBool(BUTTON_INI_SECTION, 'question', false);
     Result.Hide := Ini.ReadBool(BUTTON_INI_SECTION, 'hide', false);
-    Result.Pr := Ini.ReadInteger(BUTTON_INI_SECTION, 'priority', 0);
+    Result.Pr := NormalizeLinkPriority(
+      Ini.ReadInteger(BUTTON_INI_SECTION, 'priority', 0));
     Result.WSt := Ini.ReadInteger(BUTTON_INI_SECTION, 'windowstate', 0);
     Result.IsAdmin := Ini.ReadBool(BUTTON_INI_SECTION, 'IsAdmin', False);
 
