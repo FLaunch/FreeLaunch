@@ -159,6 +159,8 @@ function NormalizeLinkPriority(APr: Integer): Integer;
 function PriorityToComboIndex(APr: Integer): Integer;
 /// Map combo index to stored priority
 function ComboIndexToPriority(AIndex: Integer): Integer;
+/// True if the current process token is elevated
+function IsProcessElevated: Boolean;
 // Обертка над CreateProcess
 function CreateProcessFL(AExecutable, AParameters, APath: string; AWindowState,
   APriority: Integer; var AErrorCode: Integer): Boolean;
@@ -2411,6 +2413,24 @@ begin
   end;
 end;
 
+function IsProcessElevated: Boolean;
+var
+  TokenHandle: THandle;
+  Elevation: TOKEN_ELEVATION;
+  ReturnLength: DWORD;
+begin
+  Result := False;
+  if not OpenProcessToken(GetCurrentProcess, TOKEN_QUERY, TokenHandle) then
+    Exit;
+  try
+    if GetTokenInformation(TokenHandle, TokenElevation, @Elevation,
+      SizeOf(Elevation), ReturnLength) then
+      Result := Elevation.TokenIsElevated <> 0;
+  finally
+    CloseHandle(TokenHandle);
+  end;
+end;
+
 function IsExecutable(Ext: string): Boolean;
 var
   Pathext: string;
@@ -2541,15 +2561,17 @@ var
   path, exec, params: string;
   Ext: string;
 
-  function RunasCanBeUsed: Boolean;
-  begin
-    Result := Prior = NORMAL_PRIORITY_CLASS;
-  end;
-
   procedure RunElevated;
   begin
-    if RunasCanBeUsed
-    then ShellExecuteFL(AMainHandle, 'runas', exec, params, path, WinType);
+    // ShellExecute "runas" cannot set a priority class. If FreeLaunch is already
+    // elevated, CreateProcess keeps Admin+priority working; otherwise use UAC.
+    if IsProcessElevated then
+    begin
+      if not CreateProcessFL(exec, params, path, WinType, Prior, ErrorCode) then
+        RaiseLastOSError(ErrorCode);
+    end
+    else
+      ShellExecuteFL(AMainHandle, 'runas', exec, params, path, WinType);
   end;
 
 begin

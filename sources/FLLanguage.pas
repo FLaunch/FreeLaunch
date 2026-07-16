@@ -45,7 +45,7 @@ type
     PriorityBelowNormal, PriorityRealTime,
     View, ViewNormal, ViewMax,
     ViewMin, ViewHidden, BeHint, RpHint, Options, Icon, Change, ChbDrop,
-    ChbQuestion, ChbHide, ProgramFilter, ChbAdmin: string;
+    ChbQuestion, ChbHide, ProgramFilter, ChbAdmin, PriorityAdminHint: string;
   end;
 
   TLngSettings = record
@@ -59,7 +59,7 @@ type
     TitlebarHidden, TabStyle, TabStylePages, TabStyleButtons, TabStyleFButtons,
     Language, BtnSizes, BtnWidth, BtnHeight, ReloadIcons, GUIProperties,
     BtnProperties, NewBtnProperties,
-    WState, WSNormal, WSMin, WSMax, WSHidden: string;
+    WState, WSNormal, WSMin, WSMax, WSHidden, PriorityAdminHint: string;
   end;
 
   TLngMenu = record
@@ -290,6 +290,9 @@ begin
       'Executable file (*.exe, *.bat)'));
     Properties.ChbAdmin :=       Parse(Ini.ReadString(SctProperties, 'chb_admin',
       'Run with Admin rights'));
+    Properties.PriorityAdminHint := Parse(Ini.ReadString(SctProperties,
+      'priority_admin_hint',
+      'Priority applies only when FreeLaunch is already running as administrator'));
 
     TabRename := Parse(Ini.ReadString(SctTabname, 'tabname', 'Tab name'));
 
@@ -389,6 +392,9 @@ begin
       'priority_below_normal', 'Below normal'));
     Settings.PriorityAboveNormal := Parse(Ini.ReadString(SctSettings,
       'priority_above_normal', 'Above normal'));
+    Settings.PriorityAdminHint := Parse(Ini.ReadString(SctSettings,
+      'priority_admin_hint',
+      'Priority applies only when FreeLaunch is already running as administrator'));
     Settings.Theme :=            Parse(Ini.ReadString(SctSettings,
       'theme', 'Theme'));
 

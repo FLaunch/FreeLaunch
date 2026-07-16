@@ -305,6 +305,7 @@ object SettingsForm: TSettingsForm
           Width = 380
           Height = 17
           TabOrder = 2
+          OnClick = AdminCheckBoxClick
         end
         object PriorityBox: TComboBox
           Left = 240

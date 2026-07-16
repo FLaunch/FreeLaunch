@@ -223,6 +223,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 259
         Height = 17
         TabOrder = 9
+        OnClick = AdminBoxClick
       end
       object WorkFolderEdit: TButtonedEdit
         Left = 80

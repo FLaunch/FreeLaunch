@@ -74,10 +74,12 @@ type
     procedure RefPropsClick(Sender: TObject);
     procedure CommandEditChange(Sender: TObject);
     procedure WorkFolderClick(Sender: TObject);
+    procedure AdminBoxClick(Sender: TObject);
   private
     Link: TLink;
     FLoadingFields: Boolean;
     procedure SyncIconFromObject;
+    procedure UpdatePriorityControls;
   public
     procedure RefreshProps;
     class function Execute(ALink: TLink): TLink;
@@ -129,18 +131,48 @@ begin
   FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Ic), iconindex);
 end;
 
+procedure TProgrammPropertiesForm.UpdatePriorityControls;
+var
+  Ext: string;
+  IsBinary, AllowPriority: Boolean;
+begin
+  Ext := ExtractFileExt(GetAbsolutePath(CommandEdit.Text)).ToLower;
+  IsBinary := (Ext = '.exe') or (Ext = '.com');
+  // CreateProcess can set priority; ShellExecute "runas" cannot. When the
+  // button requires admin and FreeLaunch is not elevated, priority is unused.
+  AllowPriority := IsBinary and ((not AdminBox.Checked) or IsProcessElevated);
+  Label3.Enabled := AllowPriority;
+  PriorBox.Enabled := AllowPriority;
+  if IsBinary and AdminBox.Checked and (not IsProcessElevated) then
+  begin
+    PriorBox.Hint := Language.Properties.PriorityAdminHint;
+    PriorBox.ShowHint := True;
+    Label3.Hint := PriorBox.Hint;
+    Label3.ShowHint := True;
+  end
+  else
+  begin
+    PriorBox.Hint := '';
+    PriorBox.ShowHint := False;
+    Label3.Hint := '';
+    Label3.ShowHint := False;
+  end;
+  if not IsBinary then
+    PriorBox.ItemIndex := 0;
+end;
+
+procedure TProgrammPropertiesForm.AdminBoxClick(Sender: TObject);
+begin
+  UpdatePriorityControls;
+end;
+
 procedure TProgrammPropertiesForm.CommandEditChange(Sender: TObject);
 var
   ext: string;
-  IsBinary: Boolean;
 begin
   ext := extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower;
   OKButton.Enabled := ObjectExists(CommandEdit.Text) and IsExecutable(ext);
-  IsBinary := (ext = '.exe') or (ext = '.com');
-  Label3.Enabled := IsBinary;
-  PriorBox.Enabled := IsBinary;
-  if not IsBinary then
-    PriorBox.ItemIndex := 0;
+  UpdatePriorityControls;
   SyncIconFromObject;
 end;
 
@@ -259,6 +291,7 @@ begin
     PriorBox.ItemIndex := PriorityToComboIndex(Link.pr);
     WStyleBox.ItemIndex := Link.wst;
     AdminBox.Checked := Link.IsAdmin;
+    UpdatePriorityControls;
     FlaunchMainForm.LoadIcFromFileNoModif(IcImage, GetAbsolutePath(Link.icon),
       Link.iconindex);
     CommandEditChange(nil);

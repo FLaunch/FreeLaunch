@@ -99,6 +99,9 @@ type
     procedure pgcChange(Sender: TObject);
     procedure ABlendCheckBoxClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure AdminCheckBoxClick(Sender: TObject);
+  private
+    procedure UpdatePriorityControls;
   public
     Langs: array of TLngInfo;
     LngFiles: array of string;
@@ -183,6 +186,35 @@ begin
   TBarBox.ItemIndex := titlebar;
   ThemesBox.ItemIndex := CurrAppTheme;
   WSBox.ItemIndex := WStateDef;
+  UpdatePriorityControls;
+end;
+
+procedure TSettingsForm.UpdatePriorityControls;
+var
+  AllowPriority: Boolean;
+begin
+  AllowPriority := (not AdminCheckBox.Checked) or IsProcessElevated;
+  lblPriority.Enabled := AllowPriority;
+  PriorityBox.Enabled := AllowPriority;
+  if AdminCheckBox.Checked and (not IsProcessElevated) then
+  begin
+    PriorityBox.Hint := Language.Settings.PriorityAdminHint;
+    PriorityBox.ShowHint := True;
+    lblPriority.Hint := PriorityBox.Hint;
+    lblPriority.ShowHint := True;
+  end
+  else
+  begin
+    PriorityBox.Hint := '';
+    PriorityBox.ShowHint := False;
+    lblPriority.Hint := '';
+    lblPriority.ShowHint := False;
+  end;
+end;
+
+procedure TSettingsForm.AdminCheckBoxClick(Sender: TObject);
+begin
+  UpdatePriorityControls;
 end;
 
 procedure TSettingsForm.ApplySettings;
@@ -385,6 +417,7 @@ begin
   AdminCheckBox.Checked := rwar;
   DropCheckBox.Checked := defdrop;
   AutoRunCheckBox.Enabled := not IsPortable;
+  UpdatePriorityControls;
   pgc.ActivePageIndex := IfThen(lotabinsettings in [0..Pred(pgc.PageCount)],
                                   lotabinsettings, 0);
   pgc.ActivePage.SetFocus;
