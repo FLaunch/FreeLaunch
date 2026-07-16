@@ -2450,6 +2450,8 @@ function CreateProcessFL(AExecutable, AParameters, APath: string; AWindowState,
 var
   pi: TProcessInformation;
   si: TStartupInfo;
+  CmdLine: string;
+  WorkDir: PChar;
 begin
   ZeroMemory(@si, sizeof(si));
   si.cb := SizeOf(si);
@@ -2457,19 +2459,33 @@ begin
   si.wShowWindow := AWindowState;
   ZeroMemory(@PI, SizeOf(PI));
 
+  // CreateProcess requires a writable command line; quote the exe so paths with
+  // spaces parse as a single module name. Parameters are appended as-is.
+  CmdLine := '"' + AExecutable + '"';
+  if AParameters <> '' then
+    CmdLine := CmdLine + ' ' + AParameters;
+  UniqueString(CmdLine);
+
+  if APath <> '' then
+    WorkDir := PChar(APath)
+  else
+    WorkDir := nil;
+
   SetLastError(ERROR_INVALID_PARAMETER);
   {$WARN SYMBOL_PLATFORM OFF}
-  Result := Winapi.Windows.CreateProcess(PChar(AExecutable), PChar(AParameters),
+  Result := Winapi.Windows.CreateProcess(nil, PChar(CmdLine),
     nil, nil, false,
     APriority or CREATE_DEFAULT_ERROR_MODE or CREATE_UNICODE_ENVIRONMENT, nil,
-    PChar(APath), si, pi);
+    WorkDir, si, pi);
   if Result then
-    AErrorCode := 0
+  begin
+    AErrorCode := 0;
+    CloseHandle(PI.hThread);
+    CloseHandle(PI.hProcess);
+  end
   else
     AErrorCode := GetLastError;
   {$WARN SYMBOL_PLATFORM ON}
-  CloseHandle(PI.hThread);
-  CloseHandle(PI.hProcess);
 end;
 
 procedure ThreadLaunch(var ALink: TLink; AMainHandle: HWND; ADroppedFile: string);
