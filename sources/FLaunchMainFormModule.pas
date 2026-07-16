@@ -1764,7 +1764,8 @@ var
       Idx := (StartIdx + Offset) mod Total;
       ARow := Idx div FLPanel.ColsCount;
       ACol := Idx mod FLPanel.ColsCount;
-      if not FLPanel.GetDataPageByPageNumber(APage).IsActive[ARow, ACol] then
+      // Buttons[] sets CurPage; IsActive then reads that page's slot
+      if not FLPanel.Buttons[APage, ARow, ACol].IsActive then
         Exit(True);
     end;
   end;
@@ -1778,7 +1779,6 @@ var
       FLPanel.PageNumber := APage;
     end;
     Result := FLPanel.Buttons[APage, ARow, ACol];
-    Result.Highlight;
   end;
 
 begin
@@ -1807,32 +1807,50 @@ begin
           StartPage := TempButton.CurPage;
           if TryFindEmptySlot(StartPage, TempButton.RowNumber,
             TempButton.ColNumber, FoundRow, FoundCol) then
-            TempButton := SelectEmptyButton(StartPage, FoundRow, FoundCol)
+          begin
+            TempButton := SelectEmptyButton(StartPage, FoundRow, FoundCol);
+            TempButton.Highlight;
+          end
           else
           begin
             FoundPage := -1;
             if (FLPanel.PagesCount > 1) and
               (RequestMessage(Handle, Language.Messages.SearchOtherTabs) = IDYES) then
             begin
-              for PageIdx := StartPage + 1 to Pred(FLPanel.PagesCount) do
+              PageIdx := StartPage + 1;
+              while PageIdx <= Pred(FLPanel.PagesCount) do
+              begin
                 if TryFindEmptySlot(PageIdx, 0, 0, FoundRow, FoundCol) then
                 begin
                   FoundPage := PageIdx;
                   Break;
                 end;
+                Inc(PageIdx);
+              end;
               if FoundPage < 0 then
-                for PageIdx := Pred(StartPage) downto 0 do
+              begin
+                PageIdx := Pred(StartPage);
+                while PageIdx >= 0 do
+                begin
                   if TryFindEmptySlot(PageIdx, 0, 0, FoundRow, FoundCol) then
                   begin
                     FoundPage := PageIdx;
                     Break;
                   end;
+                  Dec(PageIdx);
+                end;
+              end;
               if FoundPage >= 0 then
+              begin
                 TempButton := SelectEmptyButton(FoundPage, FoundRow, FoundCol);
+                TempButton.Highlight;
+              end;
             end;
 
             if TempButton.IsActive then
             begin
+              // TryFindEmptySlot uses Buttons[] and may leave CurPage out of sync
+              FLPanel.PageNumber := MainTabsNew.TabIndex;
               if (TabsCount < TabsCountMax) and
                 (RequestMessage(Handle, Language.Messages.AddTabForDrop) = IDYES) then
               begin
