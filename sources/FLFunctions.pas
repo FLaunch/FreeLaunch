@@ -2177,20 +2177,40 @@ var
     Result := '';
   end;
 
-begin
-  AnObj  := CreateComObject(CLSID_ShellLink);
-  ShellLink := AnObj as IShellLink;
-  PersistFile := AnObj as IPersistFile;
-  // ::{GUID}\file.lnk must be resolved to a filesystem path before IPersistFile.Load
-  LinkFilePath := Trim(string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile));
-  if LooksLikeShellGuidPath(LinkFilePath) then
+  procedure ClearLinkOutputs;
   begin
-    ExpandedPath := GetAbsolutePath(LinkFilePath);
-    if (ExpandedPath <> '') and FileExists(ExpandedPath) then
-      LinkFilePath := ExpandedPath;
+    FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
+      SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), 0);
+    FillChar(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute,
+      SizeOf(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute), 0);
+    FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy,
+      SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy), 0);
+    FillChar(lpShellLinkInfoStruct^.Description,
+      SizeOf(lpShellLinkInfoStruct^.Description), 0);
+    FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
+      SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon), 0);
+    lpShellLinkInfoStruct^.IconIndex := 0;
+    lpShellLinkInfoStruct^.HotKey := 0;
+    lpShellLinkInfoStruct^.ShowCommand := 0;
+    FillChar(lpShellLinkInfoStruct^.FindData,
+      SizeOf(lpShellLinkInfoStruct^.FindData), 0);
   end;
-  PersistFile.Load(PChar(LinkFilePath), 0);
-  with ShellLink do
+
+begin
+  try
+    AnObj  := CreateComObject(CLSID_ShellLink);
+    ShellLink := AnObj as IShellLink;
+    PersistFile := AnObj as IPersistFile;
+    // ::{GUID}\file.lnk must be resolved to a filesystem path before IPersistFile.Load
+    LinkFilePath := Trim(string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile));
+    if LooksLikeShellGuidPath(LinkFilePath) then
+    begin
+      ExpandedPath := GetAbsolutePath(LinkFilePath);
+      if (ExpandedPath <> '') and FileExists(ExpandedPath) then
+        LinkFilePath := ExpandedPath;
+    end;
+    PersistFile.Load(PChar(LinkFilePath), 0);
+    with ShellLink do
     begin
       // Skip IShellLink.Resolve: GetPath/IDList already return the stored target.
       // Resolve can hang for seconds when WOW64 rewrites the path to a missing
@@ -2318,7 +2338,11 @@ begin
       GetHotKey(lpShellLinkInfoStruct^.HotKey);
       GetShowCmd(lpShellLinkInfoStruct^.ShowCommand);
     end;
- end;
+  except
+    // Corrupt or unreadable .lnk — callers treat empty target as "use the .lnk"
+    ClearLinkOutputs;
+  end;
+end;
 
 //--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
 function MyCutting(Str: string; Len: byte): string;
