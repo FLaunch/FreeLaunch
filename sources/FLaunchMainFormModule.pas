@@ -693,7 +693,8 @@ procedure TFlaunchMainForm.UMLaunchDone(var Msg: TMessage);
 var
   Button: TFLButton;
 begin
-  Button := LaunchingButtons.Items[Msg.LParam];
+  if not LaunchingButtons.TryGetValue(Msg.LParam, Button) then
+    Exit;
   LaunchingButtons.Remove(Msg.LParam);
   if (Button.IsActive) and (Button.Data.IsAdmin <> Msg.WParam.ToBoolean) then
   begin
@@ -804,19 +805,23 @@ procedure TFlaunchMainForm.LaunchButton(AButton: TFLButton;
 var
   TempLink: TLink;
 begin
-  Inc(LaunchID);
-  LaunchingButtons.Add(LaunchID, AButton);
   TempLink := AButton.DataToLink;
   TempLink.AsAdminPerm := RunAsAdmin;
   // DataToLink keeps unexpanded env vars and shell GUIDs. ObjectExists expands
   // env vars, resolves known folders, and accepts virtual shell items.
   if not ObjectExists(TempLink.exec) then
-    begin
-      if RequestMessage(Handle,
-          Format(Language.Messages.NotFound, [TempLink.exec])) = IDYES
-        then AButton.FreeData;
-    end else
-      NewProcess(TempLink, Handle, LaunchID, ADroppedFile);
+  begin
+    if RequestMessage(Handle,
+        Format(Language.Messages.NotFound, [TempLink.exec])) = IDYES
+    then
+      AButton.FreeData;
+  end
+  else
+  begin
+    Inc(LaunchID);
+    LaunchingButtons.Add(LaunchID, AButton);
+    NewProcess(TempLink, Handle, LaunchID, ADroppedFile);
+  end;
 end;
 
 procedure TFlaunchMainForm.SaveLinksIconsToCache;
