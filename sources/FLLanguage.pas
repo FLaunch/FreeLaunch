@@ -74,7 +74,8 @@ type
 
   TLngMessages = record
     Caution, Confirmation, RunProgram, DeleteTab, DeleteButton, ClearTab,
-    BusyReplace, ImportButton, NotFound, FileNotFound, SearchAButton: string;
+    BusyReplace, ImportButton, NotFound, FileNotFound, SearchAButton,
+    SearchOtherTabs, AddTabForDrop: string;
   end;
 
   TLngInfo = record
@@ -185,6 +186,10 @@ begin
       'File ''%%'' not found.'), '%s');
     Messages.SearchAButton := Parse(Ini.ReadString(SctMain, 'message10',
       'Look for another empty button on this tab?'));
+    Messages.SearchOtherTabs := Parse(Ini.ReadString(SctMain, 'message11',
+      'No empty button on this tab. Look on other tabs?'));
+    Messages.AddTabForDrop := Parse(Ini.ReadString(SctMain, 'message12',
+      'No empty button found. Add a new tab?'));
 
     Menu.Show :=         Parse(Ini.ReadString(SctMain, 'ni_show',
       '&FreeLaunch'));

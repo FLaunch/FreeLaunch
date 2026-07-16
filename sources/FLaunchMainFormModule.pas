@@ -1708,14 +1708,14 @@ procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
   FileName: string);
 var
   LnkInfo: TShellLinkInfoStruct;
-  ext{, reqstr}: string;
-  //crow, ccol: Integer;
-  TempButton : TFLButton;
+  Ext: string;
+  TempButton: TFLButton;
   OriginalFileName: string;
   IsTempDrop: Boolean;
   TempDropRoot: string;
   PermLnk: string;
   FriendlyName, LeafName: string;
+  StartPage, FoundPage, FoundRow, FoundCol, PageIdx: Integer;
 
   function PersistDroppedLinkFile(const ATempLnk: string): string;
   var
@@ -1741,6 +1741,46 @@ var
       Result := Dest;
   end;
 
+  function TryFindEmptySlot(APage, AStartRow, AStartCol: Integer;
+    out ARow, ACol: Integer): Boolean;
+  var
+    Total, StartIdx, Offset, Idx: Integer;
+  begin
+    Result := False;
+    ARow := 0;
+    ACol := 0;
+    if (APage < 0) or (APage >= FLPanel.PagesCount) then
+      Exit;
+    Total := FLPanel.RowsCount * FLPanel.ColsCount;
+    if Total <= 0 then
+      Exit;
+    StartIdx := AStartRow * FLPanel.ColsCount + AStartCol;
+    if StartIdx < 0 then
+      StartIdx := 0;
+    if StartIdx >= Total then
+      StartIdx := 0;
+    for Offset := 0 to Pred(Total) do
+    begin
+      Idx := (StartIdx + Offset) mod Total;
+      ARow := Idx div FLPanel.ColsCount;
+      ACol := Idx mod FLPanel.ColsCount;
+      if not FLPanel.GetDataPageByPageNumber(APage).IsActive[ARow, ACol] then
+        Exit(True);
+    end;
+  end;
+
+  function SelectEmptyButton(APage, ARow, ACol: Integer): TFLButton;
+  begin
+    if MainTabsNew.TabIndex <> APage then
+    begin
+      MainTabsNew.TabIndex := APage;
+      tabind := APage;
+      FLPanel.PageNumber := APage;
+    end;
+    Result := FLPanel.Buttons[APage, ARow, ACol];
+    Result.Highlight;
+  end;
+
 begin
   TempButton := Button;
   OriginalFileName := FileName;
@@ -1758,52 +1798,59 @@ begin
   begin
     TempButton.Highlight;
     case RequestMessage(Handle, Language.Messages.BusyReplace) of
-      IDYES: {go to next step};
-      //IDNO: ;
+      IDYES: { replace this button };
+      IDNO:
+        begin
+          if RequestMessage(Handle, Language.Messages.SearchAButton) <> IDYES then
+            Exit;
 
-
-          //will be in next version - 2.11+
-          {
-          if RequestMessage(Handle, Language.Messages.SearchAButton) = IDYES
-          then begin
-            for crow := 0 to Pred(TempButton.Father.RowsCount) do begin
-              for ccol := 0 to Pred(TempButton.Father.ColsCount) do begin
-                if TempButton.Father.Buttons[TempButton.CurPage, crow, ccol].IsActive = False
-                then begin
-                  TempButton := TempButton.Father.Buttons[TempButton.CurPage, crow, ccol];
+          StartPage := TempButton.CurPage;
+          if TryFindEmptySlot(StartPage, TempButton.RowNumber,
+            TempButton.ColNumber, FoundRow, FoundCol) then
+            TempButton := SelectEmptyButton(StartPage, FoundRow, FoundCol)
+          else
+          begin
+            FoundPage := -1;
+            if (FLPanel.PagesCount > 1) and
+              (RequestMessage(Handle, Language.Messages.SearchOtherTabs) = IDYES) then
+            begin
+              for PageIdx := StartPage + 1 to Pred(FLPanel.PagesCount) do
+                if TryFindEmptySlot(PageIdx, 0, 0, FoundRow, FoundCol) then
+                begin
+                  FoundPage := PageIdx;
                   Break;
                 end;
-              end;
-              if TempButton.IsActive = False then Break;
+              if FoundPage < 0 then
+                for PageIdx := Pred(StartPage) downto 0 do
+                  if TryFindEmptySlot(PageIdx, 0, 0, FoundRow, FoundCol) then
+                  begin
+                    FoundPage := PageIdx;
+                    Break;
+                  end;
+              if FoundPage >= 0 then
+                TempButton := SelectEmptyButton(FoundPage, FoundRow, FoundCol);
             end;
-            if TempButton.IsActive then begin
-              WarningMessage(Handle, 'Place in this tab was not found.'); //temporary, for testing purposes
-              Exit;
-            end;
 
-            //if no empty buttons on active tab
-            //if TempButton.IsActive = True then Exit;
-            {if TempButton.Father.PagesCount > 1
-            then reqstr := 'Look another tab?'
-            else reqstr := 'Add new tab?';
-            if TempButton.IsActive and (RequestMessage(Handle, reqstr) = IDYES)
-            then begin
-              if TempButton.Father.PagesCount = 1 then begin
-
-              end else begin
-
-              end;
-            end else Exit;}
-
-            //search case when we can repaint window after add a tab
-            {if TempButton.IsActive then begin
-              if RequestMessage(Handle, 'Place not found. Add another tab?') = IDYES then begin
+            if TempButton.IsActive then
+            begin
+              if (TabsCount < TabsCountMax) and
+                (RequestMessage(Handle, Language.Messages.AddTabForDrop) = IDYES) then
+              begin
                 TabPopupItem_New.Click;
-                TempButton := TempButton.Father.Buttons[TempButton.Father.PagesCount - 1, 0, 0];
-              end else Exit;
+                FoundPage := Pred(TabsCount);
+                MainTabsNew.TabIndex := FoundPage;
+                tabind := FoundPage;
+                FLPanel.PageNumber := FoundPage;
+                TempButton := FLPanel.Buttons[FoundPage, 0, 0];
+                TempButton.Highlight;
+              end
+              else
+                Exit;
             end;
-          end} //else Exit;
-      else Exit;
+          end;
+        end;
+      else
+        Exit;
     end;
   end;
   Ext := ExtractFileExt(FileName).ToLower;
