@@ -2665,10 +2665,32 @@ end;
 
 procedure NewProcess(ALink: TLink; AMainHandle: HWND; ALaunchID: Integer;
   ADroppedFile: string);
+
+  function LaunchConfirmName: string;
+  var
+    ExecPath, ShellName: string;
+  begin
+    Result := Trim(ALink.descr);
+    if Result <> '' then
+      Exit;
+    ExecPath := GetAbsolutePath(ALink.exec);
+    if LooksLikeShellGuidPath(ExecPath) or
+      StartsText('shell:AppsFolder\', ExecPath) or
+      LooksLikeAppUserModelId(ExecPath) then
+    begin
+      ShellName := GetShellDisplayName(ExecPath);
+      if ShellName <> '' then
+        Exit(ShellName);
+    end;
+    Result := ExtractFileName(ExecPath);
+    if (Result = '') or (Pos('::{', Result) > 0) then
+      Result := ExecPath;
+  end;
+
 begin
   if (ALink.ques) and
     (RequestMessage(AMainHandle, Format(Language.Messages.RunProgram,
-      [ExtractFileName(GetAbsolutePath(ALink.exec))])) = IDNO)
+      [LaunchConfirmName])) = IDNO)
   then Exit;
   TThread.CreateAnonymousThread(procedure
     begin
