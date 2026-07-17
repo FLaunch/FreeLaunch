@@ -10,11 +10,12 @@ FreeLaunch is a free links manager for Microsoft Windows. It allows to organize 
 - Launch programs with specific priority and window state
 - Optional tabs, rows and buttons count
 - Optional buttons size
-- Drag'n'drop files and folders
+- Drag'n'drop files, folders, and Start Menu / Explorer items (including Store apps)
+- Environment variables and known-folder GUID paths in object paths
 - Import/export settings of any button
 - Drag'n'drop moving buttons and tabs
 - Portable mode supported
-- Relative pathes supported
+- Relative paths supported
 
 ## Releases
 
@@ -34,7 +35,7 @@ You can report any issues you find to the [bugtracker](https://bt.freelaunch.su/
 
 ### 2026
 
-New features coming soon. Stay with FreeLaunch.
+Version 2.11: improved Start Menu / Explorer drop, known-folder paths, long-path handling, and many DPI and launch fixes.
 
 ### 2024
 
