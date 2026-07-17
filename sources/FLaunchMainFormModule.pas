@@ -1707,7 +1707,7 @@ end;
 procedure TFlaunchMainForm.FLPanelDropFile(Sender: TObject; Button: TFLButton;
   FileName: string);
 var
-  LnkInfo: TShellLinkInfoStruct;
+  LinkResult: TShellResolveResult;
   Ext: string;
   TempButton: TFLButton;
   OriginalFileName: string;
@@ -1911,16 +1911,15 @@ begin
 
   //--Если был перетянут ярлык
   if Ext = '.lnk' then begin
-    StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, FileName, Pred(MAX_PATH));
     //--Извлекаем информацию о ярлыке
-    GetLinkInfo(@lnkinfo);
+    ResolveShellLinkFile(FileName, LinkResult);
     {*--Заполняем информацию в поля кнопки--*}
-    TempButton.Data.Exec := LnkInfo.FullPathAndNameOfFileToExecute;
-    TempButton.Data.IconIndex := LnkInfo.IconIndex;
-    TempButton.Data.Icon := LnkInfo.FullPathAndNameOfFileContiningIcon;
-    TempButton.Data.WorkDir := LnkInfo.FullPathAndNameOfWorkingDirectroy;
-    TempButton.Data.Params := LnkInfo.ParamStringsOfFileToExecute;
-    TempButton.Data.Descr := Trim(string(LnkInfo.Description));
+    TempButton.Data.Exec := LinkResult.Exec;
+    TempButton.Data.IconIndex := LinkResult.IconIndex;
+    TempButton.Data.Icon := LinkResult.Icon;
+    TempButton.Data.WorkDir := LinkResult.WorkDir;
+    TempButton.Data.Params := LinkResult.Params;
+    TempButton.Data.Descr := Trim(LinkResult.Descr);
     // Start Menu shows the .lnk title ("Delphi 12"), while bds.exe FileDescription
     // / empty link description often yield "BDS" or a generic version string.
     if (TempButton.Data.Descr = '') or
@@ -1936,8 +1935,7 @@ begin
     end;
     // Start Menu links often expose AUMID via GetPath; ShellExecute on the
     // .lnk itself still works. Persist FileContents payloads out of %TEMP%.
-    if LooksLikeAppUserModelId(TempButton.Data.Exec) or
-      StartsText('shell:AppsFolder\', TempButton.Data.Exec) or
+    if IsAppsFolderOrAumidTarget(TempButton.Data.Exec) or
       (Trim(TempButton.Data.Exec) = '') or
       (not ObjectExists(TempButton.Data.Exec)) then
     begin
@@ -1961,8 +1959,7 @@ begin
       TempButton.Data.Params := '';
     end
     else if (TempButton.Data.Icon = '') or
-      LooksLikeAppUserModelId(TempButton.Data.Icon) or
-      StartsText('shell:AppsFolder\', TempButton.Data.Icon) then
+      IsAppsFolderOrAumidTarget(TempButton.Data.Icon) then
     begin
       // AppsFolder icon paths are unreliable in Win32 (WOW64 / UWP). Prefer the
       // original .lnk, which Shell can icon-extract normally.

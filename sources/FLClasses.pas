@@ -476,74 +476,8 @@ end;
 
 class function TFLOleDropTarget.AcceptResolvedTarget(const APath: string;
   out FileName: string): Boolean;
-var
-  Expanded, AppsTarget, Resolved: string;
-
-  function IsBadToastAumid(const S: string): Boolean;
-  begin
-    // Delphi/RAD Studio Start tiles sometimes expose the toast helper AUMID
-    Result := ContainsText(S, 'DesktopToasts');
-  end;
-
 begin
-  Result := False;
-  FileName := '';
-  if Trim(APath) = '' then
-    Exit;
-
-  // Store / AppsFolder apps (Excel, Armoury Crate, many Yandex builds): no Win32 path
-  AppsTarget := '';
-  if LooksLikeAppUserModelId(APath) then
-    AppsTarget := 'shell:AppsFolder\' + APath
-  else if SameText(Copy(APath, 1, Length('shell:AppsFolder\')), 'shell:AppsFolder\') then
-    AppsTarget := APath;
-  if AppsTarget <> '' then
-  begin
-    if IsBadToastAumid(AppsTarget) then
-      Exit;
-    if ObjectExists(AppsTarget) then
-    begin
-      FileName := AppsTarget;
-      Exit(True);
-    end;
-    Exit;
-  end;
-
-  // Prefer a path that actually exists (ProgramW6432 remap for 32-bit Shell).
-  // Keep the filesystem path — known-folder GUID form is cryptic in Properties
-  // (Desktop\file.lnk → ::{B4BFCC3A-…}\file.lnk).
-  Resolved := ResolveExistingFsPath(APath);
-  if Resolved <> '' then
-  begin
-    FileName := Resolved;
-    Exit(True);
-  end;
-
-  Expanded := APath;
-  try
-    Expanded := ExpandEnvironmentVariables(APath);
-  except
-    Expanded := APath;
-  end;
-  if Expanded <> APath then
-  begin
-    Resolved := ResolveExistingFsPath(Expanded);
-    if Resolved <> '' then
-    begin
-      // Keep env-var form when possible; else store resolved filesystem path
-      if Pos('%', APath) > 0 then
-        FileName := APath
-      else
-        FileName := Resolved;
-      Exit(True);
-    end;
-  end;
-
-  if LooksLikeShellGuidPath(APath) and ObjectExists(APath) then
-  begin
-    FileName := APath;
-    Exit(True);
-  end;
+  Result := AcceptShellDropTarget(APath, FileName);
 end;
 
 class function TFLOleDropTarget.TryPathFromShellItem(const Item: IShellItem;
@@ -559,7 +493,7 @@ var
   Pidl: PItemIDList;
   PropKey: TPropertyKey;
   PropStr: LPWSTR;
-  Candidate: string;
+  Candidate, RawPath, AbsolutePath, FileSysPath, ParsingName, Selected: string;
   DisplayHint, AumidHint: string;
   PropNames: array[0..5] of string;
   I: Integer;
@@ -587,15 +521,17 @@ var
     // Do not call IShellLink.Resolve here: when the 32-bit Shell rewrites the
     // target to a missing Program Files (x86) path (AmneziaVPN etc.), Resolve
     // searches the disk/network for a long time and freezes DragEnter.
+    RawPath := '';
+    AbsolutePath := '';
+    FileSysPath := '';
+    ParsingName := '';
     FillChar(Buf, SizeOf(Buf), 0);
     FillChar(FindData, SizeOf(FindData), 0);
-    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, SLGP_RAWPATH)) and
-      AcceptResolvedTarget(Buf, FileName) then
-      Exit(True);
+    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, SLGP_RAWPATH)) then
+      RawPath := Buf;
     FillChar(Buf, SizeOf(Buf), 0);
-    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, 0)) and
-      AcceptResolvedTarget(Buf, FileName) then
-      Exit(True);
+    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, 0)) then
+      AbsolutePath := Buf;
     Pidl := nil;
     if Succeeded(Link.GetIDList(Pidl)) and (Pidl <> nil) then
     try
@@ -603,24 +539,27 @@ var
       if Succeeded(SHGetNameFromIDList(Pidl,
         Integer(Cardinal(SIGDN_FILESYSPATH)), Name)) and (Name <> nil) then
       try
-        Result := AcceptResolvedTarget(Name, FileName);
+        FileSysPath := Name;
       finally
         CoTaskMemFree(Name);
       end;
-      if Result then
-        Exit;
       Name := nil;
       if Succeeded(SHGetNameFromIDList(Pidl,
         Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and
         (Name <> nil) then
       try
-        Result := AcceptResolvedTarget(Name, FileName);
+        ParsingName := Name;
       finally
         CoTaskMemFree(Name);
       end;
     finally
       CoTaskMemFree(Pidl);
     end;
+    Selected := ApplyProgramW6432Remap(ChooseBestStoredTarget(RawPath,
+      AbsolutePath, ParsingName, FileSysPath));
+    if Selected = '' then
+      Exit;
+    Result := AcceptShellDropTarget(Selected, FileName);
   end;
 
 begin
@@ -683,8 +622,7 @@ begin
           Continue;
         // Collect AUMID / AppsFolder for later; do not accept yet
         if SameText(PropNames[I], 'System.AppUserModel.ID') or
-          LooksLikeAppUserModelId(Candidate) or
-          StartsText('shell:AppsFolder\', Candidate) then
+          IsAppsFolderOrAumidTarget(Candidate) then
         begin
           if AumidHint = '' then
           begin
@@ -718,15 +656,15 @@ begin
     (Name <> nil) then
   try
     Candidate := Trim(Name);
-    if LooksLikeAppUserModelId(Candidate) then
+    if IsAppsFolderOrAumidTarget(Candidate) then
     begin
       if AumidHint = '' then
-        AumidHint := Candidate;
-    end
-    else if StartsText('shell:AppsFolder\', Candidate) then
-    begin
-      if AumidHint = '' then
-        AumidHint := Copy(Candidate, Length('shell:AppsFolder\') + 1, MaxInt);
+      begin
+        if StartsText('shell:AppsFolder\', Candidate) then
+          AumidHint := Copy(Candidate, Length('shell:AppsFolder\') + 1, MaxInt)
+        else
+          AumidHint := Candidate;
+      end;
     end
     else if AcceptResolvedTarget(Candidate, FileName) then
       Exit(True);

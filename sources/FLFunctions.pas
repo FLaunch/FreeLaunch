@@ -95,6 +95,17 @@ type
   end;
   PShellLinkInfoStruct = ^TShellLinkInfoStruct;
 
+  TShellResolveResult = record
+    Exec: string;
+    Icon: string;
+    WorkDir: string;
+    Params: string;
+    Descr: string;
+    IconIndex: Integer;
+    HotKey: Word;
+    ShowCommand: Integer;
+  end;
+
 // Функция не позволяет уйти значению за пределы допустимых
 function InRange(Value, FromV, ToV: byte): byte;
 // Функции определяют количество иконок в файле
@@ -120,6 +131,17 @@ function ResolveExistingFsPath(const APath: string): string;
 /// If APath is a known-folder GUID that resolves to a real file/dir, return that
 /// path for UI; otherwise return APath unchanged (This PC, Control Panel, …)
 function PreferFilesystemPath(const APath: string): string;
+function IsAppsFolderOrAumidTarget(const APath: string): Boolean;
+/// Pick best .lnk target from IShellLink path candidates; never promotes AppsFolder/AUMID (returns '').
+function ChooseBestStoredTarget(const ARaw, AAbsolute, AParsing,
+  AFileSys: string): string;
+/// 32-bit: remap missing Program Files path to ProgramW6432 when needed.
+function ApplyProgramW6432Remap(const APath: string): string;
+/// Load .lnk and fill AResult. False on failure (corrupt/unreadable).
+function ResolveShellLinkFile(const ALinkFilePath: string;
+  out AResult: TShellResolveResult): Boolean;
+/// OLE/drop: accept a usable drop path (may accept AppsFolder if ObjectExists).
+function AcceptShellDropTarget(const APath: string; out AFileName: string): Boolean;
 /// Friendly name for a shell parsing path (AppsFolder AUMID, ::{GUID}, …)
 function GetShellDisplayName(const APath: string): string;
 /// Load display image for shell: / ::{GUID} into ABitmap (UWP AppsFolder etc.)
@@ -2087,24 +2109,16 @@ begin
   Result := Copy(TempStr, 1, Length(TempStr) - Length(ExtractFileExt(FileName)));
 end;
 
-//--Функция извлекает информацию из ярлыка (*.lnk)
-procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
-var
-  ShellLink: IShellLink;
-  PersistFile: IPersistFile;
-  AnObj: IUnknown;
-  ch_temp: array [0..MAX_PATH] of Char;
-  LinkFilePath, RawPath, AbsolutePath, ParsingName, FileSysPath, SelectedPath,
-    ExpandedPath, ProgramFiles64, IconPath, FriendlyName, LeafName,
-    WorkDir: string;
-  ExpandedLen: DWORD;
-  Pidl: PItemIDList;
-  Name: LPWSTR;
+function IsAppsFolderOrAumidTarget(const APath: string): Boolean;
+begin
+  Result := StartsText('shell:AppsFolder\', APath) or
+    LooksLikeAppUserModelId(APath);
+end;
 
-  function TargetExists(const APath: string): Boolean;
-  begin
-    Result := FsPathExists(APath);
-  end;
+function ChooseBestStoredTarget(const ARaw, AAbsolute, AParsing,
+  AFileSys: string): string;
+var
+  Candidate, Expanded: string;
 
   function ExpandTarget(const APath: string): string;
   begin
@@ -2118,79 +2132,259 @@ var
     end;
   end;
 
-  function PreferStoredTarget(const ARaw, AAbsolute, AParsing,
-    AFileSys: string): string;
-  var
-    Candidate, Expanded: string;
-
-    function IsAppsFolderTarget(const APath: string): Boolean;
-    begin
-      Result := StartsText('shell:AppsFolder\', APath) or
-        LooksLikeAppUserModelId(APath);
-    end;
-
-    function TryTakePath(const APath: string): string;
-    begin
-      Result := '';
-      if APath = '' then
-        Exit;
-      // PuTTY etc.: Start .lnk IDList often has AppsFolder AUMID alongside a
-      // real putty.exe path — never prefer AppsFolder here (wrong generic icon).
-      if IsAppsFolderTarget(APath) then
-        Exit;
-      if LooksLikeShellGuidPath(APath) then
-        Exit(APath);
-      Expanded := ExpandTarget(APath);
-      Expanded := ResolveExistingFsPath(Expanded);
-      if Expanded = '' then
-        Exit;
-      // Keep filesystem path (not known-folder GUID) for readable Properties
-      Exit(Expanded);
-    end;
-
+  function TryTakePath(const APath: string): string;
   begin
-    // 1) Real filesystem / non-AppsFolder GUID targets first
-    Result := TryTakePath(AFileSys);
-    if Result <> '' then
-      Exit;
-    Result := TryTakePath(AAbsolute);
-    if Result <> '' then
-      Exit;
-    Result := TryTakePath(ARaw);
-    if Result <> '' then
-      Exit;
-    Result := TryTakePath(AParsing);
-    if Result <> '' then
-      Exit;
-
-    // 2) GUID parsing names (Control Panel, …) — not AppsFolder
-    if LooksLikeShellGuidPath(AParsing) and (not IsAppsFolderTarget(AParsing)) then
-      Exit(AParsing);
-    if LooksLikeShellGuidPath(ARaw) and (not IsAppsFolderTarget(ARaw)) then
-      Exit(ARaw);
-
-    // 3) Non-AUMID leftovers
-    Candidate := AAbsolute;
-    if Candidate = '' then
-      Candidate := ARaw;
-    if Candidate = '' then
-      Candidate := AFileSys;
-    if (Candidate <> '') and (not IsAppsFolderTarget(Candidate)) then
-    begin
-      if LooksLikeShellGuidPath(Candidate) then
-        Exit(Candidate);
-      Expanded := ResolveExistingFsPath(ExpandTarget(Candidate));
-      if Expanded <> '' then
-        Exit(Expanded);
-      Exit(Candidate);
-    end;
-    if (AParsing <> '') and LooksLikeShellGuidPath(AParsing) and
-      (not IsAppsFolderTarget(AParsing)) then
-      Exit(AParsing);
-
-    // Do not promote AppsFolder / bare AUMIDs — caller falls back to the .lnk
     Result := '';
+    if (APath = '') or IsAppsFolderOrAumidTarget(APath) then
+      Exit;
+    if LooksLikeShellGuidPath(APath) then
+      Exit(APath);
+    Expanded := ResolveExistingFsPath(ExpandTarget(APath));
+    if Expanded <> '' then
+      Result := Expanded;
   end;
+
+begin
+  // 1) Real filesystem / non-AppsFolder GUID targets first
+  Result := TryTakePath(AFileSys);
+  if Result <> '' then Exit;
+  Result := TryTakePath(AAbsolute);
+  if Result <> '' then Exit;
+  Result := TryTakePath(ARaw);
+  if Result <> '' then Exit;
+  Result := TryTakePath(AParsing);
+  if Result <> '' then Exit;
+
+  // 2) GUID parsing names (Control Panel, …) — not AppsFolder
+  if LooksLikeShellGuidPath(AParsing) and
+    not IsAppsFolderOrAumidTarget(AParsing) then
+    Exit(AParsing);
+  if LooksLikeShellGuidPath(ARaw) and not IsAppsFolderOrAumidTarget(ARaw) then
+    Exit(ARaw);
+
+  // 3) Non-AUMID leftovers
+  Candidate := AAbsolute;
+  if Candidate = '' then Candidate := ARaw;
+  if Candidate = '' then Candidate := AFileSys;
+  if (Candidate <> '') and not IsAppsFolderOrAumidTarget(Candidate) then
+  begin
+    if LooksLikeShellGuidPath(Candidate) then
+      Exit(Candidate);
+    Expanded := ResolveExistingFsPath(ExpandTarget(Candidate));
+    if Expanded <> '' then
+      Exit(Expanded);
+    Exit(Candidate);
+  end;
+  if (AParsing <> '') and LooksLikeShellGuidPath(AParsing) and
+    not IsAppsFolderOrAumidTarget(AParsing) then
+    Exit(AParsing);
+
+  // Do not promote AppsFolder / bare AUMIDs — caller falls back to the .lnk
+  Result := '';
+end;
+
+function ApplyProgramW6432Remap(const APath: string): string;
+var
+  ChTemp: array [0..MAX_PATH] of Char;
+  ExpandedPath, ProgramFiles64: string;
+  ExpandedLen: DWORD;
+begin
+  Result := APath;
+  if (Result = '') or LooksLikeShellGuidPath(Result) or
+    IsAppsFolderOrAumidTarget(Result) then
+    Exit;
+  try
+    ExpandedPath := ExpandEnvironmentVariables(Result);
+  except
+    ExpandedPath := Result;
+  end;
+  if (ExpandedPath <> '') and not FsPathExists(ExpandedPath) then
+  begin
+    ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ChTemp,
+      Length(ChTemp));
+    if ExpandedLen > 1 then
+    begin
+      SetString(ProgramFiles64, PChar(@ChTemp[0]), ExpandedLen - 1);
+      Result := StringReplace(Result, GetSpecialDir(CSIDL_PROGRAM_FILES),
+        IncludeTrailingPathDelimiter(ProgramFiles64), [rfReplaceAll, rfIgnoreCase]);
+    end;
+  end;
+end;
+
+function ResolveShellLinkFile(const ALinkFilePath: string;
+  out AResult: TShellResolveResult): Boolean;
+var
+  ShellLink: IShellLink;
+  PersistFile: IPersistFile;
+  AnObj: IUnknown;
+  LinkFilePath, RawPath, AbsolutePath, ParsingName, FileSysPath, SelectedPath,
+    ExpandedPath, IconPath, FriendlyName, LeafName: string;
+  Pidl: PItemIDList;
+  Name: LPWSTR;
+  FindData: TWin32FindData;
+  Buf: array [0..MAX_PATH] of Char;
+begin
+  Result := False;
+  AResult := Default(TShellResolveResult);
+  try
+    AnObj := CreateComObject(CLSID_ShellLink);
+    ShellLink := AnObj as IShellLink;
+    PersistFile := AnObj as IPersistFile;
+    LinkFilePath := Trim(ALinkFilePath);
+    if LooksLikeShellGuidPath(LinkFilePath) then
+    begin
+      ExpandedPath := GetAbsolutePath(LinkFilePath);
+      if (ExpandedPath <> '') and FileExists(ExpandedPath) then
+        LinkFilePath := ExpandedPath;
+    end;
+    PersistFile.Load(PChar(LinkFilePath), 0);
+
+    // Skip IShellLink.Resolve: GetPath/IDList already return the stored target.
+    // Resolve can hang for seconds when WOW64 rewrites the path to a missing
+    // Program Files (x86) location (AmneziaVPN and other 64-bit apps).
+    FillChar(Buf, SizeOf(Buf), 0);
+    FillChar(FindData, SizeOf(FindData), 0);
+    ShellLink.GetPath(Buf, Length(Buf), FindData, SLGP_RAWPATH);
+    RawPath := Buf;
+    FillChar(Buf, SizeOf(Buf), 0);
+    ShellLink.GetPath(Buf, Length(Buf), FindData, 0);
+    AbsolutePath := Buf;
+
+    ParsingName := '';
+    FileSysPath := '';
+    Pidl := nil;
+    if Succeeded(ShellLink.GetIDList(Pidl)) and (Pidl <> nil) then
+    try
+      Name := nil;
+      if Succeeded(SHGetNameFromIDList(Pidl, Integer(Cardinal(SIGDN_FILESYSPATH)),
+        Name)) and (Name <> nil) then
+      try
+        FileSysPath := Name;
+      finally
+        CoTaskMemFree(Name);
+      end;
+      Name := nil;
+      if Succeeded(SHGetNameFromIDList(Pidl,
+        Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and
+        (Name <> nil) then
+      try
+        ParsingName := Name;
+      finally
+        CoTaskMemFree(Name);
+      end;
+    finally
+      CoTaskMemFree(Pidl);
+    end;
+
+    SelectedPath := ApplyProgramW6432Remap(ChooseBestStoredTarget(RawPath,
+      AbsolutePath, ParsingName, FileSysPath));
+    if IsAppsFolderOrAumidTarget(SelectedPath) then
+      SelectedPath := '';
+    AResult.Exec := SelectedPath;
+
+    FillChar(Buf, SizeOf(Buf), 0);
+    ShellLink.GetDescription(Buf, Length(Buf));
+    AResult.Descr := Buf;
+    FillChar(Buf, SizeOf(Buf), 0);
+    ShellLink.GetArguments(Buf, Length(Buf));
+    AResult.Params := Buf;
+    FillChar(Buf, SizeOf(Buf), 0);
+    ShellLink.GetWorkingDirectory(Buf, Length(Buf));
+    AResult.WorkDir := Buf;
+
+    // Retain AppsFolder cleanup should a future selection policy allow it.
+    if StartsText('shell:AppsFolder\', SelectedPath) then
+    begin
+      FriendlyName := Trim(AResult.Descr);
+      LeafName := ExtractFileName(SelectedPath);
+      if (FriendlyName = '') or SameText(FriendlyName, LeafName) or
+        LooksLikeAppUserModelId(FriendlyName) then
+      begin
+        FriendlyName := GetShellDisplayName(SelectedPath);
+        if FriendlyName <> '' then
+          AResult.Descr := FriendlyName;
+      end;
+      if (Trim(AResult.WorkDir) = '') or
+        StartsText('shell:AppsFolder', AResult.WorkDir) then
+        AResult.WorkDir := '';
+    end;
+
+    FillChar(Buf, SizeOf(Buf), 0);
+    ShellLink.GetIconLocation(Buf, Length(Buf), AResult.IconIndex);
+    IconPath := Buf;
+    if (IconPath = '') or LooksLikeAppUserModelId(IconPath) then
+      AResult.Icon := SelectedPath
+    else
+      AResult.Icon := PreferFilesystemPath(IconPath);
+    ShellLink.GetHotKey(AResult.HotKey);
+    ShellLink.GetShowCmd(AResult.ShowCommand);
+    Result := True;
+  except
+    AResult := Default(TShellResolveResult);
+  end;
+end;
+
+function AcceptShellDropTarget(const APath: string;
+  out AFileName: string): Boolean;
+var
+  Expanded, AppsTarget, Resolved: string;
+begin
+  Result := False;
+  AFileName := '';
+  if Trim(APath) = '' then
+    Exit;
+
+  AppsTarget := '';
+  if LooksLikeAppUserModelId(APath) then
+    AppsTarget := 'shell:AppsFolder\' + APath
+  else if StartsText('shell:AppsFolder\', APath) then
+    AppsTarget := APath;
+  if AppsTarget <> '' then
+  begin
+    if ContainsText(AppsTarget, 'DesktopToasts') then
+      Exit;
+    if ObjectExists(AppsTarget) then
+    begin
+      AFileName := AppsTarget;
+      Exit(True);
+    end;
+    Exit;
+  end;
+
+  Resolved := ResolveExistingFsPath(APath);
+  if Resolved <> '' then
+  begin
+    AFileName := Resolved;
+    Exit(True);
+  end;
+  try
+    Expanded := ExpandEnvironmentVariables(APath);
+  except
+    Expanded := APath;
+  end;
+  if Expanded <> APath then
+  begin
+    Resolved := ResolveExistingFsPath(Expanded);
+    if Resolved <> '' then
+    begin
+      if Pos('%', APath) > 0 then
+        AFileName := APath
+      else
+        AFileName := Resolved;
+      Exit(True);
+    end;
+  end;
+  if LooksLikeShellGuidPath(APath) and ObjectExists(APath) then
+  begin
+    AFileName := APath;
+    Result := True;
+  end;
+end;
+
+//--Функция извлекает информацию из ярлыка (*.lnk)
+procedure GetLinkInfo(lpShellLinkInfoStruct: PShellLinkInfoStruct);
+var
+  Resolved: TShellResolveResult;
 
   procedure ClearLinkOutputs;
   begin
@@ -2212,151 +2406,25 @@ var
   end;
 
 begin
-  try
-    AnObj  := CreateComObject(CLSID_ShellLink);
-    ShellLink := AnObj as IShellLink;
-    PersistFile := AnObj as IPersistFile;
-    // ::{GUID}\file.lnk must be resolved to a filesystem path before IPersistFile.Load
-    LinkFilePath := Trim(string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile));
-    if LooksLikeShellGuidPath(LinkFilePath) then
-    begin
-      ExpandedPath := GetAbsolutePath(LinkFilePath);
-      if (ExpandedPath <> '') and FileExists(ExpandedPath) then
-        LinkFilePath := ExpandedPath;
-    end;
-    PersistFile.Load(PChar(LinkFilePath), 0);
-    with ShellLink do
-    begin
-      // Skip IShellLink.Resolve: GetPath/IDList already return the stored target.
-      // Resolve can hang for seconds when WOW64 rewrites the path to a missing
-      // Program Files (x86) location (AmneziaVPN and other 64-bit apps).
-
-      FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
-        SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), 0);
-      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
-        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute),
-        lpShellLinkInfoStruct^.FindData, SLGP_RAWPATH);
-      RawPath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute);
-
-      FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
-        SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute), 0);
-      GetPath(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
-        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute),
-        lpShellLinkInfoStruct^.FindData, 0);
-      AbsolutePath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute);
-
-      ParsingName := '';
-      FileSysPath := '';
-      Pidl := nil;
-      if Succeeded(GetIDList(Pidl)) and (Pidl <> nil) then
-      try
-        Name := nil;
-        if Succeeded(SHGetNameFromIDList(Pidl,
-          Integer(Cardinal(SIGDN_FILESYSPATH)), Name)) and (Name <> nil) then
-        try
-          FileSysPath := string(Name);
-        finally
-          CoTaskMemFree(Name);
-        end;
-        Name := nil;
-        if Succeeded(SHGetNameFromIDList(Pidl,
-          Integer(Cardinal(SIGDN_DESKTOPABSOLUTEPARSING)), Name)) and
-          (Name <> nil) then
-        try
-          ParsingName := string(Name);
-        finally
-          CoTaskMemFree(Name);
-        end;
-      finally
-        CoTaskMemFree(Pidl);
-      end;
-
-      SelectedPath := PreferStoredTarget(RawPath, AbsolutePath, ParsingName,
-        FileSysPath);
-      // Never keep AppsFolder/AUMID as the .lnk target — FLPanelDropFile will
-      // fall back to the .lnk itself (correct PuTTY icon from the shortcut).
-      if StartsText('shell:AppsFolder\', SelectedPath) or
-        LooksLikeAppUserModelId(SelectedPath) then
-        SelectedPath := '';
-
-      // 32-bit: remapping Program Files → ProgramW6432 (filesystem paths only)
-      if (SelectedPath <> '') and (not LooksLikeShellGuidPath(SelectedPath)) and
-        (not LooksLikeAppUserModelId(SelectedPath)) and
-        (not StartsText('shell:AppsFolder\', SelectedPath)) then
-      begin
-        ExpandedPath := '';
-        try
-          ExpandedPath := ExpandEnvironmentVariables(SelectedPath);
-        except
-          ExpandedPath := SelectedPath;
-        end;
-        if (ExpandedPath <> '') and (not TargetExists(ExpandedPath)) then
-        begin
-          ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ch_temp,
-            Length(ch_temp));
-          if ExpandedLen > 1 then
-          begin
-            SetString(ProgramFiles64, PChar(@ch_temp[0]), ExpandedLen - 1);
-            SelectedPath := StringReplace(SelectedPath,
-              GetSpecialDir(CSIDL_PROGRAM_FILES),
-              IncludeTrailingPathDelimiter(ProgramFiles64),
-              [rfReplaceAll, rfIgnoreCase]);
-          end;
-        end;
-      end;
-
-      StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute,
-        SelectedPath,
-        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute) - 1);
-
-      GetDescription(lpShellLinkInfoStruct^.Description,
-        Length(lpShellLinkInfoStruct^.Description));
-      GetArguments(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute,
-        Length(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute));
-      GetWorkingDirectory(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy,
-        Length(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
-
-      // AppsFolder targets: .lnk Description is often the AUMID leaf; WorkDir is
-      // usually shell:AppsFolder\ — prefer Shell friendly name, clear WorkDir.
-      if StartsText('shell:AppsFolder\', SelectedPath) then
-      begin
-        FriendlyName := Trim(string(lpShellLinkInfoStruct^.Description));
-        LeafName := ExtractFileName(SelectedPath);
-        if (FriendlyName = '') or SameText(FriendlyName, LeafName) or
-          LooksLikeAppUserModelId(FriendlyName) then
-        begin
-          FriendlyName := GetShellDisplayName(SelectedPath);
-          if FriendlyName <> '' then
-            StrPLCopy(lpShellLinkInfoStruct^.Description, FriendlyName,
-              Length(lpShellLinkInfoStruct^.Description) - 1);
-        end;
-        WorkDir := Trim(string(
-          lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy));
-        if (WorkDir = '') or StartsText('shell:AppsFolder', WorkDir) then
-          FillChar(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy,
-            SizeOf(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy), 0);
-      end;
-
-      GetIconLocation(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
-        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon),
-        lpShellLinkInfoStruct^.IconIndex);
-
-      IconPath := string(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon);
-      if (IconPath = '') or LooksLikeAppUserModelId(IconPath) then
-        IconPath := SelectedPath
-      else
-        IconPath := PreferFilesystemPath(IconPath);
-      StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
-        IconPath,
-        Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon) - 1);
-
-      GetHotKey(lpShellLinkInfoStruct^.HotKey);
-      GetShowCmd(lpShellLinkInfoStruct^.ShowCommand);
-    end;
-  except
-    // Corrupt or unreadable .lnk — callers treat empty target as "use the .lnk"
-    ClearLinkOutputs;
-  end;
+  ClearLinkOutputs;
+  if not ResolveShellLinkFile(
+    string(lpShellLinkInfoStruct^.FullPathAndNameOfLinkFile), Resolved) then
+    Exit;
+  StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute, Resolved.Exec,
+    Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileToExecute) - 1);
+  StrPLCopy(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute, Resolved.Params,
+    Length(lpShellLinkInfoStruct^.ParamStringsOfFileToExecute) - 1);
+  StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy,
+    Resolved.WorkDir,
+    Length(lpShellLinkInfoStruct^.FullPathAndNameOfWorkingDirectroy) - 1);
+  StrPLCopy(lpShellLinkInfoStruct^.Description, Resolved.Descr,
+    Length(lpShellLinkInfoStruct^.Description) - 1);
+  StrPLCopy(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon,
+    Resolved.Icon,
+    Length(lpShellLinkInfoStruct^.FullPathAndNameOfFileContiningIcon) - 1);
+  lpShellLinkInfoStruct^.IconIndex := Resolved.IconIndex;
+  lpShellLinkInfoStruct^.HotKey := Resolved.HotKey;
+  lpShellLinkInfoStruct^.ShowCommand := Resolved.ShowCommand;
 end;
 
 //--Обрезает строку Str до длины Len с добавлением троеточия в конец (если строка длинее Len)
