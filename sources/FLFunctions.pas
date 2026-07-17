@@ -81,6 +81,8 @@ type
   end;
 
   //--Структура информации о ярлыке
+  // Legacy fixed-size fields (MAX_PATH). Prefer ResolveShellLinkFile / TShellResolveResult
+  // for new code — those use unbounded Delphi strings.
   TShellLinkInfoStruct = record
     FullPathAndNameOfLinkFile: array[0..MAX_PATH] of Char;
     FullPathAndNameOfFileToExecute: array[0..MAX_PATH] of Char;
@@ -105,6 +107,10 @@ type
     HotKey: Word;
     ShowCommand: Integer;
   end;
+
+const
+  /// Win32 long-path friendly buffer size (characters, including NUL)
+  FLLongPathBufLen = 32768;
 
 // Функция не позволяет уйти значению за пределы допустимых
 function InRange(Value, FromV, ToV: byte): byte;
@@ -1071,7 +1077,7 @@ var
   Folder: IShellFolder;
   FolderPtr: Pointer;
   Extract: IExtractIconW;
-  Loc: array[0..MAX_PATH] of WideChar;
+  Loc: string;
   Idx: Integer;
   Flags: UINT;
   Large, Small: HICON;
@@ -1106,20 +1112,22 @@ begin
       (Extract = nil) then
       Exit;
 
-    FillChar(Loc, SizeOf(Loc), 0);
+    SetLength(Loc, FLLongPathBufLen);
+    FillChar(PChar(Loc)^, FLLongPathBufLen * SizeOf(Char), 0);
     Idx := 0;
     Flags := 0;
-    if Failed(Extract.GetIconLocation(GIL_FORSHELL, Loc, MAX_PATH, Idx, Flags)) then
+    if Failed(Extract.GetIconLocation(GIL_FORSHELL, PWideChar(Loc),
+      FLLongPathBufLen, Idx, Flags)) then
       Exit;
 
     Large := 0;
     Small := 0;
-    Hr := Extract.Extract(Loc, Cardinal(Idx), Large, Small,
+    Hr := Extract.Extract(PWideChar(Loc), Cardinal(Idx), Large, Small,
       MakeLong(Word(ASize), Word(ASize)));
     // S_FALSE = caller should ExtractIconEx from Loc; S_OK = icons returned
-    if (Large = 0) and (Small = 0) and Succeeded(Hr) and (Loc[0] <> #0) and
+    if (Large = 0) and (Small = 0) and Succeeded(Hr) and (PWideChar(Loc)^ <> #0) and
       ((Flags and GIL_NOTFILENAME) = 0) then
-      ExtractIconEx(Loc, Idx, Large, Small, 1);
+      ExtractIconEx(PWideChar(Loc), Idx, Large, Small, 1);
 
     if Large <> 0 then
     begin
@@ -1372,11 +1380,46 @@ end;
 //--  CSIDL_FONTS - Шрифты
 function GetSpecialDir(const CSIDL: byte): string;
 var
+  FolderId: TGUID;
+  PathPtr: LPWSTR;
   Buf: array[0..MAX_PATH] of Char;
+  UseKnown: Boolean;
 begin
   Result := '';
-  if SHGetFolderPath(0, CSIDL, 0, 0, Buf) = 0 then Result := Buf else Exit;
-  if Result[length(Result)] <> '\' then Result := Result + '\';
+  UseKnown := True;
+  case CSIDL of
+    CSIDL_APPDATA:
+      FolderId := StringToGUID('{3EB685DB-65F9-4CF6-A03A-E3EF65729F3D}'); // RoamingAppData
+    CSIDL_PROGRAMS:
+      FolderId := StringToGUID('{A77F5D77-2E2B-44C3-A6A2-ABA601054A51}'); // Programs
+    CSIDL_COMMON_PROGRAMS:
+      FolderId := StringToGUID('{0139D44E-6AFE-49F2-8690-3DAFCAE6FFB8}'); // CommonPrograms
+    CSIDL_DESKTOPDIRECTORY:
+      FolderId := StringToGUID('{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}'); // Desktop
+    CSIDL_COMMON_DESKTOPDIRECTORY:
+      FolderId := StringToGUID('{C4AA340D-F20F-4863-AFEF-F87EF2E6BA25}'); // PublicDesktop
+    CSIDL_PROGRAM_FILES:
+      FolderId := StringToGUID('{905E63B6-C1BF-494E-B29C-65B732D3D21A}'); // ProgramFiles
+  else
+    UseKnown := False;
+  end;
+
+  if UseKnown then
+  begin
+    PathPtr := nil;
+    if Succeeded(SHGetKnownFolderPath(FolderId, 0, 0, PathPtr)) and
+      (PathPtr <> nil) then
+    try
+      Result := IncludeTrailingPathDelimiter(string(PathPtr));
+      Exit;
+    finally
+      CoTaskMemFree(PathPtr);
+    end;
+  end;
+
+  // Legacy fallback (MAX_PATH-limited API)
+  if SHGetFolderPath(0, CSIDL, 0, 0, Buf) = 0 then
+    Result := IncludeTrailingPathDelimiter(Buf);
 end;
 
 function LooksLikeShellGuidPath(const APath: string): Boolean;
@@ -1413,6 +1456,23 @@ begin
     Result := 'shell:' + Result;
 end;
 
+function ExpandProgramW6432Env: string;
+var
+  EnvBuf: string;
+  Len: DWORD;
+begin
+  Result := '';
+  SetLength(EnvBuf, FLLongPathBufLen);
+  FillChar(PChar(EnvBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
+  Len := ExpandEnvironmentStrings('%ProgramW6432%', PChar(EnvBuf),
+    FLLongPathBufLen);
+  if Len > 1 then
+    SetLength(EnvBuf, Len - 1)
+  else
+    Exit;
+  Result := EnvBuf;
+end;
+
 function TryPathToKnownFolderGuidForm(const APath: string;
   out AGuidPath: string): Boolean;
 var
@@ -1421,8 +1481,6 @@ var
   Folder: IKnownFolder;
   FolderId: TKnownFolderID;
   FolderPathPtr: LPWSTR;
-  Buf: array[0..MAX_PATH] of Char;
-  Len: DWORD;
 begin
   Result := False;
   AGuidPath := '';
@@ -1440,10 +1498,9 @@ begin
 
   // Win32: IKnownFolderManager often maps "C:\Program Files\..." to
   // ProgramFilesX86. Prefer ProgramFilesX64 when under %ProgramW6432%.
-  Len := ExpandEnvironmentStrings('%ProgramW6432%', Buf, Length(Buf));
-  if Len > 1 then
+  Pf64 := ExpandProgramW6432Env;
+  if Pf64 <> '' then
   begin
-    SetString(Pf64, PChar(@Buf[0]), Len - 1);
     Pf64 := ExcludeTrailingPathDelimiter(Pf64);
     if (Pf64 <> '') and
       (SameText(Absolute, Pf64) or
@@ -1704,8 +1761,6 @@ end;
 function MapProgramFiles32To64(const APath: string): string;
 var
   Pf32, Pf64: string;
-  Buf: array[0..MAX_PATH] of Char;
-  Len: DWORD;
 begin
   Result := APath;
 {$IFDEF WIN32}
@@ -1713,10 +1768,9 @@ begin
   Pf32 := GetSpecialDir(CSIDL_PROGRAM_FILES);
   if (Pf32 = '') or (not StartsText(Pf32, APath)) then
     Exit;
-  Len := ExpandEnvironmentStrings('%ProgramW6432%', Buf, Length(Buf));
-  if Len <= 1 then
+  Pf64 := ExpandProgramW6432Env;
+  if Pf64 = '' then
     Exit;
-  SetString(Pf64, PChar(@Buf[0]), Len - 1);
   Pf64 := IncludeTrailingPathDelimiter(Pf64);
   if SameText(Pf32, Pf64) then
     Exit;
@@ -1857,8 +1911,6 @@ var
   BraceOpen, BraceClose: Integer;
   FolderId: TGUID;
   FolderPath: LPWSTR;
-  Buf: array[0..MAX_PATH] of Char;
-  Len: DWORD;
 begin
   Result := False;
   AResolved := '';
@@ -1898,10 +1950,9 @@ begin
   // fall back to %ProgramW6432% (same physical folder).
   if IsEqualGUID(FolderId, StringToGUID('{6D809377-6AF0-444B-8957-A3773F02200E}')) then
   begin
-    Len := ExpandEnvironmentStrings('%ProgramW6432%', Buf, Length(Buf));
-    if Len > 1 then
+    Base := ExpandProgramW6432Env;
+    if Base <> '' then
     begin
-      SetString(Base, PChar(@Buf[0]), Len - 1);
       AResolved := ExcludeTrailingPathDelimiter(Base) + Suffix;
       Result := AResolved <> '';
     end;
@@ -1912,7 +1963,6 @@ function ResolveShellPath(const APath: string): string;
 var
   Pidl: PItemIDList;
   AttrIn, AttrOut: DWORD;
-  PathBuf: array[0..MAX_PATH] of Char;
   Name: LPWSTR;
   Candidate: string;
   Resolved, Existing: string;
@@ -1952,15 +2002,8 @@ begin
     Exit;
   end;
   try
-    if SHGetPathFromIDList(Pidl, PathBuf) and (PathBuf[0] <> #0) then
-    begin
-      Existing := TakeExisting(PathBuf);
-      if Existing <> '' then
-        Exit(Existing);
-      Exit(PathBuf);
-    end;
+    // Prefer SIGDN_FILESYSPATH — not capped at MAX_PATH like SHGetPathFromIDList
     Name := nil;
-    // SIGDN_FILESYSPATH is $80058000; cast avoids W1012 on Integer param
     if Succeeded(SHGetNameFromIDList(Pidl, Integer(Cardinal(SIGDN_FILESYSPATH)),
       Name)) and (Name <> nil) then
     try
@@ -1985,6 +2028,8 @@ begin
         if Existing <> '' then
           Exit(Existing);
       end;
+      if LooksLikeShellGuidPath(string(Name)) then
+        Exit(string(Name));
     finally
       CoTaskMemFree(Name);
     end;
@@ -2185,9 +2230,7 @@ end;
 
 function ApplyProgramW6432Remap(const APath: string): string;
 var
-  ChTemp: array [0..MAX_PATH] of Char;
   ExpandedPath, ProgramFiles64: string;
-  ExpandedLen: DWORD;
 begin
   Result := APath;
   if (Result = '') or LooksLikeShellGuidPath(Result) or
@@ -2200,14 +2243,10 @@ begin
   end;
   if (ExpandedPath <> '') and not FsPathExists(ExpandedPath) then
   begin
-    ExpandedLen := ExpandEnvironmentStrings('%ProgramW6432%', ChTemp,
-      Length(ChTemp));
-    if ExpandedLen > 1 then
-    begin
-      SetString(ProgramFiles64, PChar(@ChTemp[0]), ExpandedLen - 1);
+    ProgramFiles64 := ExpandProgramW6432Env;
+    if ProgramFiles64 <> '' then
       Result := StringReplace(Result, GetSpecialDir(CSIDL_PROGRAM_FILES),
         IncludeTrailingPathDelimiter(ProgramFiles64), [rfReplaceAll, rfIgnoreCase]);
-    end;
   end;
 end;
 
@@ -2218,11 +2257,11 @@ var
   PersistFile: IPersistFile;
   AnObj: IUnknown;
   LinkFilePath, RawPath, AbsolutePath, ParsingName, FileSysPath, SelectedPath,
-    ExpandedPath, IconPath, FriendlyName, LeafName: string;
+    ExpandedPath, IconPath, FriendlyName, LeafName, PathBuf: string;
   Pidl: PItemIDList;
   Name: LPWSTR;
   FindData: TWin32FindData;
-  Buf: array [0..MAX_PATH] of Char;
+  IconIndex: Integer;
 begin
   Result := False;
   AResult := Default(TShellResolveResult);
@@ -2242,13 +2281,14 @@ begin
     // Skip IShellLink.Resolve: GetPath/IDList already return the stored target.
     // Resolve can hang for seconds when WOW64 rewrites the path to a missing
     // Program Files (x86) location (AmneziaVPN and other 64-bit apps).
-    FillChar(Buf, SizeOf(Buf), 0);
+    SetLength(PathBuf, FLLongPathBufLen);
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
     FillChar(FindData, SizeOf(FindData), 0);
-    ShellLink.GetPath(Buf, Length(Buf), FindData, SLGP_RAWPATH);
-    RawPath := Buf;
-    FillChar(Buf, SizeOf(Buf), 0);
-    ShellLink.GetPath(Buf, Length(Buf), FindData, 0);
-    AbsolutePath := Buf;
+    ShellLink.GetPath(PChar(PathBuf), FLLongPathBufLen, FindData, SLGP_RAWPATH);
+    RawPath := PChar(PathBuf);
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
+    ShellLink.GetPath(PChar(PathBuf), FLLongPathBufLen, FindData, 0);
+    AbsolutePath := PChar(PathBuf);
 
     ParsingName := '';
     FileSysPath := '';
@@ -2282,15 +2322,15 @@ begin
       SelectedPath := '';
     AResult.Exec := SelectedPath;
 
-    FillChar(Buf, SizeOf(Buf), 0);
-    ShellLink.GetDescription(Buf, Length(Buf));
-    AResult.Descr := Buf;
-    FillChar(Buf, SizeOf(Buf), 0);
-    ShellLink.GetArguments(Buf, Length(Buf));
-    AResult.Params := Buf;
-    FillChar(Buf, SizeOf(Buf), 0);
-    ShellLink.GetWorkingDirectory(Buf, Length(Buf));
-    AResult.WorkDir := Buf;
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
+    ShellLink.GetDescription(PChar(PathBuf), FLLongPathBufLen);
+    AResult.Descr := PChar(PathBuf);
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
+    ShellLink.GetArguments(PChar(PathBuf), FLLongPathBufLen);
+    AResult.Params := PChar(PathBuf);
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
+    ShellLink.GetWorkingDirectory(PChar(PathBuf), FLLongPathBufLen);
+    AResult.WorkDir := PChar(PathBuf);
 
     // Retain AppsFolder cleanup should a future selection policy allow it.
     if StartsText('shell:AppsFolder\', SelectedPath) then
@@ -2309,9 +2349,11 @@ begin
         AResult.WorkDir := '';
     end;
 
-    FillChar(Buf, SizeOf(Buf), 0);
-    ShellLink.GetIconLocation(Buf, Length(Buf), AResult.IconIndex);
-    IconPath := Buf;
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
+    IconIndex := 0;
+    ShellLink.GetIconLocation(PChar(PathBuf), FLLongPathBufLen, IconIndex);
+    AResult.IconIndex := IconIndex;
+    IconPath := PChar(PathBuf);
     if (IconPath = '') or LooksLikeAppUserModelId(IconPath) then
       AResult.Icon := SelectedPath
     else

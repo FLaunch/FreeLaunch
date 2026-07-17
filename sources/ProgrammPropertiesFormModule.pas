@@ -302,7 +302,7 @@ end;
 
 procedure TProgrammPropertiesForm.RefreshProps;
 var
-  lnkinfo: TShellLinkInfoStruct;
+  LinkResult: TShellResolveResult;
   FName: string;
   ext: string;
   WasLoading: Boolean;
@@ -315,19 +315,19 @@ begin
   try
     if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
-      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
-      GetLinkInfo(@lnkinfo);
-      FName := lnkinfo.FullPathAndNameOfFileToExecute;
+      if not ResolveShellLinkFile(GetAbsolutePath(CommandEdit.Text), LinkResult) then
+        Exit;
+      FName := LinkResult.Exec;
       ext := extractfileext(GetAbsolutePath(FName)).ToLower;
       if not IsExecutable(ext) and not LooksLikeShellGuidPath(FName) then
         Exit;
       CommandEdit.Text := FName;
-      Ic := lnkinfo.FullPathAndNameOfFileContiningIcon;
+      Ic := LinkResult.Icon;
       if Ic = '' then Ic := CommandEdit.Text;
-      iconindex := lnkinfo.IconIndex;
-      WorkFolderEdit.Text := lnkinfo.FullPathAndNameOfWorkingDirectroy;
-      ParamsEdit.Text := lnkinfo.ParamStringsOfFileToExecute;
-      DescrEdit.Text := lnkinfo.Description;
+      iconindex := LinkResult.IconIndex;
+      WorkFolderEdit.Text := LinkResult.WorkDir;
+      ParamsEdit.Text := LinkResult.Params;
+      DescrEdit.Text := LinkResult.Descr;
     end
     else
     begin

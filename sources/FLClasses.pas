@@ -488,13 +488,12 @@ var
   LinkTarget: IShellItem;
   ShellLink: IShellLink;
   Item2: IShellItem2;
-  Buf: array[0..MAX_PATH] of Char;
   FindData: TWin32FindData;
   Pidl: PItemIDList;
   PropKey: TPropertyKey;
   PropStr: LPWSTR;
   Candidate, RawPath, AbsolutePath, FileSysPath, ParsingName, Selected: string;
-  DisplayHint, AumidHint: string;
+  DisplayHint, AumidHint, PathBuf: string;
   PropNames: array[0..5] of string;
   I: Integer;
 
@@ -525,13 +524,15 @@ var
     AbsolutePath := '';
     FileSysPath := '';
     ParsingName := '';
-    FillChar(Buf, SizeOf(Buf), 0);
+    SetLength(PathBuf, FLLongPathBufLen);
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
     FillChar(FindData, SizeOf(FindData), 0);
-    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, SLGP_RAWPATH)) then
-      RawPath := Buf;
-    FillChar(Buf, SizeOf(Buf), 0);
-    if Succeeded(Link.GetPath(Buf, Length(Buf), FindData, 0)) then
-      AbsolutePath := Buf;
+    if Succeeded(Link.GetPath(PChar(PathBuf), FLLongPathBufLen, FindData,
+      SLGP_RAWPATH)) then
+      RawPath := PChar(PathBuf);
+    FillChar(PChar(PathBuf)^, FLLongPathBufLen * SizeOf(Char), 0);
+    if Succeeded(Link.GetPath(PChar(PathBuf), FLLongPathBufLen, FindData, 0)) then
+      AbsolutePath := PChar(PathBuf);
     Pidl := nil;
     if Succeeded(Link.GetIDList(Pidl)) and (Pidl <> nil) then
     try
@@ -822,7 +823,6 @@ function TFLOleDropTarget.ExtractDropPath(const DataObj: IDataObject;
 var
   FormatEtc: TFormatEtc;
   Medium: TStgMedium;
-  Buf: array[0..MAX_PATH] of Char;
   PCida: PIDA;
   Offsets: PUINT;
   FolderPidl, ItemPidl, AbsolutePidl: PItemIDList;
@@ -832,7 +832,8 @@ var
   Item: IShellItem;
   Count: DWORD;
   ShellItem: IShellItem;
-  Candidate: string;
+  Candidate, PathBuf: string;
+  Name: LPWSTR;
 begin
   Result := False;
   FileName := '';
@@ -849,12 +850,17 @@ begin
   try
     if Medium.tymed = TYMED_HGLOBAL then
     begin
-      Len := DragQueryFile(Medium.hGlobal, 0, Buf, Length(Buf));
+      Len := DragQueryFile(Medium.hGlobal, 0, nil, 0);
       if Len > 0 then
       begin
-        SetString(Candidate, Buf, Len);
-        if AcceptResolvedTarget(Candidate, FileName) then
-          Exit(True);
+        SetLength(PathBuf, Len + 1);
+        Len := DragQueryFile(Medium.hGlobal, 0, PChar(PathBuf), Len + 1);
+        if Len > 0 then
+        begin
+          SetLength(PathBuf, Len);
+          if AcceptResolvedTarget(PathBuf, FileName) then
+            Exit(True);
+        end;
       end;
     end;
   finally
@@ -906,10 +912,15 @@ begin
           AbsolutePidl := ILCombine(FolderPidl, ItemPidl);
           if AbsolutePidl <> nil then
           try
-            FillChar(Buf, SizeOf(Buf), 0);
-            if SHGetPathFromIDList(AbsolutePidl, Buf) and
-              AcceptResolvedTarget(Buf, FileName) then
-              Exit(True);
+            Name := nil;
+            if Succeeded(SHGetNameFromIDList(AbsolutePidl,
+              Integer(Cardinal(SIGDN_FILESYSPATH)), Name)) and (Name <> nil) then
+            try
+              if AcceptResolvedTarget(string(Name), FileName) then
+                Exit(True);
+            finally
+              CoTaskMemFree(Name);
+            end;
             ShellItem := nil;
             if Succeeded(SHCreateItemFromIDList(AbsolutePidl, IID_IShellItem,
               ShellItem)) and TryPathFromShellItem(ShellItem, FileName) then
@@ -2166,13 +2177,23 @@ end;
 //--Метод генерируется при перетаскивании файла на кнопку
 procedure TFLPanel.WMDropFiles(var Msg: TWMDropFiles);
 var
-  Buf: array [0..MAX_PATH] of Char;
+  PathBuf: string;
+  Len: UINT;
 begin
   try
     if Assigned(fDropFile) then
     begin
-      DragQueryFile(Msg.Drop, 0, Buf, SizeOf(Buf));
-      NotifyDropFile(Buf, Mouse.CursorPos);
+      Len := DragQueryFile(Msg.Drop, 0, nil, 0);
+      if Len > 0 then
+      begin
+        SetLength(PathBuf, Len + 1);
+        Len := DragQueryFile(Msg.Drop, 0, PChar(PathBuf), Len + 1);
+        if Len > 0 then
+        begin
+          SetLength(PathBuf, Len);
+          NotifyDropFile(PathBuf, Mouse.CursorPos);
+        end;
+      end;
     end;
   finally
     DragFinish(Msg.Drop);

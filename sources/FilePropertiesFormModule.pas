@@ -210,7 +210,7 @@ end;
 
 procedure TFilePropertiesForm.RefreshProps;
 var
-  lnkinfo: TShellLinkInfoStruct;
+  LinkResult: TShellResolveResult;
   WasLoading: Boolean;
 begin
   if not ObjectExists(CommandEdit.Text) then
@@ -221,14 +221,14 @@ begin
   try
     if extractfileext(GetAbsolutePath(CommandEdit.Text)).ToLower = '.lnk' then
     begin
-      StrPLCopy(lnkinfo.FullPathAndNameOfLinkFile, GetAbsolutePath(CommandEdit.Text), MAX_PATH - 1);
-      GetLinkInfo(@lnkinfo);
-      CommandEdit.Text := lnkinfo.FullPathAndNameOfFileToExecute;
-      Ic := lnkinfo.FullPathAndNameOfFileContiningIcon;
+      if not ResolveShellLinkFile(GetAbsolutePath(CommandEdit.Text), LinkResult) then
+        Exit;
+      CommandEdit.Text := LinkResult.Exec;
+      Ic := LinkResult.Icon;
       if Ic = '' then Ic := CommandEdit.Text;
-      iconindex := lnkinfo.IconIndex;
-      WorkFolderEdit.Text := lnkinfo.FullPathAndNameOfWorkingDirectroy;
-      DescrEdit.Text := lnkinfo.Description;
+      iconindex := LinkResult.IconIndex;
+      WorkFolderEdit.Text := LinkResult.WorkDir;
+      DescrEdit.Text := LinkResult.Descr;
     end
     else
     begin
