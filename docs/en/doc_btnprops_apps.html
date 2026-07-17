@@ -16,7 +16,7 @@
     <ul>
       <li>
         <strong>Object</strong><br />
-        Contains the path to the executable.<br /><br />
+        Contains the path to the executable. Environment variables (for example %windir%) and known-folder GUID paths (::{GUID}\…) are supported.<br /><br />
       </li>
       <li>
         <strong>Folder</strong><br />
@@ -40,7 +40,7 @@
       </li>
       <li>
         <strong>Priority</strong><br />
-        Contains the priority value with which the executable file will run.<br /><br />
+        Contains the priority value with which the executable file will run. The Realtime priority is not available. If "Run with Administrator rights" is enabled and FreeLaunch itself is not elevated, the priority control is disabled (priority cannot be applied through UAC elevation).<br /><br />
       </li>
       <li>
         <strong>View</strong><br />

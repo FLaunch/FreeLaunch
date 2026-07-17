@@ -23,6 +23,30 @@
     <h1>Changelog</h1>
     <table>
       <tr><td colspan="4"><hr /></td></tr>
+      <tr><th align="left">Version</th><th align="left">2.11</th><th align="left">Release</th></th><th align="right">2026-07-17</th></tr>
+      <tr><td colspan="4">&nbsp;</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/added.png" width="16" height="16" alt="Added" /></td><td colspan="3" align="left">Added drag-and-drop from Start Menu and Explorer with correct icons and readable paths for Win32, Store/UWP, and Control Panel items.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/added.png" width="16" height="16" alt="Added" /></td><td colspan="3" align="left">Added support for known-folder object paths (KNOWNFOLDERID / ::{GUID}\…).</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/added.png" width="16" height="16" alt="Added" /></td><td colspan="3" align="left">When dropping onto a busy button, you can keep it and place the item on an empty slot on this or another tab, or create a new tab.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/added.png" width="16" height="16" alt="Added" /></td><td colspan="3" align="left">Executable detection now respects the PATHEXT environment variable.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/updated.png" width="16" height="16" alt="Updated" /></td><td colspan="3" align="left">Improved long-path support for shortcuts, drag-and-drop, and shell path resolution (full effect on Windows 10 1607+ when long paths are enabled in the OS).</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/updated.png" width="16" height="16" alt="Updated" /></td><td colspan="3" align="left">The launch confirmation dialog now shows a readable name (button description or Shell display name) instead of a raw path or GUID.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/updated.png" width="16" height="16" alt="Updated" /></td><td colspan="3" align="left">Improved compatibility with ASLR.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed DPI and multi-monitor issues: main window layout on startup, icon and window size after DPI change, and status bar covering the bottom row of icons when changing the theme.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed expansion of system environment variables in object paths (for example %windir% or %ProgramFiles(x86)%).</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed resolving Program Files paths for 64-bit applications.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed a crash when dropping or opening a damaged or unreadable shortcut (.lnk).</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed a crash/leak in launch completion tracking for missing or stale launches.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed launching executables with spaces in the path and command-line arguments.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed silent failure when launching an admin button with a non-normal process priority; the priority control is disabled with a hint when FreeLaunch is not elevated.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed settings load so button panels map to the correct tabs via TabNumber.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed icon refresh when swapping buttons by drag-and-drop.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed the file/folder picker dialog when the initial directory does not exist.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Fixed transferring buttons when dragging tabs, searching for the nearest free button on drop, icon reload/cache issues, tab name loading, corrupted settings file handling, a memory leak when registering a global hotkey, and the process remaining after exit.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/fixed.png" width="16" height="16" alt="Fixed" /></td><td colspan="3" align="left">Various minor fixes.</td></tr>
+      <tr><td align="right" valign="top"><img src="../data/image/removed.png" width="16" height="16" alt="Removed" /></td><td colspan="3" align="left">Removed the Realtime priority option. Existing buttons or defaults that used Realtime are converted to High on load.</td></tr>
+      <tr><td colspan="4">&nbsp;</td></tr>
+      <tr><td colspan="4"><hr /></td></tr>
       <tr><th align="left">Version</th><th align="left">2.10</th><th align="left">Release</th></th><th align="right">2024-12-26</th></tr>
       <tr><td colspan="4">&nbsp;</td></tr>
       <tr><td align="right" valign="top"><img src="../data/image/added.png" width="16" height="16" alt="Added" /></td><td colspan="3" align="left">Added the ability to switch between tabs using the scroll by mouse wheel.</td></tr>
