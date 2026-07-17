@@ -3,7 +3,7 @@
         <ProjectGuid>{02D93137-42D0-4C3F-B8DB-C2FD000BD41D}</ProjectGuid>
         <MainSource>FLaunch.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
@@ -100,10 +100,10 @@
         <DCC_Define>madExcept;$(DCC_Define)</DCC_Define>
         <BT_BuildType>Debug</BT_BuildType>
         <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
-        <VerInfo_Release>2024</VerInfo_Release>
-        <VerInfo_Build>1226</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.10.2024.1226;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.10;Comments=</VerInfo_Keys>
-        <VerInfo_MinorVer>10</VerInfo_MinorVer>
+        <VerInfo_Release>2026</VerInfo_Release>
+        <VerInfo_Build>711</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=FreeLaunch;FileVersion=2.11.2026.711;InternalName=FreeLaunch;LegalCopyright=FreeLaunch contributors ©;LegalTrademarks=;OriginalFilename=FLaunch.exe;ProductName=FreeLaunch;ProductVersion=2.11;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>11</VerInfo_MinorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_RangeChecking>true</DCC_RangeChecking>
