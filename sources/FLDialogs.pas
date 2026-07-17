@@ -140,7 +140,6 @@ function TFileOrDirDialog.Execute: Boolean;
 var
   FilePath: string;
 begin
-  Result := False;
   FilePath := ExtractFilePath(FFileName);
   if DirectoryExists(FilePath) then
     FOpenDialog.DefaultFolder := FilePath;

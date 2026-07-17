@@ -1364,17 +1364,24 @@ end;
 
 function LooksLikeAppUserModelId(const APath: string): Boolean;
 var
-  S: string;
+  S, Ext: string;
 begin
-  // AUMID: "Publisher.Product_hash" / "Embarcadero.DesktopToasts.C5E43BD0"
-  // — has dots, no drive/path separators, not a shell GUID form.
+  // AUMID examples: "Publisher.Product_8wekyb3d8bbwe!App",
+  // "Embarcadero.DesktopToasts.C5E43BD0" (rare) — prefer "_" or "!" markers.
+  // Reject plain filenames like "node.exe" / "readme.txt" (dot only).
   S := Trim(APath);
-  Result := (S <> '') and
-    (not LooksLikeShellGuidPath(S)) and
-    (Pos('\', S) = 0) and
-    (Pos('/', S) = 0) and
-    (Pos(':', S) = 0) and
-    (Pos('.', S) > 0);
+  Result := False;
+  if (S = '') or LooksLikeShellGuidPath(S) then
+    Exit;
+  if (Pos('\', S) > 0) or (Pos('/', S) > 0) or (Pos(':', S) > 0) then
+    Exit;
+  if Pos('.', S) = 0 then
+    Exit;
+  Ext := ExtractFileExt(S).ToLower;
+  if (Ext <> '') and (Length(Ext) <= 5) then
+    // Short trailing ".xxx" is almost always a file extension, not an AUMID.
+    Exit;
+  Result := (Pos('_', S) > 0) or (Pos('!', S) > 0);
 end;
 
 function NormalizeShellParsingName(const APath: string): string;
