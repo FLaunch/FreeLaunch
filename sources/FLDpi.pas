@@ -26,8 +26,7 @@ unit FLDpi;
 interface
 
 uses
-  Winapi.Windows, Winapi.MultiMon, Winapi.ShellScaling, System.SysUtils,
-  System.Types, Vcl.Forms;
+  Winapi.Windows, Winapi.MultiMon, System.SysUtils, System.Types, Vcl.Forms;
 
 const
   FLDefaultDpi = 96;
@@ -46,8 +45,50 @@ function FLSnapRectToMonitorWorkArea(const ARect: TRect; AMonitor: TMonitor): TR
 
 implementation
 
-function FLGetDpiForWindowSafe(AHandle: HWND): UINT; stdcall;
-  external 'user32.dll' name 'GetDpiForWindow';
+const
+  // MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI (Win8.1+); avoid static link to Shcore.dll
+  MDT_EFFECTIVE_DPI = 0;
+
+type
+  TGetDpiForWindowFunc = function(hwnd: HWND): UINT; stdcall;
+  TGetDpiForMonitorFunc = function(hmonitor: HMONITOR; dpiType: Integer;
+    out dpiX, dpiY: UINT): HRESULT; stdcall;
+
+var
+  GetDpiForWindowFunc: TGetDpiForWindowFunc = nil;
+  GetDpiForMonitorFunc: TGetDpiForMonitorFunc = nil;
+  DpiApisInitialized: Boolean = False;
+
+procedure InitDpiApis;
+var
+  ModUser32, ModShcore: HMODULE;
+begin
+  if DpiApisInitialized then
+    Exit;
+  DpiApisInitialized := True;
+
+  // GetDpiForWindow: Windows 10 version 1607+
+  ModUser32 := GetModuleHandle(user32);
+  if ModUser32 <> 0 then
+    @GetDpiForWindowFunc := GetProcAddress(ModUser32, 'GetDpiForWindow');
+
+  // GetDpiForMonitor: Windows 8.1+ (Shcore.dll is absent on Windows 7)
+  ModShcore := GetModuleHandle('Shcore.dll');
+  if ModShcore = 0 then
+    ModShcore := LoadLibrary('Shcore.dll');
+  if ModShcore <> 0 then
+    @GetDpiForMonitorFunc := GetProcAddress(ModShcore, 'GetDpiForMonitor');
+end;
+
+function FLGetDpiForWindowSafe(AHandle: HWND): UINT;
+begin
+  Result := 0;
+  if AHandle = 0 then
+    Exit;
+  InitDpiApis;
+  if Assigned(GetDpiForWindowFunc) then
+    Result := GetDpiForWindowFunc(AHandle);
+end;
 
 function FLGetDpiForMonitorHandle(HMon: HMONITOR): Integer;
 var
@@ -56,7 +97,9 @@ begin
   Result := 0;
   if HMon = 0 then
     Exit;
-  if GetDpiForMonitor(HMon, MDT_EFFECTIVE_DPI, Xdpi, Ydpi) = S_OK then
+  InitDpiApis;
+  if Assigned(GetDpiForMonitorFunc) and
+    (GetDpiForMonitorFunc(HMon, MDT_EFFECTIVE_DPI, Xdpi, Ydpi) = S_OK) then
     Result := Ydpi;
 end;
 

@@ -593,14 +593,34 @@ begin
   end;
 end;
 
-function GetPackagesByPackageFamily(PackageFamilyName: PWideChar;
-  var Count: UINT; PackageFullNames: Pointer; var BufferLength: UINT;
-  Buffer: PWideChar): LONG; stdcall;
-  external kernel32 name 'GetPackagesByPackageFamily';
+// Package APIs are Windows 8+; resolve at runtime so Windows 7 can still start.
+type
+  TGetPackagesByPackageFamily = function(PackageFamilyName: PWideChar;
+    var Count: UINT; PackageFullNames: Pointer; var BufferLength: UINT;
+    Buffer: PWideChar): LONG; stdcall;
+  TGetPackagePathByFullName = function(PackageFullName: PWideChar;
+    var PathLength: UINT; Path: PWideChar): LONG; stdcall;
 
-function GetPackagePathByFullName(PackageFullName: PWideChar;
-  var PathLength: UINT; Path: PWideChar): LONG; stdcall;
-  external kernel32 name 'GetPackagePathByFullName';
+var
+  GetPackagesByPackageFamilyFunc: TGetPackagesByPackageFamily = nil;
+  GetPackagePathByFullNameFunc: TGetPackagePathByFullName = nil;
+  PackageApisInitialized: Boolean = False;
+
+procedure InitPackageApis;
+var
+  Kernel: HMODULE;
+begin
+  if PackageApisInitialized then
+    Exit;
+  PackageApisInitialized := True;
+  Kernel := GetModuleHandle(kernel32);
+  if Kernel = 0 then
+    Exit;
+  @GetPackagesByPackageFamilyFunc :=
+    GetProcAddress(Kernel, 'GetPackagesByPackageFamily');
+  @GetPackagePathByFullNameFunc :=
+    GetProcAddress(Kernel, 'GetPackagePathByFullName');
+end;
 
 function Wow64DisableWow64FsRedirection(out OldValue: Pointer): BOOL; stdcall;
   external kernel32 name 'Wow64DisableWow64FsRedirection';
@@ -720,26 +740,30 @@ begin
   APackagePath := '';
   if AFamily = '' then
     Exit;
+  InitPackageApis;
+  if not Assigned(GetPackagesByPackageFamilyFunc) or
+    not Assigned(GetPackagePathByFullNameFunc) then
+    Exit;
   Count := 0;
   BufLen := 0;
-  Hr := GetPackagesByPackageFamily(PWideChar(AFamily), Count, nil, BufLen, nil);
+  Hr := GetPackagesByPackageFamilyFunc(PWideChar(AFamily), Count, nil, BufLen, nil);
   if ((Hr <> ERROR_INSUFFICIENT_BUFFER) and (Hr <> ERROR_SUCCESS)) or
     (Count = 0) or (BufLen = 0) then
     Exit;
   SetLength(Names, Count);
   SetLength(Buf, BufLen);
-  Hr := GetPackagesByPackageFamily(PWideChar(AFamily), Count, @Names[0], BufLen,
+  Hr := GetPackagesByPackageFamilyFunc(PWideChar(AFamily), Count, @Names[0], BufLen,
     @Buf[0]);
   if (Hr <> ERROR_SUCCESS) or (Count = 0) or (Names[0] = nil) then
     Exit;
   FullName := Names[0];
   PathLen := 0;
-  Hr := GetPackagePathByFullName(PWideChar(FullName), PathLen, nil);
+  Hr := GetPackagePathByFullNameFunc(PWideChar(FullName), PathLen, nil);
   if ((Hr <> ERROR_INSUFFICIENT_BUFFER) and (Hr <> ERROR_SUCCESS)) or
     (PathLen = 0) then
     Exit;
   SetLength(PathBuf, PathLen);
-  Hr := GetPackagePathByFullName(PWideChar(FullName), PathLen, @PathBuf[0]);
+  Hr := GetPackagePathByFullNameFunc(PWideChar(FullName), PathLen, @PathBuf[0]);
   if Hr <> ERROR_SUCCESS then
     Exit;
   APackagePath := ExcludeTrailingPathDelimiter(PWideChar(@PathBuf[0]));
