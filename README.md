@@ -35,6 +35,8 @@ You can report any issues you find to the [bugtracker](https://bt.freelaunch.su/
 
 ### 2026
 
+Version 2.12: fixed FreeLaunch not starting on Windows 7 (newer DPI and package APIs are resolved at runtime).
+
 Version 2.11: improved Start Menu / Explorer drop, known-folder paths, long-path handling, and many DPI and launch fixes.
 
 ### 2024
