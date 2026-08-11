@@ -33,16 +33,9 @@ You can report any issues you find to the [bugtracker](https://bt.freelaunch.su/
 
 ## Historical Note
 
-### 2026
-
-Version 2.12: fixed FreeLaunch not starting on Windows 7 (newer DPI and package APIs are resolved at runtime).
-
-Version 2.11: improved Start Menu / Explorer drop, known-folder paths, long-path handling, and many DPI and launch fixes.
-
 ### 2024
 
-As a result of GitHub's actions aimed at discriminating against Russian developers, access to the repository on GitHub was lost.
-In connection with this, the project moved to the Russian service [GitVerse](https://gitverse.ru/freelaunch/FreeLaunch).
+Project page was moved to the Russian service [GitVerse](https://gitverse.ru/freelaunch/FreeLaunch).
 
 ### 2022-2023
 
