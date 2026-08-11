@@ -33,6 +33,7 @@ build/bin/*.map
 build/bin/*.drc
 build/bin/*.xml
 build/bin/*.txt
+build/bin/LICENSE
 build/bin/help/
 build/bin/languages/
 build/bin/IconCache/
