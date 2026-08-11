@@ -1,0 +1,56 @@
+# Mirror GitVerse -> GitHub (FLaunch/FreeLaunch as a clean mirror).
+# Docs: https://gitverse.ru/docs/collaborative/repositories/guides/repository-workflow/mirroring-uc
+#
+# Required GitVerse secrets (repo Settings -> Secrets):
+#   GH_MIRROR_OWNER  = FLaunch
+#   GH_MIRROR_REPO   = FreeLaunch
+#   GH_MIRROR_TOKEN  = GitHub PAT with write access to FLaunch/FreeLaunch
+#                      (classic: public_repo / repo; or fine-grained: Contents Read and write)
+#
+# Also enable CI/CD in the GitVerse repository settings.
+# Warning: each run force-mirrors refs; GitHub history becomes identical to GitVerse.
+
+name: Mirror to GitHub
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-cloud-runner
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all branches and tags
+        run: |
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+          git fetch origin --tags --force
+          for remote in $(git branch -r | sed 's|^[ ]*origin/||' | grep -v '^HEAD$'); do
+            git branch -f "$remote" "origin/$remote" 2>/dev/null || git branch "$remote" "origin/$remote"
+          done
+
+      - name: Push mirror to GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GH_MIRROR_TOKEN }}
+          GH_OWNER: ${{ secrets.GH_MIRROR_OWNER }}
+          GH_REPO: ${{ secrets.GH_MIRROR_REPO }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ] || [ -z "${GH_OWNER:-}" ] || [ -z "${GH_REPO:-}" ]; then
+            echo "Missing GH_MIRROR_TOKEN / GH_MIRROR_OWNER / GH_MIRROR_REPO secrets."
+            exit 1
+          fi
+          git remote remove github 2>/dev/null || true
+          git remote add github "https://x-access-token:${GH_TOKEN}@github.com/${GH_OWNER}/${GH_REPO}.git"
+          git push --mirror --force github
