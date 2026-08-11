@@ -176,6 +176,7 @@ begin
     Label1.Caption := Language.Properties.LblObject + ':';
     Label4.Caption := Language.Properties.Description + ':';
     Label7.Caption := Language.Properties.View + ':';
+    WStyleBox.Items.Clear;
     WStyleBox.Items.Add(Language.Properties.ViewNormal);
     WStyleBox.Items.Add(Language.Properties.ViewMax);
     WStyleBox.Items.Add(Language.Properties.ViewMin);

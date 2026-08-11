@@ -3,6 +3,7 @@ object AboutForm: TAboutForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
+  Caption = 'About'
   ClientHeight = 321
   ClientWidth = 414
   Color = clBtnFace
@@ -35,6 +36,7 @@ object AboutForm: TAboutForm
       Top = 10
       Width = 6
       Height = 25
+      Caption = 'FreeLaunch'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -21
@@ -54,6 +56,7 @@ object AboutForm: TAboutForm
       Width = 4
       Height = 16
       Cursor = crHandPoint
+      Caption = 'Contributors'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = -13
@@ -69,6 +72,7 @@ object AboutForm: TAboutForm
       Height = 16
       Cursor = crHandPoint
       Alignment = taRightJustify
+      Caption = 'License'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = -13
@@ -84,6 +88,7 @@ object AboutForm: TAboutForm
       Height = 16
       Cursor = crHandPoint
       Alignment = taCenter
+      Caption = 'Thanks'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue
       Font.Height = -13

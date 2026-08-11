@@ -3,6 +3,7 @@ object ChangeIconForm: TChangeIconForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
+  Caption = 'Icon select'
   ClientHeight = 172
   ClientWidth = 378
   Color = clBtnFace
@@ -30,6 +31,7 @@ object ChangeIconForm: TChangeIconForm
       Width = 3
       Height = 13
       Alignment = taRightJustify
+      Caption = 'File:'
     end
     object Label2: TLabel
       Left = 50
@@ -37,6 +39,7 @@ object ChangeIconForm: TChangeIconForm
       Width = 3
       Height = 13
       Alignment = taRightJustify
+      Caption = 'Index:'
     end
     object IcImage: TImage
       Left = 328
@@ -49,6 +52,7 @@ object ChangeIconForm: TChangeIconForm
       Top = 55
       Width = 3
       Height = 13
+      Caption = 'of 5'
     end
     object IndexEdit: TSpinEdit
       Left = 60
@@ -91,6 +95,7 @@ object ChangeIconForm: TChangeIconForm
       Top = 100
       Width = 250
       Height = 17
+      Caption = 'Use negative index'
       TabOrder = 3
       OnClick = IndexEditChange
     end
@@ -101,6 +106,7 @@ object ChangeIconForm: TChangeIconForm
     Width = 75
     Height = 25
     Cancel = True
+    Caption = 'Cancel'
     TabOrder = 2
     OnClick = CancelButtonClick
   end
@@ -109,6 +115,7 @@ object ChangeIconForm: TChangeIconForm
     Top = 140
     Width = 75
     Height = 25
+    Caption = 'OK'
     Default = True
     TabOrder = 1
     OnClick = OKButtonClick

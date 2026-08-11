@@ -3,6 +3,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
+  Caption = 'Properties'
   ClientHeight = 320
   ClientWidth = 538
   Color = clBtnFace
@@ -30,6 +31,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     TabOrder = 0
     ExplicitHeight = 274
     object TabSheet1: TTabSheet
+      Caption = 'Properties'
       DesignSize = (
         513
         247)
@@ -39,6 +41,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Object:'
       end
       object Label2: TLabel
         Left = 69
@@ -46,6 +49,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Parameters:'
       end
       object Label4: TLabel
         Left = 69
@@ -53,6 +57,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Description:'
       end
       object Label3: TLabel
         Left = 69
@@ -60,6 +65,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Priority:'
       end
       object Bevel1: TBevel
         Left = 351
@@ -75,6 +81,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 17
         Width = 3
         Height = 13
+        Caption = 'Options'
       end
       object Bevel2: TBevel
         Left = 405
@@ -95,6 +102,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 102
         Width = 3
         Height = 13
+        Caption = 'Icon'
       end
       object IcImage: TImage
         Left = 379
@@ -108,6 +116,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'View:'
       end
       object Label8: TLabel
         Left = 69
@@ -115,6 +124,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Parameters:'
         Enabled = False
       end
       object Label9: TLabel
@@ -123,6 +133,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Folder:'
       end
       object ParamsEdit: TEdit
         Left = 80
@@ -145,12 +156,19 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Height = 21
         Style = csDropDownList
         TabOrder = 7
+        Items.Strings = (
+          'Normal'
+          'High'
+          'Idle'
+          'Below normal'
+          'Above normal')
       end
       object ChangeIconButton: TButton
         Left = 423
         Top = 128
         Width = 75
         Height = 25
+        Caption = 'Change...'
         TabOrder = 12
         OnClick = ChangeIconButtonClick
       end
@@ -159,6 +177,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 37
         Width = 138
         Height = 17
+        Caption = 'Confirm launch'
         TabOrder = 10
       end
       object WStyleBox: TComboBox
@@ -168,12 +187,18 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Height = 21
         Style = csDropDownList
         TabOrder = 8
+        Items.Strings = (
+          'Normal'
+          'Maximized'
+          'Minimized'
+          'Hidden')
       end
       object DropBox: TCheckBox
         Left = 80
         Top = 105
         Width = 259
         Height = 17
+        Caption = 'Accept dropped files (%1 - filename)'
         TabOrder = 4
         OnClick = DropBoxClick
       end
@@ -190,6 +215,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 60
         Width = 138
         Height = 17
+        Caption = 'Hide after launch'
         TabOrder = 11
       end
       object RefProps: TButton
@@ -222,6 +248,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
         Top = 218
         Width = 259
         Height = 17
+        Caption = 'Run with Admin rights'
         TabOrder = 9
         OnClick = AdminBoxClick
       end
@@ -245,6 +272,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    Caption = 'OK'
     Default = True
     ModalResult = 1
     TabOrder = 1
@@ -258,6 +286,7 @@ object ProgrammPropertiesForm: TProgrammPropertiesForm
     Height = 25
     Anchors = [akLeft, akBottom]
     Cancel = True
+    Caption = 'Cancel'
     ModalResult = 2
     TabOrder = 2
     ExplicitTop = 288

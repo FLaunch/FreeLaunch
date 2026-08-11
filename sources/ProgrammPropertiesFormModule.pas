@@ -253,12 +253,14 @@ begin
     Label8.Caption := Label2.Caption;
     Label4.Caption := Language.Properties.Description + ':';
     Label3.Caption := Language.Properties.Priority + ':';
+    PriorBox.Items.Clear;
     PriorBox.Items.Add(Language.Properties.PriorityNormal);
     PriorBox.Items.Add(Language.Properties.PriorityHigh);
     PriorBox.Items.Add(Language.Properties.PriorityIdle);
     PriorBox.Items.Add(Language.Properties.PriorityBelowNormal);
     PriorBox.Items.Add(Language.Properties.PriorityAboveNormal);
     Label7.Caption := Language.Properties.View + ':';
+    WStyleBox.Items.Clear;
     WStyleBox.Items.Add(Language.Properties.ViewNormal);
     WStyleBox.Items.Add(Language.Properties.ViewMax);
     WStyleBox.Items.Add(Language.Properties.ViewMin);

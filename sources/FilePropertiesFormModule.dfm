@@ -3,6 +3,7 @@ object FilePropertiesForm: TFilePropertiesForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
+  Caption = 'Properties'
   ClientHeight = 258
   ClientWidth = 538
   Color = clBtnFace
@@ -28,6 +29,7 @@ object FilePropertiesForm: TFilePropertiesForm
     Anchors = [akLeft, akTop, akBottom]
     TabOrder = 0
     object TabSheet1: TTabSheet
+      Caption = 'Properties'
       DesignSize = (
         513
         185)
@@ -37,6 +39,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Object:'
       end
       object Label4: TLabel
         Left = 69
@@ -44,6 +47,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Description:'
       end
       object Label7: TLabel
         Left = 69
@@ -51,6 +55,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'View:'
       end
       object Bevel1: TBevel
         Left = 351
@@ -66,6 +71,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Top = 17
         Width = 3
         Height = 13
+        Caption = 'Options'
       end
       object Bevel2: TBevel
         Left = 405
@@ -86,6 +92,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Top = 102
         Width = 3
         Height = 13
+        Caption = 'Icon'
       end
       object IcImage: TImage
         Left = 379
@@ -99,6 +106,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Folder:'
       end
       object DescrEdit: TEdit
         Left = 78
@@ -114,12 +122,18 @@ object FilePropertiesForm: TFilePropertiesForm
         Height = 21
         Style = csDropDownList
         TabOrder = 4
+        Items.Strings = (
+          'Normal'
+          'Maximized'
+          'Minimized'
+          'Hidden')
       end
       object ChangeIconButton: TButton
         Left = 423
         Top = 128
         Width = 75
         Height = 25
+        Caption = 'Change...'
         TabOrder = 7
         OnClick = ChangeIconButtonClick
       end
@@ -128,6 +142,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Top = 37
         Width = 138
         Height = 17
+        Caption = 'Confirm launch'
         TabOrder = 5
       end
       object HideCheckBox: TCheckBox
@@ -135,6 +150,7 @@ object FilePropertiesForm: TFilePropertiesForm
         Top = 60
         Width = 138
         Height = 17
+        Caption = 'Hide after launch'
         TabOrder = 6
       end
       object CommandEdit: TButtonedEdit
@@ -182,6 +198,7 @@ object FilePropertiesForm: TFilePropertiesForm
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
+    Caption = 'OK'
     Default = True
     ModalResult = 1
     TabOrder = 1
@@ -194,6 +211,7 @@ object FilePropertiesForm: TFilePropertiesForm
     Height = 25
     Anchors = [akLeft, akBottom]
     Cancel = True
+    Caption = 'Cancel'
     ModalResult = 2
     TabOrder = 2
   end

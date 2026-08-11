@@ -3,6 +3,7 @@ object RenameTabForm: TRenameTabForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
+  Caption = 'Tab name'
   ClientHeight = 102
   ClientWidth = 339
   Color = clBtnFace
@@ -28,6 +29,7 @@ object RenameTabForm: TRenameTabForm
       Width = 3
       Height = 13
       Alignment = taRightJustify
+      Caption = 'Tab name:'
     end
     object TabNameEdit: TEdit
       Left = 106
@@ -42,6 +44,7 @@ object RenameTabForm: TRenameTabForm
     Top = 71
     Width = 75
     Height = 25
+    Caption = 'OK'
     Default = True
     ModalResult = 1
     TabOrder = 1
@@ -52,6 +55,7 @@ object RenameTabForm: TRenameTabForm
     Width = 75
     Height = 25
     Cancel = True
+    Caption = 'Cancel'
     ModalResult = 2
     TabOrder = 2
   end

@@ -3,6 +3,7 @@ object FlaunchMainForm: TFlaunchMainForm
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
+  Caption = 'FreeLaunch'
   ClientHeight = 164
   ClientWidth = 321
   Color = clBtnFace
@@ -59,19 +60,23 @@ object FlaunchMainForm: TFlaunchMainForm
     Left = 16
     Top = 32
     object NI_Show: TMenuItem
+      Caption = '&FreeLaunch'
       Default = True
       OnClick = NI_ShowClick
     end
     object NI_Settings: TMenuItem
+      Caption = '&Settings...'
       OnClick = NI_SettingsClick
     end
     object NI_L5: TMenuItem
       Caption = '-'
     end
     object NI_About: TMenuItem
+      Caption = '&About...'
       OnClick = NI_AboutClick
     end
     object NI_Close: TMenuItem
+      Caption = '&Close'
       OnClick = NI_CloseClick
     end
   end
@@ -187,10 +192,12 @@ object FlaunchMainForm: TFlaunchMainForm
     Left = 48
     Top = 80
     object ButtonPopupItem_Run: TMenuItem
+      Caption = '&Execute'
       Default = True
       OnClick = ButtonPopupItem_RunClick
     end
     object ButtonPopupItem_RunAsAdmin: TMenuItem
+      Caption = 'Run as Administrator'
       OnClick = ButtonPopupItem_RunAsAdminClick
     end
     object ButtonPopupItem_Line: TMenuItem
@@ -198,34 +205,41 @@ object FlaunchMainForm: TFlaunchMainForm
     end
     object ButtonPopupItem_TypeProgramm: TMenuItem
       AutoCheck = True
+      Caption = '&Executed file'
       RadioItem = True
     end
     object ButtonPopupItem_TypeFile: TMenuItem
       AutoCheck = True
+      Caption = '&File, folder'
       RadioItem = True
     end
     object ButtonPopupItem_Line2: TMenuItem
       Caption = '-'
     end
     object ButtonPopupItem_Export: TMenuItem
+      Caption = '&Export...'
       OnClick = ButtonPopupItem_ExportClick
     end
     object ButtonPopupItem_Import: TMenuItem
+      Caption = '&Import...'
       OnClick = ButtonPopupItem_ImportClick
     end
     object ButtonPopupItem_Line3: TMenuItem
       Caption = '-'
     end
     object ButtonPopupItem_Clear: TMenuItem
+      Caption = '&Clear button'
       OnClick = ButtonPopupItem_ClearClick
     end
     object ButtonPopupItem_Props: TMenuItem
+      Caption = 'Button &properties...'
       OnClick = ButtonPopupItem_PropsClick
     end
     object ButtonPopupItem_Line4: TMenuItem
       Caption = '-'
     end
     object ButtonPopupItem_AppSettings: TMenuItem
+      Caption = 'Settings'
       OnClick = NI_SettingsClick
     end
   end
@@ -233,21 +247,26 @@ object FlaunchMainForm: TFlaunchMainForm
     Left = 136
     Top = 80
     object TabPopupItem_New: TMenuItem
+      Caption = '&Add'
       OnClick = TabPopupItem_NewClick
     end
     object TabPopupItem_Rename: TMenuItem
+      Caption = '&Rename'
       OnClick = TabPopupItem_RenameClick
     end
     object TabPopupItem_Clear: TMenuItem
+      Caption = '&Clear'
       OnClick = TabPopupItem_ClearClick
     end
     object TabPopupItem_Delete: TMenuItem
+      Caption = '&Delete'
       OnClick = TabPopupItem_DeleteClick
     end
     object TabPopupItem_Delim: TMenuItem
       Caption = '-'
     end
     object TabPopupItem_AppSettings: TMenuItem
+      Caption = 'Settings'
       OnClick = NI_SettingsClick
     end
   end

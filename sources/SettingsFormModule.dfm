@@ -4,6 +4,7 @@ object SettingsForm: TSettingsForm
   ActiveControl = pgc
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
+  Caption = 'Settings'
   ClientHeight = 432
   ClientWidth = 448
   Color = clBtnFace
@@ -30,11 +31,13 @@ object SettingsForm: TSettingsForm
     TabOrder = 0
     OnChange = pgcChange
     object TabGeneral: TTabSheet
+      Caption = 'General'
       object AutorunCheckBox: TCheckBox
         Left = 10
         Top = 10
         Width = 420
         Height = 17
+        Caption = 'Autostart with system'
         TabOrder = 0
       end
       object TopCheckBox: TCheckBox
@@ -42,6 +45,7 @@ object SettingsForm: TSettingsForm
         Top = 35
         Width = 420
         Height = 17
+        Caption = 'Always on top'
         TabOrder = 1
       end
       object ReloadIconsButton: TButton
@@ -49,6 +53,7 @@ object SettingsForm: TSettingsForm
         Top = 325
         Width = 145
         Height = 25
+        Caption = 'Reload icons'
         TabOrder = 8
         OnClick = ReloadIconsButtonClick
       end
@@ -57,6 +62,7 @@ object SettingsForm: TSettingsForm
         Top = 85
         Width = 420
         Height = 17
+        Caption = 'Start hidden'
         TabOrder = 3
       end
       object StatusBarBox: TCheckBox
@@ -64,6 +70,7 @@ object SettingsForm: TSettingsForm
         Top = 110
         Width = 420
         Height = 17
+        Caption = 'Show status bar'
         TabOrder = 4
         OnClick = StatusBarBoxClick
       end
@@ -72,6 +79,7 @@ object SettingsForm: TSettingsForm
         Top = 135
         Width = 400
         Height = 17
+        Caption = 'Show the date and time in the status bar'
         TabOrder = 5
       end
       object DelLnkCheckBox: TCheckBox
@@ -79,6 +87,7 @@ object SettingsForm: TSettingsForm
         Top = 160
         Width = 420
         Height = 17
+        Caption = 'Delete shortcut file after creating a button'
         TabOrder = 6
       end
       object ClearCheckBox: TCheckBox
@@ -86,6 +95,9 @@ object SettingsForm: TSettingsForm
         Top = 185
         Width = 420
         Height = 17
+        Caption = 
+          'When reloading icons, delete the button if the object is not fou' +
+          'nd'
         TabOrder = 7
       end
       object TaskBarBox: TCheckBox
@@ -93,10 +105,12 @@ object SettingsForm: TSettingsForm
         Top = 60
         Width = 420
         Height = 17
+        Caption = 'Show on taskbar'
         TabOrder = 2
       end
     end
     object TabInterface: TTabSheet
+      Caption = 'Interface'
       ImageIndex = 1
       object lblWndTitle: TLabel
         Left = 190
@@ -104,6 +118,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Window title style:'
       end
       object lblTabStyle: TLabel
         Left = 190
@@ -111,6 +126,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Tab style:'
       end
       object lblLang: TLabel
         Left = 190
@@ -118,6 +134,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Language:'
       end
       object lblNumofTabs: TLabel
         Left = 265
@@ -125,6 +142,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Number of tabs:'
       end
       object lblNumofRows: TLabel
         Left = 265
@@ -132,6 +150,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Number of rows on the tab:'
       end
       object lblNumofCols: TLabel
         Left = 265
@@ -139,6 +158,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Number of columns on the tab:'
       end
       object lblPadding: TLabel
         Left = 265
@@ -146,6 +166,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Padding between buttons:'
       end
       object lblTheme: TLabel
         Left = 190
@@ -153,6 +174,7 @@ object SettingsForm: TSettingsForm
         Width = 3
         Height = 13
         Alignment = taRightJustify
+        Caption = 'Theme:'
       end
       object TBarBox: TComboBox
         Left = 200
@@ -161,6 +183,10 @@ object SettingsForm: TSettingsForm
         Height = 21
         Style = csDropDownList
         TabOrder = 2
+        Items.Strings = (
+          'Normal'
+          'Mini'
+          'Hidden')
       end
       object TabsBox: TComboBox
         Left = 200
@@ -169,6 +195,10 @@ object SettingsForm: TSettingsForm
         Height = 21
         Style = csDropDownList
         TabOrder = 3
+        Items.Strings = (
+          'Pages'
+          'Buttons'
+          'Flat buttons')
       end
       object LanguagesBox: TComboBox
         Left = 200
@@ -227,12 +257,17 @@ object SettingsForm: TSettingsForm
         Height = 21
         Style = csDropDownList
         TabOrder = 1
+        Items.Strings = (
+          'Classic'
+          'Slate Gray'
+          'Light')
       end
       object ABlendCheckBox: TCheckBox
         Left = 10
         Top = 220
         Width = 400
         Height = 17
+        Caption = 'Enable main window transparency:'
         TabOrder = 8
         OnClick = ABlendCheckBoxClick
       end
@@ -252,16 +287,19 @@ object SettingsForm: TSettingsForm
         Top = 245
         Width = 380
         Height = 17
+        Caption = 'Turn off transparency if the cursor is over the window'
         TabOrder = 9
       end
     end
     object TabNewButtons: TTabSheet
+      Caption = 'Buttons'
       ImageIndex = 2
       object grpNewBtns: TGroupBox
         Left = 20
         Top = 20
         Width = 400
         Height = 190
+        Caption = 'Properties of new buttons'
         TabOrder = 0
         object lblWState: TLabel
           Left = 230
@@ -269,6 +307,7 @@ object SettingsForm: TSettingsForm
           Width = 3
           Height = 13
           Alignment = taRightJustify
+          Caption = 'Window state:'
         end
         object lblPriority: TLabel
           Left = 230
@@ -276,12 +315,14 @@ object SettingsForm: TSettingsForm
           Width = 3
           Height = 13
           Alignment = taRightJustify
+          Caption = 'Priority:'
         end
         object HideCheckBox: TCheckBox
           Left = 10
           Top = 25
           Width = 380
           Height = 17
+          Caption = 'Hide FreeLaunch after launching a button'
           TabOrder = 0
         end
         object QoLCheckBox: TCheckBox
@@ -289,6 +330,7 @@ object SettingsForm: TSettingsForm
           Top = 50
           Width = 380
           Height = 17
+          Caption = 'Request confirmation before launching a button'
           TabOrder = 1
         end
         object WSBox: TComboBox
@@ -298,12 +340,18 @@ object SettingsForm: TSettingsForm
           Height = 21
           Style = csDropDownList
           TabOrder = 4
+          Items.Strings = (
+            'Normal'
+            'Maximized'
+            'Minimized'
+            'Hidden')
         end
         object AdminCheckBox: TCheckBox
           Left = 10
           Top = 75
           Width = 380
           Height = 17
+          Caption = 'Run with Administrator rights'
           TabOrder = 2
           OnClick = AdminCheckBoxClick
         end
@@ -314,12 +362,19 @@ object SettingsForm: TSettingsForm
           Height = 21
           Style = csDropDownList
           TabOrder = 5
+          Items.Strings = (
+            'Normal'
+            'High'
+            'Idle'
+            'Below normal'
+            'Above normal')
         end
         object DropCheckBox: TCheckBox
           Left = 10
           Top = 100
           Width = 380
           Height = 17
+          Caption = 'Accept dropped files'
           TabOrder = 3
         end
       end
@@ -328,6 +383,7 @@ object SettingsForm: TSettingsForm
         Top = 230
         Width = 400
         Height = 70
+        Caption = 'Button size'
         TabOrder = 1
         object lblBtnW: TLabel
           Left = 245
@@ -335,6 +391,7 @@ object SettingsForm: TSettingsForm
           Width = 3
           Height = 13
           Alignment = taRightJustify
+          Caption = 'Width:'
         end
         object lblBtnH: TLabel
           Left = 245
@@ -342,6 +399,7 @@ object SettingsForm: TSettingsForm
           Width = 3
           Height = 13
           Alignment = taRightJustify
+          Caption = 'Height:'
         end
         object IWEdit: TSpinEdit
           Left = 255
@@ -371,6 +429,7 @@ object SettingsForm: TSettingsForm
     Top = 400
     Width = 100
     Height = 25
+    Caption = 'OK'
     TabOrder = 1
     OnClick = OKButtonClick
   end
@@ -380,6 +439,7 @@ object SettingsForm: TSettingsForm
     Width = 100
     Height = 25
     Cancel = True
+    Caption = 'Cancel'
     TabOrder = 3
     TabStop = False
     OnClick = CancelButtonClick
@@ -389,6 +449,7 @@ object SettingsForm: TSettingsForm
     Top = 400
     Width = 100
     Height = 25
+    Caption = 'Apply'
     Default = True
     TabOrder = 2
     OnClick = ApplyButtonClick
