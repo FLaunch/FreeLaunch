@@ -1,0 +1,65 @@
+# Security Policy
+
+## Supported versions
+
+Security fixes are applied to the current maintained line of FreeLaunch.
+
+| Version | Supported |
+|---------|-----------|
+| Latest release (see [Releases](https://gitverse.ru/freelaunch/FreeLaunch/releases)) | Yes |
+| Development `master` | Yes (fixes land here first) |
+| Older releases | No (please upgrade) |
+
+Windows versions that the current release is intended to run on should be treated as in scope for security reports that affect those builds.
+
+## Reporting a vulnerability
+
+Please **do not** open a public issue, merge request, or bugtracker ticket with exploit details.
+
+Report privately to the maintainer:
+
+* GitVerse: [@Ta2i4](https://gitverse.ru/ta2i4) (private message)
+* Or use the [bugtracker](https://bt.freelaunch.su/) only if you can mark the report as private / non-public
+
+Include as much of the following as you can:
+
+* Affected version (release tag or commit)
+* OS version and architecture (for example Windows 10 22H2 x64)
+* Steps to reproduce
+* Impact (what an attacker could do)
+* Proof of concept **only** in the private report (no public PoC until a fix is available)
+
+## What to expect
+
+* Acknowledgement when the report is seen (best effort; there is no fixed SLA)
+* Assessment of severity and whether a fix is planned
+* Coordination on disclosure timing after a fix is released or the report is declined
+
+We ask that you give maintainers reasonable time to fix and ship a release before any public disclosure.
+
+## Disclosure policy
+
+* Prefer coordinated disclosure: public details after a fixed release is available, or after maintainers confirm they will not fix the issue.
+* Credit: with your consent, reporters may be thanked in release notes / `THANKS.txt` / commit messages.
+* Do not publish working exploits against unpatched releases.
+
+## Scope notes
+
+In scope examples:
+
+* Path handling that leads to unexpected code execution when launching configured items
+* Privilege / elevation issues introduced by FreeLaunch itself
+* Unsafe handling of imported settings, shortcuts, or dropped files that can compromise the user who runs FreeLaunch
+
+Out of scope examples:
+
+* Issues that require the user to already run untrusted code with the same privileges as FreeLaunch
+* Vulnerabilities only in third-party programs launched by FreeLaunch (report those upstream)
+* Pure UI/UX bugs without a security impact (use the normal bugtracker)
+
+## Canonical repository
+
+Report and discuss security matters against the GitVerse project:
+https://gitverse.ru/freelaunch/FreeLaunch  
+
+GitHub is a read-only mirror and is not the channel for security coordination.
