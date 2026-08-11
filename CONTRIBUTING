@@ -1,0 +1,68 @@
+# Contributing to FreeLaunch
+
+Thank you for your interest in FreeLaunch. This document explains how to propose changes so they are easier to review and accept.
+
+Canonical repository: [gitverse.ru/freelaunch/FreeLaunch](https://gitverse.ru/freelaunch/FreeLaunch)  
+GitHub is a read-only mirror of GitVerse.
+
+## How to propose changes
+
+1. **Bugs and feature requests**  
+   Prefer the [bugtracker](https://bt.freelaunch.su/).  
+   On GitVerse you may also open an issue or start a discussion before coding large changes.
+
+2. **Small fixes**  
+   Fork the repository on GitVerse, create a branch from `master`, open a merge request (MR) into `master`.
+
+3. **Larger changes**  
+   Please discuss the idea first (bugtracker / discussion / issue), so we can agree on scope and approach before a large MR.
+
+Do not open pull requests against the GitHub mirror for upstream inclusion — they will not be merged there.
+
+## Merge request checklist
+
+Please include in the MR description:
+
+- [ ] What problem this solves (link to bugtracker issue / GitVerse issue if any)
+- [ ] How you tested the change (OS version, steps)
+- [ ] Notes for the reviewer (risks, follow-ups, intentional omissions)
+
+Keep the MR focused: one topic per MR when practical. Avoid unrelated reformatting.
+
+## Development environment
+
+| Item | Value |
+|------|--------|
+| IDE | Embarcadero Delphi 12 Athens (Community Edition is fine) |
+| Framework | VCL, Win32 |
+| Output | `build/bin/FLaunch.exe` (see project settings) |
+
+Notes:
+
+- Community Edition does **not** build from the command line — compile in the IDE.
+- Day-to-day work uses the **Debug** configuration. Use **Release** only for packaging a release build, then switch back to Debug.
+- Zip packaging: `build/makezip.bat` (requires a previously built executable).
+
+## Code guidelines
+
+- Source and comments are written in **English**.
+- Prefer a **minimal diff**: change only what the task needs; do not reformat unrelated code.
+- Form modules: `*FormModule.pas` + `.dfm`; shared logic lives in `FL*.pas` modules.
+- Match existing naming, structure, and style in nearby code.
+- Design-time captions in `.dfm` files are optional placeholders for the IDE designer; runtime UI text comes from language files (`.lng`) via `FLLanguage`.
+
+## Commit messages
+
+- Use short, clear messages in English (imperative or past tense is fine if consistent with nearby history).
+- Explain *why* when it is not obvious from the diff.
+- Do not mix unrelated fixes in one commit when they can be split cleanly.
+
+## Review and expectations
+
+- Maintainers review MRs as time allows; there is no fixed SLA.
+- Feedback may request smaller commits, tests on specific Windows versions, or API/compatibility notes (for example Windows 7).
+- CI may mirror accepted `master` changes to GitHub automatically; you do not need to update the mirror yourself.
+
+## License
+
+By contributing, you agree that your contributions are licensed under the same terms as the project: [GNU GPL v3](LICENSE).
