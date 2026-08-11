@@ -41,7 +41,7 @@ uses
 
 const
   fn_authors = 'AUTHORS.txt';
-  fn_license = 'COPYING.txt';
+  fn_license = 'LICENSE';
   fn_thanks  = 'THANKS.txt';
 
 type

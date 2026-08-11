@@ -26,7 +26,7 @@ rd /s /q "..\sources\Win32"
 @echo Copying files
 @echo off
 xcopy "..\AUTHORS.txt" "bin" /c /q /r /y
-xcopy "..\COPYING.txt" "bin" /c /q /r /y
+xcopy "..\LICENSE" "bin" /c /q /r /y
 xcopy "..\THANKS.txt" "bin" /c /q /r /y
 md bin\languages
 xcopy "..\localizations\*.lng" "bin\languages" /c /q /r /y
